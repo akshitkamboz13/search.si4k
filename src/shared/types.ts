@@ -51,6 +51,11 @@ export interface SearchResponse {
     total: number;
     executionTimeMs: number;
     providers: string[];
+    isStreaming?: boolean;
+    pendingSources?: number;
+    completedSources?: number;
+    totalSourcesCount?: number;
+    statusText?: string;
   };
 }
 
@@ -59,4 +64,16 @@ export interface SearchOptions {
   lang?: string;
   page?: number;
   pageSize?: number;
+  maxConcurrency?: number;
+}
+
+export interface StreamEventPayload {
+  event: 'progress' | 'results' | 'complete' | 'error';
+  data: Partial<SearchResponse> & {
+    pendingSources?: number;
+    completedSources?: number;
+    totalSourcesCount?: number;
+    statusText?: string;
+    message?: string;
+  };
 }

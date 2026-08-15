@@ -10,6 +10,7 @@ export interface KiwixConfig {
   localPublicUrl: string;
   onlineUrl: string;
   onlinePublicUrl: string;
+  maxConcurrentSearches: number;
 }
 
 export interface Config {
@@ -37,5 +38,6 @@ export const config: Config = {
     localPublicUrl: defaultLocalPublicUrl.replace(/\/$/, ''),
     onlineUrl: defaultOnlineUrl.replace(/\/$/, ''),
     onlinePublicUrl: defaultOnlinePublicUrl.replace(/\/$/, ''),
+    maxConcurrentSearches: parseInt(process.env.MAX_CONCURRENT_ZIM_SEARCHES || '8', 10),
   },
 };

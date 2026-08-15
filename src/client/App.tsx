@@ -1,11 +1,11 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { SearchResponse, SearchMode } from '../shared/types.js';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { SearchResponse, SearchMode, StreamEventPayload } from '../shared/types.js';
 import { Header } from './components/Header.js';
 import { SearchBar } from './components/SearchBar.js';
 import { SearchResults } from './components/SearchResults.js';
 import { LoadingState } from './components/LoadingState.js';
 import { ErrorState } from './components/ErrorState.js';
-import { fetchSearchResults } from './services/api.js';
+import { streamSearchResults } from './services/api.js';
 import { BookOpen, MapPin, Database } from 'lucide-react';
 
 export const App: React.FC = () => {
@@ -16,6 +16,9 @@ export const App: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [response, setResponse] = useState<SearchResponse | null>(null);
+  const [streamStatus, setStreamStatus] = useState<string>('');
+
+  const cancelStreamRef = useRef<(() => void) | null>(null);
 
   // Synchronize theme with DOM data-theme attribute
   useEffect(() => {
@@ -23,9 +26,16 @@ export const App: React.FC = () => {
   }, [theme]);
 
   const executeSearch = useCallback(
-    async (searchQuery: string, searchMode: SearchMode = mode, searchPage: number = page) => {
+    (searchQuery: string, searchMode: SearchMode = mode, searchPage: number = page) => {
+      // Cancel any ongoing stream
+      if (cancelStreamRef.current) {
+        cancelStreamRef.current();
+        cancelStreamRef.current = null;
+      }
+
       setLoading(true);
       setError(null);
+      setStreamStatus('Initiating search...');
 
       // Build updated URL preserving q, mode, page
       const params = new URLSearchParams();
@@ -37,16 +47,37 @@ export const App: React.FC = () => {
       const newUrl = `${window.location.pathname}?${params.toString()}`;
       window.history.pushState({ q: searchQuery, mode: searchMode, page: searchPage }, '', newUrl);
 
-      try {
-        const data = await fetchSearchResults(searchQuery, searchMode, searchPage);
-        setResponse(data);
-        setPage(data.pagination.page);
-      } catch (err) {
-        console.error('Search request failed:', err);
-        setError(err instanceof Error ? err.message : 'Unable to connect to Si4k Search API');
-      } finally {
-        setLoading(false);
-      }
+      cancelStreamRef.current = streamSearchResults(
+        searchQuery,
+        searchMode,
+        searchPage,
+        (payload: StreamEventPayload) => {
+          if (payload.event === 'progress') {
+            if (payload.data.statusText) {
+              setStreamStatus(payload.data.statusText);
+            }
+          } else if (payload.event === 'results') {
+            setLoading(false);
+            if (payload.data.results) {
+              setResponse(payload.data as SearchResponse);
+            }
+            if (payload.data.meta?.statusText) {
+              setStreamStatus(payload.data.meta.statusText);
+            }
+          } else if (payload.event === 'complete') {
+            setLoading(false);
+            if (payload.data.results) {
+              setResponse(payload.data as SearchResponse);
+            }
+            setStreamStatus('Search complete');
+          }
+        },
+        (err: Error) => {
+          console.error('Streaming search error:', err);
+          setError(err.message || 'Unable to connect to Si4k Search API');
+          setLoading(false);
+        }
+      );
     },
     [mode, page]
   );
@@ -75,7 +106,12 @@ export const App: React.FC = () => {
     handleUrlState();
 
     window.addEventListener('popstate', handleUrlState);
-    return () => window.removeEventListener('popstate', handleUrlState);
+    return () => {
+      window.removeEventListener('popstate', handleUrlState);
+      if (cancelStreamRef.current) {
+        cancelStreamRef.current();
+      }
+    };
   }, []);
 
   const handleSearchSubmit = (newQuery: string) => {
@@ -105,10 +141,15 @@ export const App: React.FC = () => {
   };
 
   const handleHomeClick = () => {
+    if (cancelStreamRef.current) {
+      cancelStreamRef.current();
+      cancelStreamRef.current = null;
+    }
     setQuery('');
     setPage(1);
     setResponse(null);
     setError(null);
+    setStreamStatus('');
     window.history.pushState({}, '', window.location.pathname);
   };
 
@@ -142,14 +183,18 @@ export const App: React.FC = () => {
           autoFocus={true}
         />
 
-        {loading && <LoadingState />}
+        {loading && !response && <LoadingState />}
 
         {!loading && error && (
           <ErrorState message={error} onRetry={() => executeSearch(query, mode, page)} />
         )}
 
-        {!loading && !error && response && (
-          <SearchResults response={response} onPageChange={handlePageChange} />
+        {response && (
+          <SearchResults
+            response={response}
+            onPageChange={handlePageChange}
+            streamStatus={streamStatus}
+          />
         )}
 
         {!hasSearched && (
