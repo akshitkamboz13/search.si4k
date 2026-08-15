@@ -30,12 +30,12 @@ export class ZimLibrary {
   async getDiscoveredSources(forceReload: boolean = false): Promise<DiscoveredZim[]> {
     const now = Date.now();
 
-    // Check if local file exists and file timestamp changed
+    // Check if local library.xml metadata file exists on disk
     if (fs.existsSync(this.libraryXmlPath)) {
       try {
         const stats = fs.statSync(this.libraryXmlPath);
         if (forceReload || stats.mtimeMs > this.lastMtimeMs) {
-          console.log(`[ZimLibrary] Loading ZIM entries from local filesystem XML: ${this.libraryXmlPath}`);
+          console.log(`[ZimLibrary] Loading ZIM metadata entries from local library.xml: ${this.libraryXmlPath}`);
           const xmlContent = fs.readFileSync(this.libraryXmlPath, 'utf-8');
           this.discoveredSources = this.parseLibraryXml(xmlContent);
           this.lastMtimeMs = stats.mtimeMs;
@@ -47,9 +47,9 @@ export class ZimLibrary {
       }
     }
 
-    // Fallback for development laptop mode: fetch catalog entries over HTTP
+    // Fallback if library.xml file absent: fetch catalog entries over HTTP
     if (forceReload || this.discoveredSources.length === 0 || (now - this.lastFetchTimeMs > this.cacheTtlMs)) {
-      console.log(`[ZimLibrary] Local file '${this.libraryXmlPath}' absent. Fetching dynamic ZIM catalog from Kiwix server (${this.kiwixServerUrl})...`);
+      console.log(`[ZimLibrary] Local metadata file '${this.libraryXmlPath}' absent. Fetching dynamic ZIM catalog from Kiwix server (${this.kiwixServerUrl})...`);
       try {
         const catalogUrl = `${this.kiwixServerUrl}/catalog/v2/entries?count=1000`;
         const response = await fetch(catalogUrl, {
@@ -73,7 +73,7 @@ export class ZimLibrary {
   }
 
   /**
-   * Parse XML content from library.xml or catalog Atom OPDS feed
+   * Parse XML content from library.xml (attributes & elements) or catalog Atom OPDS feed
    */
   public parseLibraryXml(xmlContent: string): DiscoveredZim[] {
     const $ = cheerio.load(xmlContent, { xmlMode: true });
@@ -84,14 +84,24 @@ export class ZimLibrary {
 
     entries.each((index, el) => {
       const item = $(el);
-      const title = item.find('title').first().text().trim();
-      const description = item.find('summary, description, content').first().text().trim();
-      const rawName = item.find('name').first().text().trim();
-      
-      let zimName = rawName;
 
-      // Extract zimName from link href if /content/{zimName} present
-      if (!zimName || zimName === 'openZIM' || zimName === 'DevDocs' || zimName === 'Kiwix') {
+      // Support both XML attributes (<book name="..." title="..." description="..." tags="...">) and child elements (<entry><title>...</title></entry>)
+      const title = item.attr('title') || item.find('title').first().text().trim();
+      const description = item.attr('description') || item.find('summary, description, content').first().text().trim();
+      
+      let zimName = '';
+
+      // Primary: extract exact ZIM filename from path attribute if present (e.g. path="../ZIM/Operating_Systems/archlinux_en_all_maxi_2026-07.zim")
+      const pathAttr = item.attr('path');
+      if (pathAttr) {
+        const match = pathAttr.match(/([^/\\]+)\.zim$/i);
+        if (match && match[1]) {
+          zimName = match[1];
+        }
+      }
+
+      // Secondary: link href attribute if /content/{zimName} present
+      if (!zimName) {
         const links = item.find('link');
         links.each((_, linkEl) => {
           const href = $(linkEl).attr('href') || '';
@@ -102,20 +112,20 @@ export class ZimLibrary {
         });
       }
 
+      // Fallback to name or id attribute
       if (!zimName) {
-        const idAttr = item.attr('id') || item.find('id').text().trim();
-        if (idAttr) zimName = idAttr;
+        zimName = item.attr('name') || item.find('name').first().text().trim() || item.attr('id') || item.find('id').text().trim();
       }
 
       if (!title || !zimName) return;
 
       // Language extraction (default 'en')
-      let lang = item.find('language, lang').first().text().trim() || 'en';
+      let lang = item.attr('language') || item.find('language, lang').first().text().trim() || 'en';
       if (lang === 'eng') lang = 'en';
       if (lang === 'hin') lang = 'hi';
 
       // Tags extraction
-      const tagsText = item.find('tags, category').first().text().trim();
+      const tagsText = item.attr('tags') || item.find('tags, category').first().text().trim() || '';
       const tags = tagsText ? tagsText.split(/[;, ]+/).filter(Boolean) : [];
 
       // Clean human display name
