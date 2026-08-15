@@ -1,0 +1,4358 @@
+{
+  "version": 1,
+  "generatedAt": "2026-08-15T05:20:02.358Z",
+  "totalSources": 133,
+  "sources": [
+    {
+      "zimName": "devdocs_en_cmake_2026-08",
+      "title": "CMake Docs",
+      "description": "CMake documentation, by DevDocs",
+      "language": "en",
+      "parentCategory": "Programming",
+      "categories": [
+        "programming"
+      ],
+      "keywords": [
+        "cmake",
+        "docs",
+        "documentation",
+        "devdocs",
+        "ftindex",
+        "pictures",
+        "yes",
+        "videos",
+        "details",
+        "programming"
+      ],
+      "tags": [
+        "devdocs",
+        "cmake",
+        "_ftindex:no",
+        "_pictures:yes",
+        "_videos:yes",
+        "_details:yes"
+      ],
+      "basePriority": 5
+    },
+    {
+      "zimName": "devdocs_en_leaflet_2026-05",
+      "title": "Leaflet Docs",
+      "description": "Leaflet documentation, by DevDocs",
+      "language": "en",
+      "parentCategory": "Programming",
+      "categories": [
+        "programming"
+      ],
+      "keywords": [
+        "leaflet",
+        "docs",
+        "documentation",
+        "devdocs",
+        "ftindex",
+        "pictures",
+        "yes",
+        "videos",
+        "details",
+        "programming"
+      ],
+      "tags": [
+        "devdocs",
+        "leaflet",
+        "_ftindex:no",
+        "_pictures:yes",
+        "_videos:yes",
+        "_details:yes"
+      ],
+      "basePriority": 5
+    },
+    {
+      "zimName": "devdocs_en_go_2026-07",
+      "title": "Go Docs",
+      "description": "Go documentation, by DevDocs",
+      "language": "en",
+      "parentCategory": "Programming",
+      "categories": [
+        "programming"
+      ],
+      "keywords": [
+        "docs",
+        "documentation",
+        "devdocs",
+        "ftindex",
+        "pictures",
+        "yes",
+        "videos",
+        "details",
+        "programming"
+      ],
+      "tags": [
+        "devdocs",
+        "go",
+        "_ftindex:no",
+        "_pictures:yes",
+        "_videos:yes",
+        "_details:yes"
+      ],
+      "basePriority": 5
+    },
+    {
+      "zimName": "gutenberg_en_lcc-l_2026-03",
+      "title": "Project Gutenberg Library",
+      "description": "Education",
+      "language": "en",
+      "parentCategory": "Books",
+      "categories": [
+        "programming"
+      ],
+      "keywords": [
+        "project",
+        "gutenberg",
+        "library",
+        "education",
+        "category",
+        "ftindex",
+        "pictures",
+        "yes",
+        "videos",
+        "details",
+        "books"
+      ],
+      "tags": [
+        "_category:gutenberg",
+        "gutenberg",
+        "_ftindex:no",
+        "_pictures:yes",
+        "_videos:yes",
+        "_details:yes"
+      ],
+      "basePriority": 5
+    },
+    {
+      "zimName": "stackoverflow.com_en_all_2023-11",
+      "title": "Stack Overflow",
+      "description": "Q&A for professional and enthusiast programmers",
+      "language": "en",
+      "parentCategory": "Programming",
+      "categories": [
+        "programming"
+      ],
+      "keywords": [
+        "stack",
+        "overflow",
+        "for",
+        "professional",
+        "and",
+        "enthusiast",
+        "programmers",
+        "exchange",
+        "category",
+        "ftindex",
+        "pictures",
+        "yes",
+        "videos",
+        "details",
+        "programming"
+      ],
+      "tags": [
+        "stack_exchange",
+        "_category:stack_exchange",
+        "_ftindex:no",
+        "_pictures:yes",
+        "_videos:yes",
+        "_details:yes"
+      ],
+      "basePriority": 5
+    },
+    {
+      "zimName": "devdocs_en_redux_2026-07",
+      "title": "Redux Docs",
+      "description": "Redux documentation, by DevDocs",
+      "language": "en",
+      "parentCategory": "Programming",
+      "categories": [
+        "programming"
+      ],
+      "keywords": [
+        "redux",
+        "docs",
+        "documentation",
+        "devdocs",
+        "ftindex",
+        "pictures",
+        "yes",
+        "videos",
+        "details",
+        "programming"
+      ],
+      "tags": [
+        "devdocs",
+        "redux",
+        "_ftindex:no",
+        "_pictures:yes",
+        "_videos:yes",
+        "_details:yes"
+      ],
+      "basePriority": 5
+    },
+    {
+      "zimName": "devdocs_en_apache-http-server_2026-07",
+      "title": "Apache HTTP Server Docs",
+      "description": "Apache HTTP Server documentation, by DevDocs",
+      "language": "en",
+      "parentCategory": "Programming",
+      "categories": [
+        "programming"
+      ],
+      "keywords": [
+        "apache",
+        "http",
+        "server",
+        "docs",
+        "documentation",
+        "devdocs",
+        "ftindex",
+        "pictures",
+        "yes",
+        "videos",
+        "details",
+        "programming"
+      ],
+      "tags": [
+        "devdocs",
+        "apache_http_server",
+        "_ftindex:no",
+        "_pictures:yes",
+        "_videos:yes",
+        "_details:yes"
+      ],
+      "basePriority": 5
+    },
+    {
+      "zimName": "devdocs_en_pytorch_2026-07",
+      "title": "PyTorch Docs",
+      "description": "PyTorch documentation, by DevDocs",
+      "language": "en",
+      "parentCategory": "Programming",
+      "categories": [
+        "programming"
+      ],
+      "keywords": [
+        "pytorch",
+        "docs",
+        "documentation",
+        "devdocs",
+        "ftindex",
+        "pictures",
+        "yes",
+        "videos",
+        "details",
+        "programming"
+      ],
+      "tags": [
+        "devdocs",
+        "pytorch",
+        "_ftindex:no",
+        "_pictures:yes",
+        "_videos:yes",
+        "_details:yes"
+      ],
+      "basePriority": 5
+    },
+    {
+      "zimName": "devdocs_en_liquid_2026-07",
+      "title": "Liquid Docs",
+      "description": "Liquid documentation, by DevDocs",
+      "language": "en",
+      "parentCategory": "Programming",
+      "categories": [
+        "programming"
+      ],
+      "keywords": [
+        "liquid",
+        "docs",
+        "documentation",
+        "devdocs",
+        "ftindex",
+        "pictures",
+        "yes",
+        "videos",
+        "details",
+        "programming"
+      ],
+      "tags": [
+        "devdocs",
+        "liquid",
+        "_ftindex:no",
+        "_pictures:yes",
+        "_videos:yes",
+        "_details:yes"
+      ],
+      "basePriority": 5
+    },
+    {
+      "zimName": "devdocs_en_tensorflow-cpp_2026-08",
+      "title": "TensorFlow C++ Docs",
+      "description": "TensorFlow C++ documentation, by DevDocs",
+      "language": "en",
+      "parentCategory": "Programming",
+      "categories": [
+        "programming"
+      ],
+      "keywords": [
+        "tensorflow",
+        "docs",
+        "documentation",
+        "devdocs",
+        "cpp",
+        "ftindex",
+        "pictures",
+        "yes",
+        "videos",
+        "details",
+        "programming"
+      ],
+      "tags": [
+        "devdocs",
+        "tensorflow_cpp",
+        "_ftindex:no",
+        "_pictures:yes",
+        "_videos:yes",
+        "_details:yes"
+      ],
+      "basePriority": 5
+    },
+    {
+      "zimName": "unix.stackexchange.com_en_all_2026-02",
+      "title": "Unix & Linux Q&A",
+      "description": "Stack Exchange Q&A for users of Linux, FreeBSD and other Unix-like OS",
+      "language": "en",
+      "parentCategory": "Programming",
+      "categories": [
+        "linux",
+        "programming"
+      ],
+      "keywords": [
+        "unix",
+        "linux",
+        "stack",
+        "exchange",
+        "for",
+        "users",
+        "freebsd",
+        "and",
+        "other",
+        "like",
+        "category",
+        "videos",
+        "details",
+        "ftindex",
+        "pictures",
+        "yes",
+        "programming"
+      ],
+      "tags": [
+        "_category:stack_exchange",
+        "_videos:no",
+        "stack_exchange",
+        "_details:no",
+        "_ftindex:no",
+        "_pictures:yes"
+      ],
+      "basePriority": 5
+    },
+    {
+      "zimName": "devdocs_en_gtk_2026-07",
+      "title": "GTK Docs",
+      "description": "GTK documentation, by DevDocs",
+      "language": "en",
+      "parentCategory": "Programming",
+      "categories": [
+        "programming"
+      ],
+      "keywords": [
+        "gtk",
+        "docs",
+        "documentation",
+        "devdocs",
+        "ftindex",
+        "pictures",
+        "yes",
+        "videos",
+        "details",
+        "programming"
+      ],
+      "tags": [
+        "devdocs",
+        "gtk",
+        "_ftindex:no",
+        "_pictures:yes",
+        "_videos:yes",
+        "_details:yes"
+      ],
+      "basePriority": 5
+    },
+    {
+      "zimName": "devdocs_en_django_2026-07",
+      "title": "Django Docs",
+      "description": "Django documentation, by DevDocs",
+      "language": "en",
+      "parentCategory": "Programming",
+      "categories": [
+        "programming"
+      ],
+      "keywords": [
+        "django",
+        "docs",
+        "documentation",
+        "devdocs",
+        "ftindex",
+        "pictures",
+        "yes",
+        "videos",
+        "details",
+        "programming"
+      ],
+      "tags": [
+        "devdocs",
+        "django",
+        "_ftindex:no",
+        "_pictures:yes",
+        "_videos:yes",
+        "_details:yes"
+      ],
+      "basePriority": 5
+    },
+    {
+      "zimName": "medicalsciences.stackexchange.com_en_all_2026-02",
+      "title": "Medical Sciences Q&A",
+      "description": "Stack Exchange Q&A for everything related to medicine and healthcare sciences",
+      "language": "en",
+      "parentCategory": "Medicine",
+      "categories": [
+        "programming",
+        "medicine",
+        "automotive",
+        "general"
+      ],
+      "keywords": [
+        "medical",
+        "sciences",
+        "stack",
+        "exchange",
+        "for",
+        "everything",
+        "related",
+        "medicine",
+        "and",
+        "healthcare",
+        "category",
+        "details",
+        "videos",
+        "ftindex",
+        "pictures",
+        "yes"
+      ],
+      "tags": [
+        "_category:stack_exchange",
+        "_details:no",
+        "_videos:no",
+        "stack_exchange",
+        "_ftindex:no",
+        "_pictures:yes"
+      ],
+      "basePriority": 5
+    },
+    {
+      "zimName": "gutenberg_en_lcc-u_2026-03",
+      "title": "Project Gutenberg Library",
+      "description": "Military science",
+      "language": "en",
+      "parentCategory": "Books",
+      "categories": [
+        "programming",
+        "general"
+      ],
+      "keywords": [
+        "project",
+        "gutenberg",
+        "library",
+        "military",
+        "science",
+        "category",
+        "ftindex",
+        "pictures",
+        "yes",
+        "videos",
+        "details",
+        "books"
+      ],
+      "tags": [
+        "_category:gutenberg",
+        "gutenberg",
+        "_ftindex:no",
+        "_pictures:yes",
+        "_videos:yes",
+        "_details:yes"
+      ],
+      "basePriority": 5
+    },
+    {
+      "zimName": "devdocs_en_openlayers_2026-06",
+      "title": "OpenLayers Docs",
+      "description": "OpenLayers documentation, by DevDocs",
+      "language": "en",
+      "parentCategory": "Programming",
+      "categories": [
+        "programming"
+      ],
+      "keywords": [
+        "openlayers",
+        "docs",
+        "documentation",
+        "devdocs",
+        "ftindex",
+        "pictures",
+        "yes",
+        "videos",
+        "details",
+        "programming"
+      ],
+      "tags": [
+        "devdocs",
+        "openlayers",
+        "_ftindex:no",
+        "_pictures:yes",
+        "_videos:yes",
+        "_details:yes"
+      ],
+      "basePriority": 5
+    },
+    {
+      "zimName": "gutenberg_en_lcc-t_2026-03",
+      "title": "Project Gutenberg Library",
+      "description": "Technology",
+      "language": "en",
+      "parentCategory": "Books",
+      "categories": [
+        "programming"
+      ],
+      "keywords": [
+        "project",
+        "gutenberg",
+        "library",
+        "technology",
+        "category",
+        "ftindex",
+        "pictures",
+        "yes",
+        "videos",
+        "details",
+        "books"
+      ],
+      "tags": [
+        "_category:gutenberg",
+        "gutenberg",
+        "_ftindex:no",
+        "_pictures:yes",
+        "_videos:yes",
+        "_details:yes"
+      ],
+      "basePriority": 5
+    },
+    {
+      "zimName": "devdocs_en_man_2026-07",
+      "title": "Linux man pages Docs",
+      "description": "Linux man pages documentation, by DevDocs",
+      "language": "en",
+      "parentCategory": "Programming",
+      "categories": [
+        "linux",
+        "programming"
+      ],
+      "keywords": [
+        "linux",
+        "man",
+        "pages",
+        "docs",
+        "documentation",
+        "devdocs",
+        "ftindex",
+        "pictures",
+        "yes",
+        "videos",
+        "details",
+        "programming"
+      ],
+      "tags": [
+        "devdocs",
+        "man",
+        "_ftindex:no",
+        "_pictures:yes",
+        "_videos:yes",
+        "_details:yes"
+      ],
+      "basePriority": 5
+    },
+    {
+      "zimName": "devdocs_en_dom_2026-05",
+      "title": "Web APIs Docs",
+      "description": "Web APIs documentation, by DevDocs",
+      "language": "en",
+      "parentCategory": "Programming",
+      "categories": [
+        "programming"
+      ],
+      "keywords": [
+        "web",
+        "apis",
+        "docs",
+        "documentation",
+        "devdocs",
+        "dom",
+        "ftindex",
+        "pictures",
+        "yes",
+        "videos",
+        "details",
+        "programming"
+      ],
+      "tags": [
+        "devdocs",
+        "dom",
+        "_ftindex:no",
+        "_pictures:yes",
+        "_videos:yes",
+        "_details:yes"
+      ],
+      "basePriority": 5
+    },
+    {
+      "zimName": "devdocs_en_numpy_2026-07",
+      "title": "NumPy Docs",
+      "description": "NumPy documentation, by DevDocs",
+      "language": "en",
+      "parentCategory": "Programming",
+      "categories": [
+        "programming"
+      ],
+      "keywords": [
+        "numpy",
+        "docs",
+        "documentation",
+        "devdocs",
+        "ftindex",
+        "pictures",
+        "yes",
+        "videos",
+        "details",
+        "programming"
+      ],
+      "tags": [
+        "devdocs",
+        "numpy",
+        "_ftindex:no",
+        "_pictures:yes",
+        "_videos:yes",
+        "_details:yes"
+      ],
+      "basePriority": 5
+    },
+    {
+      "zimName": "libretexts.org_en_k12_2026-01",
+      "title": "K-12 Education LibreTexts",
+      "description": "K-12 Education courses and bookshelves from LibreTexts.org",
+      "language": "en",
+      "parentCategory": "LibreTexts",
+      "categories": [
+        "general"
+      ],
+      "keywords": [
+        "education",
+        "libretexts",
+        "courses",
+        "and",
+        "bookshelves",
+        "from",
+        "org",
+        "ftindex",
+        "pictures",
+        "yes",
+        "videos",
+        "details"
+      ],
+      "tags": [
+        "_ftindex:no",
+        "_pictures:yes",
+        "_videos:yes",
+        "_details:yes"
+      ],
+      "basePriority": 5
+    },
+    {
+      "zimName": "devdocs_en_jsdoc_2026-07",
+      "title": "JSDoc Docs",
+      "description": "JSDoc documentation, by DevDocs",
+      "language": "en",
+      "parentCategory": "Programming",
+      "categories": [
+        "programming"
+      ],
+      "keywords": [
+        "jsdoc",
+        "docs",
+        "documentation",
+        "devdocs",
+        "ftindex",
+        "pictures",
+        "yes",
+        "videos",
+        "details",
+        "programming"
+      ],
+      "tags": [
+        "devdocs",
+        "jsdoc",
+        "_ftindex:no",
+        "_pictures:yes",
+        "_videos:yes",
+        "_details:yes"
+      ],
+      "basePriority": 5
+    },
+    {
+      "zimName": "devdocs_en_scala_2026-07",
+      "title": "Scala Docs",
+      "description": "Scala documentation, by DevDocs",
+      "language": "en",
+      "parentCategory": "Programming",
+      "categories": [
+        "programming"
+      ],
+      "keywords": [
+        "scala",
+        "docs",
+        "documentation",
+        "devdocs",
+        "ftindex",
+        "pictures",
+        "yes",
+        "videos",
+        "details",
+        "programming"
+      ],
+      "tags": [
+        "devdocs",
+        "scala",
+        "_ftindex:no",
+        "_pictures:yes",
+        "_videos:yes",
+        "_details:yes"
+      ],
+      "basePriority": 5
+    },
+    {
+      "zimName": "devdocs_en_electron_2026-07",
+      "title": "Electron Docs",
+      "description": "Electron documentation, by DevDocs",
+      "language": "en",
+      "parentCategory": "Programming",
+      "categories": [
+        "programming"
+      ],
+      "keywords": [
+        "electron",
+        "docs",
+        "documentation",
+        "devdocs",
+        "ftindex",
+        "pictures",
+        "yes",
+        "videos",
+        "details",
+        "programming"
+      ],
+      "tags": [
+        "devdocs",
+        "electron",
+        "_ftindex:no",
+        "_pictures:yes",
+        "_videos:yes",
+        "_details:yes"
+      ],
+      "basePriority": 5
+    },
+    {
+      "zimName": "libretexts.org_en_bio_2025-01",
+      "title": "Biology LibreTexts",
+      "description": "Biology courses and bookshelves from LibreTexts.org",
+      "language": "en",
+      "parentCategory": "LibreTexts",
+      "categories": [
+        "general"
+      ],
+      "keywords": [
+        "biology",
+        "libretexts",
+        "courses",
+        "and",
+        "bookshelves",
+        "from",
+        "org",
+        "ftindex",
+        "pictures",
+        "yes",
+        "videos",
+        "details"
+      ],
+      "tags": [
+        "_ftindex:no",
+        "_pictures:yes",
+        "_videos:yes",
+        "_details:yes"
+      ],
+      "basePriority": 5
+    },
+    {
+      "zimName": "devdocs_en_lua_2026-05",
+      "title": "Lua Docs",
+      "description": "Lua documentation, by DevDocs",
+      "language": "en",
+      "parentCategory": "Programming",
+      "categories": [
+        "programming"
+      ],
+      "keywords": [
+        "lua",
+        "docs",
+        "documentation",
+        "devdocs",
+        "ftindex",
+        "pictures",
+        "yes",
+        "videos",
+        "details",
+        "programming"
+      ],
+      "tags": [
+        "devdocs",
+        "lua",
+        "_ftindex:no",
+        "_pictures:yes",
+        "_videos:yes",
+        "_details:yes"
+      ],
+      "basePriority": 5
+    },
+    {
+      "zimName": "devdocs_en_nginx_2026-04",
+      "title": "nginx Docs",
+      "description": "nginx documentation, by DevDocs",
+      "language": "en",
+      "parentCategory": "Programming",
+      "categories": [
+        "programming"
+      ],
+      "keywords": [
+        "nginx",
+        "docs",
+        "documentation",
+        "devdocs",
+        "ftindex",
+        "pictures",
+        "yes",
+        "videos",
+        "details",
+        "programming"
+      ],
+      "tags": [
+        "devdocs",
+        "nginx",
+        "_ftindex:no",
+        "_pictures:yes",
+        "_videos:yes",
+        "_details:yes"
+      ],
+      "basePriority": 5
+    },
+    {
+      "zimName": "devdocs_en_c_2026-07",
+      "title": "C Docs",
+      "description": "C documentation, by DevDocs",
+      "language": "en",
+      "parentCategory": "Documents",
+      "categories": [
+        "programming"
+      ],
+      "keywords": [
+        "docs",
+        "documentation",
+        "devdocs",
+        "ftindex",
+        "pictures",
+        "yes",
+        "videos",
+        "details",
+        "documents"
+      ],
+      "tags": [
+        "devdocs",
+        "c",
+        "_ftindex:no",
+        "_pictures:yes",
+        "_videos:yes",
+        "_details:yes"
+      ],
+      "basePriority": 5
+    },
+    {
+      "zimName": "devdocs_en_opengl_2026-07",
+      "title": "OpenGL Docs",
+      "description": "OpenGL documentation, by DevDocs",
+      "language": "en",
+      "parentCategory": "Programming",
+      "categories": [
+        "programming"
+      ],
+      "keywords": [
+        "opengl",
+        "docs",
+        "documentation",
+        "devdocs",
+        "ftindex",
+        "pictures",
+        "yes",
+        "videos",
+        "details",
+        "programming"
+      ],
+      "tags": [
+        "devdocs",
+        "opengl",
+        "_ftindex:no",
+        "_pictures:yes",
+        "_videos:yes",
+        "_details:yes"
+      ],
+      "basePriority": 5
+    },
+    {
+      "zimName": "devdocs_en_docker_2026-07",
+      "title": "Docker Docs",
+      "description": "Docker documentation, by DevDocs",
+      "language": "en",
+      "parentCategory": "Programming",
+      "categories": [
+        "programming"
+      ],
+      "keywords": [
+        "docker",
+        "docs",
+        "documentation",
+        "devdocs",
+        "ftindex",
+        "pictures",
+        "yes",
+        "videos",
+        "details",
+        "programming"
+      ],
+      "tags": [
+        "devdocs",
+        "docker",
+        "_ftindex:no",
+        "_pictures:yes",
+        "_videos:yes",
+        "_details:yes"
+      ],
+      "basePriority": 5
+    },
+    {
+      "zimName": "medlineplus.gov_en_all_2025-01",
+      "title": "MedlinePlus",
+      "description": "Trusted Health Information for You",
+      "language": "en",
+      "parentCategory": "Medicine",
+      "categories": [
+        "programming",
+        "medicine"
+      ],
+      "keywords": [
+        "medlineplus",
+        "trusted",
+        "health",
+        "information",
+        "for",
+        "you",
+        "ftindex",
+        "yes",
+        "category",
+        "other",
+        "pictures",
+        "videos",
+        "details",
+        "medicine"
+      ],
+      "tags": [
+        "_ftindex:yes",
+        "_category:other",
+        "_pictures:yes",
+        "_videos:yes",
+        "_details:yes"
+      ],
+      "basePriority": 5
+    },
+    {
+      "zimName": "devdocs_en_typescript_2026-07",
+      "title": "TypeScript Docs",
+      "description": "TypeScript documentation, by DevDocs",
+      "language": "en",
+      "parentCategory": "Programming",
+      "categories": [
+        "programming"
+      ],
+      "keywords": [
+        "typescript",
+        "docs",
+        "documentation",
+        "devdocs",
+        "ftindex",
+        "pictures",
+        "yes",
+        "videos",
+        "details",
+        "programming"
+      ],
+      "tags": [
+        "devdocs",
+        "typescript",
+        "_ftindex:no",
+        "_pictures:yes",
+        "_videos:yes",
+        "_details:yes"
+      ],
+      "basePriority": 5
+    },
+    {
+      "zimName": "devdocs_en_vue_2026-05",
+      "title": "Vue Docs",
+      "description": "Vue documentation, by DevDocs",
+      "language": "en",
+      "parentCategory": "Programming",
+      "categories": [
+        "programming"
+      ],
+      "keywords": [
+        "vue",
+        "docs",
+        "documentation",
+        "devdocs",
+        "ftindex",
+        "pictures",
+        "yes",
+        "videos",
+        "details",
+        "programming"
+      ],
+      "tags": [
+        "devdocs",
+        "vue",
+        "_ftindex:no",
+        "_pictures:yes",
+        "_videos:yes",
+        "_details:yes"
+      ],
+      "basePriority": 5
+    },
+    {
+      "zimName": "devdocs_en_laravel_2026-08",
+      "title": "Laravel Docs",
+      "description": "Laravel documentation, by DevDocs",
+      "language": "en",
+      "parentCategory": "Programming",
+      "categories": [
+        "programming"
+      ],
+      "keywords": [
+        "laravel",
+        "docs",
+        "documentation",
+        "devdocs",
+        "ftindex",
+        "pictures",
+        "yes",
+        "videos",
+        "details",
+        "programming"
+      ],
+      "tags": [
+        "devdocs",
+        "laravel",
+        "_ftindex:no",
+        "_pictures:yes",
+        "_videos:yes",
+        "_details:yes"
+      ],
+      "basePriority": 5
+    },
+    {
+      "zimName": "devdocs_en_eslint_2026-07",
+      "title": "ESLint Docs",
+      "description": "ESLint documentation, by DevDocs",
+      "language": "en",
+      "parentCategory": "Programming",
+      "categories": [
+        "programming"
+      ],
+      "keywords": [
+        "eslint",
+        "docs",
+        "documentation",
+        "devdocs",
+        "ftindex",
+        "pictures",
+        "yes",
+        "videos",
+        "details",
+        "programming"
+      ],
+      "tags": [
+        "devdocs",
+        "eslint",
+        "_ftindex:no",
+        "_pictures:yes",
+        "_videos:yes",
+        "_details:yes"
+      ],
+      "basePriority": 5
+    },
+    {
+      "zimName": "libretexts.org_en_chem_2025-01",
+      "title": "Chemistry LibreTexts",
+      "description": "Chemistry courses and bookshelves from LibreTexts.org",
+      "language": "en",
+      "parentCategory": "LibreTexts",
+      "categories": [
+        "general"
+      ],
+      "keywords": [
+        "chemistry",
+        "libretexts",
+        "courses",
+        "and",
+        "bookshelves",
+        "from",
+        "org",
+        "ftindex",
+        "pictures",
+        "yes",
+        "videos",
+        "details"
+      ],
+      "tags": [
+        "_ftindex:no",
+        "_pictures:yes",
+        "_videos:yes",
+        "_details:yes"
+      ],
+      "basePriority": 5
+    },
+    {
+      "zimName": "wikibooks_en_all_maxi_2026-04",
+      "title": "Wikibooks",
+      "description": "The open-content textbooks collection",
+      "language": "en",
+      "parentCategory": "Encyclopedia",
+      "categories": [
+        "programming"
+      ],
+      "keywords": [
+        "wikibooks",
+        "the",
+        "open",
+        "content",
+        "textbooks",
+        "collection",
+        "category",
+        "pictures",
+        "yes",
+        "videos",
+        "details",
+        "ftindex",
+        "encyclopedia"
+      ],
+      "tags": [
+        "wikibooks",
+        "_category:wikibooks",
+        "_pictures:yes",
+        "_videos:no",
+        "_details:yes",
+        "_ftindex:yes"
+      ],
+      "basePriority": 5
+    },
+    {
+      "zimName": "publicdomainrecipes.com_en_all_2026-05",
+      "title": "Public Domain Recipes",
+      "description": "What do you want to cook?",
+      "language": "en",
+      "parentCategory": "Misc",
+      "categories": [
+        "programming",
+        "cooking"
+      ],
+      "keywords": [
+        "public",
+        "domain",
+        "recipes",
+        "what",
+        "you",
+        "want",
+        "cook",
+        "food",
+        "ftindex",
+        "yes",
+        "category",
+        "other",
+        "pictures",
+        "videos",
+        "details",
+        "misc"
+      ],
+      "tags": [
+        "food",
+        "_ftindex:yes",
+        "_category:other",
+        "_pictures:yes",
+        "_videos:yes",
+        "_details:yes"
+      ],
+      "basePriority": 5
+    },
+    {
+      "zimName": "devdocs_en_git_2026-07",
+      "title": "Git Docs",
+      "description": "Git documentation, by DevDocs",
+      "language": "en",
+      "parentCategory": "Programming",
+      "categories": [
+        "programming"
+      ],
+      "keywords": [
+        "git",
+        "docs",
+        "documentation",
+        "devdocs",
+        "ftindex",
+        "pictures",
+        "yes",
+        "videos",
+        "details",
+        "programming"
+      ],
+      "tags": [
+        "devdocs",
+        "git",
+        "_ftindex:no",
+        "_pictures:yes",
+        "_videos:yes",
+        "_details:yes"
+      ],
+      "basePriority": 5
+    },
+    {
+      "zimName": "devdocs_en_python_2026-08",
+      "title": "Python Docs",
+      "description": "Python documentation, by DevDocs",
+      "language": "en",
+      "parentCategory": "Programming",
+      "categories": [
+        "programming"
+      ],
+      "keywords": [
+        "python",
+        "docs",
+        "documentation",
+        "devdocs",
+        "ftindex",
+        "pictures",
+        "yes",
+        "videos",
+        "details",
+        "programming"
+      ],
+      "tags": [
+        "devdocs",
+        "python",
+        "_ftindex:no",
+        "_pictures:yes",
+        "_videos:yes",
+        "_details:yes"
+      ],
+      "basePriority": 5
+    },
+    {
+      "zimName": "devdocs_en_cpp_2026-07",
+      "title": "C++ Docs",
+      "description": "C++ documentation, by DevDocs",
+      "language": "en",
+      "parentCategory": "Programming",
+      "categories": [
+        "programming"
+      ],
+      "keywords": [
+        "docs",
+        "documentation",
+        "devdocs",
+        "cpp",
+        "ftindex",
+        "pictures",
+        "yes",
+        "videos",
+        "details",
+        "programming"
+      ],
+      "tags": [
+        "devdocs",
+        "cpp",
+        "_ftindex:no",
+        "_pictures:yes",
+        "_videos:yes",
+        "_details:yes"
+      ],
+      "basePriority": 5
+    },
+    {
+      "zimName": "gutenberg_en_lcc-g_2026-03",
+      "title": "Project Gutenberg Library",
+      "description": "Geography, anthropology, recreation",
+      "language": "en",
+      "parentCategory": "Books",
+      "categories": [
+        "programming",
+        "general"
+      ],
+      "keywords": [
+        "project",
+        "gutenberg",
+        "library",
+        "geography",
+        "anthropology",
+        "recreation",
+        "category",
+        "ftindex",
+        "pictures",
+        "yes",
+        "videos",
+        "details",
+        "books"
+      ],
+      "tags": [
+        "_category:gutenberg",
+        "gutenberg",
+        "_ftindex:no",
+        "_pictures:yes",
+        "_videos:yes",
+        "_details:yes"
+      ],
+      "basePriority": 5
+    },
+    {
+      "zimName": "devdocs_en_pandas_2026-07",
+      "title": "pandas Docs",
+      "description": "pandas documentation, by DevDocs",
+      "language": "en",
+      "parentCategory": "Programming",
+      "categories": [
+        "programming"
+      ],
+      "keywords": [
+        "pandas",
+        "docs",
+        "documentation",
+        "devdocs",
+        "ftindex",
+        "pictures",
+        "yes",
+        "videos",
+        "details",
+        "programming"
+      ],
+      "tags": [
+        "devdocs",
+        "pandas",
+        "_ftindex:no",
+        "_pictures:yes",
+        "_videos:yes",
+        "_details:yes"
+      ],
+      "basePriority": 5
+    },
+    {
+      "zimName": "archlinux_en_all_maxi_2026-07",
+      "title": "ArchWiki",
+      "description": "Arch Linux documentation",
+      "language": "en",
+      "parentCategory": "Documents",
+      "categories": [
+        "linux"
+      ],
+      "keywords": [
+        "archwiki",
+        "arch",
+        "linux",
+        "documentation",
+        "distro",
+        "archlinux",
+        "pictures",
+        "yes",
+        "videos",
+        "details",
+        "ftindex",
+        "documents",
+        "arch linux",
+        "pacman",
+        "aur",
+        "systemd",
+        "terminal",
+        "bash",
+        "folder",
+        "directory"
+      ],
+      "tags": [
+        "Linux",
+        "distro",
+        "archlinux",
+        "_pictures:yes",
+        "_videos:no",
+        "_details:yes",
+        "_ftindex:yes"
+      ],
+      "basePriority": 9
+    },
+    {
+      "zimName": "gutenberg_en_lcc-q_2026-03",
+      "title": "Project Gutenberg Library",
+      "description": "Science",
+      "language": "en",
+      "parentCategory": "Books",
+      "categories": [
+        "programming",
+        "general"
+      ],
+      "keywords": [
+        "project",
+        "gutenberg",
+        "library",
+        "science",
+        "category",
+        "ftindex",
+        "pictures",
+        "yes",
+        "videos",
+        "details",
+        "books"
+      ],
+      "tags": [
+        "_category:gutenberg",
+        "gutenberg",
+        "_ftindex:no",
+        "_pictures:yes",
+        "_videos:yes",
+        "_details:yes"
+      ],
+      "basePriority": 5
+    },
+    {
+      "zimName": "wikitech_en_all_maxi_2024-06",
+      "title": "Wikitech",
+      "description": "Technical documentation for Wikimedia wikis and infrastructure",
+      "language": "en",
+      "parentCategory": "Programming",
+      "categories": [
+        "programming"
+      ],
+      "keywords": [
+        "wikitech",
+        "technical",
+        "documentation",
+        "for",
+        "wikimedia",
+        "wikis",
+        "and",
+        "infrastructure",
+        "pictures",
+        "yes",
+        "videos",
+        "details",
+        "ftindex",
+        "programming"
+      ],
+      "tags": [
+        "wikimedia",
+        "_pictures:yes",
+        "_videos:no",
+        "_details:yes",
+        "_ftindex:yes"
+      ],
+      "basePriority": 5
+    },
+    {
+      "zimName": "devdocs_en_gnuplot_2026-07",
+      "title": "Gnuplot Docs",
+      "description": "Gnuplot documentation, by DevDocs",
+      "language": "en",
+      "parentCategory": "Programming",
+      "categories": [
+        "programming"
+      ],
+      "keywords": [
+        "gnuplot",
+        "docs",
+        "documentation",
+        "devdocs",
+        "ftindex",
+        "pictures",
+        "yes",
+        "videos",
+        "details",
+        "programming"
+      ],
+      "tags": [
+        "devdocs",
+        "gnuplot",
+        "_ftindex:no",
+        "_pictures:yes",
+        "_videos:yes",
+        "_details:yes"
+      ],
+      "basePriority": 5
+    },
+    {
+      "zimName": "libretexts.org_en_phys_2026-01",
+      "title": "Physics LibreTexts",
+      "description": "Physics courses and bookshelves from LibreTexts.org",
+      "language": "en",
+      "parentCategory": "LibreTexts",
+      "categories": [
+        "general"
+      ],
+      "keywords": [
+        "physics",
+        "libretexts",
+        "courses",
+        "and",
+        "bookshelves",
+        "from",
+        "org",
+        "ftindex",
+        "pictures",
+        "yes",
+        "videos",
+        "details"
+      ],
+      "tags": [
+        "_ftindex:no",
+        "_pictures:yes",
+        "_videos:yes",
+        "_details:yes"
+      ],
+      "basePriority": 5
+    },
+    {
+      "zimName": "gutenberg_en_lcc-a_2026-03",
+      "title": "Project Gutenberg Library",
+      "description": "General works",
+      "language": "en",
+      "parentCategory": "Books",
+      "categories": [
+        "programming"
+      ],
+      "keywords": [
+        "project",
+        "gutenberg",
+        "library",
+        "general",
+        "works",
+        "category",
+        "ftindex",
+        "pictures",
+        "yes",
+        "videos",
+        "details",
+        "books"
+      ],
+      "tags": [
+        "_category:gutenberg",
+        "gutenberg",
+        "_ftindex:no",
+        "_pictures:yes",
+        "_videos:yes",
+        "_details:yes"
+      ],
+      "basePriority": 5
+    },
+    {
+      "zimName": "wiktionary_pa_all_nopic_2026-07",
+      "title": "Wiktionary",
+      "description": "The biggest Wiki Dictionary in Punjabi language",
+      "language": "pa",
+      "parentCategory": "Encyclopedia",
+      "categories": [
+        "programming"
+      ],
+      "keywords": [
+        "wiktionary",
+        "the",
+        "biggest",
+        "wiki",
+        "dictionary",
+        "punjabi",
+        "language",
+        "category",
+        "pictures",
+        "videos",
+        "details",
+        "yes",
+        "ftindex",
+        "encyclopedia"
+      ],
+      "tags": [
+        "wiktionary",
+        "_category:wiktionary",
+        "_pictures:no",
+        "_videos:no",
+        "_details:yes",
+        "_ftindex:yes"
+      ],
+      "basePriority": 5
+    },
+    {
+      "zimName": "devdocs_en_css_2026-07",
+      "title": "CSS Docs",
+      "description": "CSS documentation, by DevDocs",
+      "language": "en",
+      "parentCategory": "Programming",
+      "categories": [
+        "programming"
+      ],
+      "keywords": [
+        "css",
+        "docs",
+        "documentation",
+        "devdocs",
+        "ftindex",
+        "pictures",
+        "yes",
+        "videos",
+        "details",
+        "programming"
+      ],
+      "tags": [
+        "devdocs",
+        "css",
+        "_ftindex:no",
+        "_pictures:yes",
+        "_videos:yes",
+        "_details:yes"
+      ],
+      "basePriority": 5
+    },
+    {
+      "zimName": "gutenberg_en_lcc-s_2026-03",
+      "title": "Project Gutenberg Library",
+      "description": "Agriculture",
+      "language": "en",
+      "parentCategory": "Books",
+      "categories": [
+        "programming"
+      ],
+      "keywords": [
+        "project",
+        "gutenberg",
+        "library",
+        "agriculture",
+        "category",
+        "ftindex",
+        "pictures",
+        "yes",
+        "videos",
+        "details",
+        "books"
+      ],
+      "tags": [
+        "_category:gutenberg",
+        "gutenberg",
+        "_ftindex:no",
+        "_pictures:yes",
+        "_videos:yes",
+        "_details:yes"
+      ],
+      "basePriority": 5
+    },
+    {
+      "zimName": "wikihow_en_maxi_2023-03",
+      "title": "wikiHow: How-to instructions you can trust.",
+      "description": "Learn how to do anything with wikiHow, the world's most popular how-to website. Easy, well-researched, and trustworthy instructions for everything you want to know.",
+      "language": "en",
+      "parentCategory": "wikiHow",
+      "categories": [
+        "linux",
+        "programming",
+        "guides"
+      ],
+      "keywords": [
+        "wikihow",
+        "how",
+        "instructions",
+        "you",
+        "can",
+        "trust",
+        "learn",
+        "anything",
+        "with",
+        "the",
+        "world",
+        "most",
+        "popular",
+        "website",
+        "easy",
+        "well",
+        "researched",
+        "and",
+        "trustworthy",
+        "for",
+        "how to",
+        "diy",
+        "repair",
+        "cooking",
+        "recipe",
+        "paneer",
+        "food",
+        "make",
+        "build"
+      ],
+      "tags": [
+        "wikihow",
+        "_pictures:yes",
+        "_videos:yes",
+        "_category:wikihow",
+        "_ftindex:no",
+        "_details:yes"
+      ],
+      "basePriority": 9
+    },
+    {
+      "zimName": "devdocs_en_npm_2026-05",
+      "title": "npm Docs",
+      "description": "npm documentation, by DevDocs",
+      "language": "en",
+      "parentCategory": "Programming",
+      "categories": [
+        "programming"
+      ],
+      "keywords": [
+        "npm",
+        "docs",
+        "documentation",
+        "devdocs",
+        "ftindex",
+        "pictures",
+        "yes",
+        "videos",
+        "details",
+        "programming"
+      ],
+      "tags": [
+        "devdocs",
+        "npm",
+        "_ftindex:no",
+        "_pictures:yes",
+        "_videos:yes",
+        "_details:yes"
+      ],
+      "basePriority": 5
+    },
+    {
+      "zimName": "devdocs_en_web-extensions_2026-07",
+      "title": "Web Extensions Docs",
+      "description": "Web Extensions documentation, by DevDocs",
+      "language": "en",
+      "parentCategory": "Programming",
+      "categories": [
+        "programming"
+      ],
+      "keywords": [
+        "web",
+        "extensions",
+        "docs",
+        "documentation",
+        "devdocs",
+        "ftindex",
+        "pictures",
+        "yes",
+        "videos",
+        "details",
+        "programming"
+      ],
+      "tags": [
+        "devdocs",
+        "web_extensions",
+        "_ftindex:no",
+        "_pictures:yes",
+        "_videos:yes",
+        "_details:yes"
+      ],
+      "basePriority": 5
+    },
+    {
+      "zimName": "wikihow_hi_maxi_2024-11",
+      "title": "विकीहाउ: \"कैसे करें\" इंस्ट्रक्शन्स जिन पर आप भरोसा कर सकते हैं।",
+      "description": "विकिहाउ एक विकि आधारित सहयोगपूर्ण परियोजना है, दुनिया का सबसे बड़ा, सर्वोच्च गुणवत्ता का कैसे-करें मैनुअल निर्माण करने का।  हमारा बहुभाषीय कैसे-करें मैनुअल में सभी प्रकार की चीजों करने के लिए मुक्त में कदम दर कदम अनुदेश दिए गए हैं|",
+      "language": "hi",
+      "parentCategory": "wikiHow",
+      "categories": [
+        "programming",
+        "guides"
+      ],
+      "keywords": [
+        "wikihow",
+        "videos",
+        "yes",
+        "category",
+        "pictures",
+        "ftindex",
+        "details",
+        "how to",
+        "diy",
+        "repair",
+        "cooking",
+        "recipe",
+        "paneer",
+        "food",
+        "make",
+        "build"
+      ],
+      "tags": [
+        "wikihow",
+        "_videos:yes",
+        "_category:wikihow",
+        "_pictures:yes",
+        "_ftindex:no",
+        "_details:yes"
+      ],
+      "basePriority": 9
+    },
+    {
+      "zimName": "gutenberg_en_lcc-r_2026-03",
+      "title": "Project Gutenberg Library",
+      "description": "Medicine",
+      "language": "en",
+      "parentCategory": "Books",
+      "categories": [
+        "programming",
+        "medicine"
+      ],
+      "keywords": [
+        "project",
+        "gutenberg",
+        "library",
+        "medicine",
+        "category",
+        "ftindex",
+        "pictures",
+        "yes",
+        "videos",
+        "details",
+        "books"
+      ],
+      "tags": [
+        "_category:gutenberg",
+        "gutenberg",
+        "_ftindex:no",
+        "_pictures:yes",
+        "_videos:yes",
+        "_details:yes"
+      ],
+      "basePriority": 5
+    },
+    {
+      "zimName": "devdocs_en_node_2026-08",
+      "title": "Node.js Docs",
+      "description": "Node.js documentation, by DevDocs",
+      "language": "en",
+      "parentCategory": "Programming",
+      "categories": [
+        "programming"
+      ],
+      "keywords": [
+        "node",
+        "docs",
+        "documentation",
+        "devdocs",
+        "ftindex",
+        "pictures",
+        "yes",
+        "videos",
+        "details",
+        "programming"
+      ],
+      "tags": [
+        "devdocs",
+        "node",
+        "_ftindex:no",
+        "_pictures:yes",
+        "_videos:yes",
+        "_details:yes"
+      ],
+      "basePriority": 5
+    },
+    {
+      "zimName": "mdwiki_en_all_2025-11",
+      "title": "MDWiki Medical Encyclopedia",
+      "description": "Healthcare articles curated by WikiProjectMed",
+      "language": "en",
+      "parentCategory": "Medicine",
+      "categories": [
+        "medicine",
+        "automotive"
+      ],
+      "keywords": [
+        "mdwiki",
+        "medical",
+        "encyclopedia",
+        "healthcare",
+        "articles",
+        "curated",
+        "wikiprojectmed",
+        "details",
+        "yes",
+        "ftindex",
+        "pictures",
+        "videos",
+        "medicine"
+      ],
+      "tags": [
+        "medical",
+        "mdwiki",
+        "_details:yes",
+        "_ftindex:yes",
+        "_pictures:yes",
+        "_videos:yes"
+      ],
+      "basePriority": 5
+    },
+    {
+      "zimName": "devdocs_en_crystal_2026-07",
+      "title": "Crystal Docs",
+      "description": "Crystal documentation, by DevDocs",
+      "language": "en",
+      "parentCategory": "Programming",
+      "categories": [
+        "programming"
+      ],
+      "keywords": [
+        "crystal",
+        "docs",
+        "documentation",
+        "devdocs",
+        "ftindex",
+        "pictures",
+        "yes",
+        "videos",
+        "details",
+        "programming"
+      ],
+      "tags": [
+        "devdocs",
+        "crystal",
+        "_ftindex:no",
+        "_pictures:yes",
+        "_videos:yes",
+        "_details:yes"
+      ],
+      "basePriority": 5
+    },
+    {
+      "zimName": "libretexts.org_en_geo_2026-01",
+      "title": "Geosciences LibreTexts",
+      "description": "Geosciences courses and bookshelves from LibreTexts.org",
+      "language": "en",
+      "parentCategory": "LibreTexts",
+      "categories": [
+        "general"
+      ],
+      "keywords": [
+        "geosciences",
+        "libretexts",
+        "courses",
+        "and",
+        "bookshelves",
+        "from",
+        "org",
+        "ftindex",
+        "pictures",
+        "yes",
+        "videos",
+        "details"
+      ],
+      "tags": [
+        "_ftindex:no",
+        "_pictures:yes",
+        "_videos:yes",
+        "_details:yes"
+      ],
+      "basePriority": 5
+    },
+    {
+      "zimName": "libretexts.org_en_eng_2025-01",
+      "title": "Engineering LibreTexts",
+      "description": "Engineering courses and bookshelves from LibreTexts.org",
+      "language": "en",
+      "parentCategory": "LibreTexts",
+      "categories": [
+        "automotive"
+      ],
+      "keywords": [
+        "engineering",
+        "libretexts",
+        "courses",
+        "and",
+        "bookshelves",
+        "from",
+        "org",
+        "ftindex",
+        "pictures",
+        "yes",
+        "videos",
+        "details"
+      ],
+      "tags": [
+        "engineering",
+        "_ftindex:no",
+        "_pictures:yes",
+        "_videos:yes",
+        "_details:yes"
+      ],
+      "basePriority": 5
+    },
+    {
+      "zimName": "devdocs_en_axios_2026-05",
+      "title": "Axios Docs",
+      "description": "Axios documentation, by DevDocs",
+      "language": "en",
+      "parentCategory": "Programming",
+      "categories": [
+        "programming"
+      ],
+      "keywords": [
+        "axios",
+        "docs",
+        "documentation",
+        "devdocs",
+        "ftindex",
+        "pictures",
+        "yes",
+        "videos",
+        "details",
+        "programming"
+      ],
+      "tags": [
+        "devdocs",
+        "axios",
+        "_ftindex:no",
+        "_pictures:yes",
+        "_videos:yes",
+        "_details:yes"
+      ],
+      "basePriority": 5
+    },
+    {
+      "zimName": "wikiquote_en_all_maxi_2026-07",
+      "title": "Wikiquote",
+      "description": "An Offline Version of Wikiquote in English Language",
+      "language": "en",
+      "parentCategory": "Encyclopedia",
+      "categories": [
+        "programming"
+      ],
+      "keywords": [
+        "wikiquote",
+        "offline",
+        "version",
+        "english",
+        "language",
+        "category",
+        "pictures",
+        "yes",
+        "videos",
+        "details",
+        "ftindex",
+        "encyclopedia"
+      ],
+      "tags": [
+        "wikiquote",
+        "_category:wikiquote",
+        "_pictures:yes",
+        "_videos:no",
+        "_details:yes",
+        "_ftindex:yes"
+      ],
+      "basePriority": 5
+    },
+    {
+      "zimName": "wiktionary_en_all_nopic_2026-05",
+      "title": "Wiktionary",
+      "description": "The largest dictionary on the web.",
+      "language": "en",
+      "parentCategory": "Encyclopedia",
+      "categories": [
+        "programming"
+      ],
+      "keywords": [
+        "wiktionary",
+        "the",
+        "largest",
+        "dictionary",
+        "web",
+        "category",
+        "pictures",
+        "videos",
+        "details",
+        "yes",
+        "ftindex",
+        "encyclopedia"
+      ],
+      "tags": [
+        "wiktionary",
+        "_category:wiktionary",
+        "_pictures:no",
+        "_videos:no",
+        "_details:yes",
+        "_ftindex:yes"
+      ],
+      "basePriority": 5
+    },
+    {
+      "zimName": "nhs.uk_en_medicines_2025-12",
+      "title": "NHS' Medicines A to Z",
+      "description": "How medicines work, how and when to take them",
+      "language": "en",
+      "parentCategory": "Medicine",
+      "categories": [
+        "programming",
+        "medicine"
+      ],
+      "keywords": [
+        "nhs",
+        "medicines",
+        "how",
+        "work",
+        "and",
+        "when",
+        "take",
+        "them",
+        "category",
+        "other",
+        "ftindex",
+        "yes",
+        "pictures",
+        "videos",
+        "details",
+        "medicine"
+      ],
+      "tags": [
+        "_category:other",
+        "_ftindex:yes",
+        "_pictures:yes",
+        "_videos:yes",
+        "_details:yes"
+      ],
+      "basePriority": 5
+    },
+    {
+      "zimName": "devdocs_en_nix_2026-07",
+      "title": "Nix Docs",
+      "description": "Nix documentation, by DevDocs",
+      "language": "en",
+      "parentCategory": "Programming",
+      "categories": [
+        "programming"
+      ],
+      "keywords": [
+        "nix",
+        "docs",
+        "documentation",
+        "devdocs",
+        "ftindex",
+        "pictures",
+        "yes",
+        "videos",
+        "details",
+        "programming"
+      ],
+      "tags": [
+        "devdocs",
+        "nix",
+        "_ftindex:no",
+        "_pictures:yes",
+        "_videos:yes",
+        "_details:yes"
+      ],
+      "basePriority": 5
+    },
+    {
+      "zimName": "devdocs_en_gnu-make_2026-07",
+      "title": "GNU Make Docs",
+      "description": "GNU Make documentation, by DevDocs",
+      "language": "en",
+      "parentCategory": "Programming",
+      "categories": [
+        "programming"
+      ],
+      "keywords": [
+        "gnu",
+        "make",
+        "docs",
+        "documentation",
+        "devdocs",
+        "ftindex",
+        "pictures",
+        "yes",
+        "videos",
+        "details",
+        "programming"
+      ],
+      "tags": [
+        "devdocs",
+        "gnu_make",
+        "_ftindex:no",
+        "_pictures:yes",
+        "_videos:yes",
+        "_details:yes"
+      ],
+      "basePriority": 5
+    },
+    {
+      "zimName": "freecodecamp_en_javascript-algorithms-and-data-structures_2026-05",
+      "title": "FreeCodeCamp JavaScript",
+      "description": "JavaScript courses",
+      "language": "en",
+      "parentCategory": "Programming",
+      "categories": [
+        "programming"
+      ],
+      "keywords": [
+        "freecodecamp",
+        "javascript",
+        "courses",
+        "fcc",
+        "ftindex",
+        "pictures",
+        "yes",
+        "videos",
+        "details",
+        "programming"
+      ],
+      "tags": [
+        "FCC",
+        "freeCodeCamp",
+        "_ftindex:no",
+        "_pictures:yes",
+        "_videos:yes",
+        "_details:yes"
+      ],
+      "basePriority": 5
+    },
+    {
+      "zimName": "devdocs_en_date-fns_2026-07",
+      "title": "date-fns Docs",
+      "description": "date-fns documentation, by DevDocs",
+      "language": "en",
+      "parentCategory": "Programming",
+      "categories": [
+        "programming"
+      ],
+      "keywords": [
+        "date",
+        "fns",
+        "docs",
+        "documentation",
+        "devdocs",
+        "ftindex",
+        "pictures",
+        "yes",
+        "videos",
+        "details",
+        "programming"
+      ],
+      "tags": [
+        "devdocs",
+        "date_fns",
+        "_ftindex:no",
+        "_pictures:yes",
+        "_videos:yes",
+        "_details:yes"
+      ],
+      "basePriority": 5
+    },
+    {
+      "zimName": "libretexts.org_en_stats_2026-01",
+      "title": "Statistics LibreTexts",
+      "description": "Statistics courses and bookshelves from LibreTexts.org",
+      "language": "en",
+      "parentCategory": "LibreTexts",
+      "categories": [
+        "general"
+      ],
+      "keywords": [
+        "statistics",
+        "libretexts",
+        "courses",
+        "and",
+        "bookshelves",
+        "from",
+        "org",
+        "ftindex",
+        "pictures",
+        "yes",
+        "videos",
+        "details"
+      ],
+      "tags": [
+        "_ftindex:no",
+        "_pictures:yes",
+        "_videos:yes",
+        "_details:yes"
+      ],
+      "basePriority": 5
+    },
+    {
+      "zimName": "phet_en_all_2026-05",
+      "title": "PhET Interactive Simulations",
+      "description": "Interactive simulations for Science and Math",
+      "language": "en",
+      "parentCategory": "Education",
+      "categories": [
+        "programming",
+        "general"
+      ],
+      "keywords": [
+        "phet",
+        "interactive",
+        "simulations",
+        "for",
+        "science",
+        "and",
+        "math",
+        "category",
+        "pictures",
+        "yes",
+        "videos",
+        "ftindex",
+        "details",
+        "education"
+      ],
+      "tags": [
+        "_category:phet",
+        "_pictures:yes",
+        "_videos:no",
+        "_ftindex:no",
+        "_details:yes"
+      ],
+      "basePriority": 5
+    },
+    {
+      "zimName": "devdocs_en_tailwindcss_2026-05",
+      "title": "Tailwind CSS Docs",
+      "description": "Tailwind CSS documentation, by DevDocs",
+      "language": "en",
+      "parentCategory": "Programming",
+      "categories": [
+        "programming"
+      ],
+      "keywords": [
+        "tailwind",
+        "css",
+        "docs",
+        "documentation",
+        "devdocs",
+        "tailwindcss",
+        "ftindex",
+        "pictures",
+        "yes",
+        "videos",
+        "details",
+        "programming"
+      ],
+      "tags": [
+        "devdocs",
+        "tailwindcss",
+        "_ftindex:no",
+        "_pictures:yes",
+        "_videos:yes",
+        "_details:yes"
+      ],
+      "basePriority": 5
+    },
+    {
+      "zimName": "devdocs_en_ruby_2026-07",
+      "title": "Ruby Docs",
+      "description": "Ruby documentation, by DevDocs",
+      "language": "en",
+      "parentCategory": "Programming",
+      "categories": [
+        "programming"
+      ],
+      "keywords": [
+        "ruby",
+        "docs",
+        "documentation",
+        "devdocs",
+        "ftindex",
+        "pictures",
+        "yes",
+        "videos",
+        "details",
+        "programming"
+      ],
+      "tags": [
+        "devdocs",
+        "ruby",
+        "_ftindex:no",
+        "_pictures:yes",
+        "_videos:yes",
+        "_details:yes"
+      ],
+      "basePriority": 5
+    },
+    {
+      "zimName": "devdocs_en_mongoose_2026-04",
+      "title": "Mongoose Docs",
+      "description": "Mongoose documentation, by DevDocs",
+      "language": "en",
+      "parentCategory": "Programming",
+      "categories": [
+        "programming"
+      ],
+      "keywords": [
+        "mongoose",
+        "docs",
+        "documentation",
+        "devdocs",
+        "ftindex",
+        "pictures",
+        "yes",
+        "videos",
+        "details",
+        "programming"
+      ],
+      "tags": [
+        "devdocs",
+        "mongoose",
+        "_ftindex:no",
+        "_pictures:yes",
+        "_videos:yes",
+        "_details:yes"
+      ],
+      "basePriority": 5
+    },
+    {
+      "zimName": "booksdash_en_all_2024-06",
+      "title": "Bookdash",
+      "description": "Library of 150+ free picture books for read-aloud to young children.",
+      "language": "en",
+      "parentCategory": "Books",
+      "categories": [
+        "programming"
+      ],
+      "keywords": [
+        "bookdash",
+        "library",
+        "150",
+        "free",
+        "picture",
+        "books",
+        "for",
+        "read",
+        "aloud",
+        "young",
+        "children",
+        "ftindex",
+        "yes",
+        "category",
+        "other",
+        "pictures",
+        "videos",
+        "details"
+      ],
+      "tags": [
+        "_ftindex:yes",
+        "_category:other",
+        "_pictures:yes",
+        "_videos:yes",
+        "_details:yes"
+      ],
+      "basePriority": 5
+    },
+    {
+      "zimName": "devdocs_en_nginx-lua-module_2026-05",
+      "title": "nginx / Lua Module Docs",
+      "description": "nginx / Lua Module documentation, by DevDocs",
+      "language": "en",
+      "parentCategory": "Programming",
+      "categories": [
+        "programming"
+      ],
+      "keywords": [
+        "nginx",
+        "lua",
+        "module",
+        "docs",
+        "documentation",
+        "devdocs",
+        "ftindex",
+        "pictures",
+        "yes",
+        "videos",
+        "details",
+        "programming"
+      ],
+      "tags": [
+        "devdocs",
+        "nginx_lua_module",
+        "_ftindex:no",
+        "_pictures:yes",
+        "_videos:yes",
+        "_details:yes"
+      ],
+      "basePriority": 5
+    },
+    {
+      "zimName": "wiktionary_sa_all_nopic_2026-07",
+      "title": "विकिशब्दकोशः",
+      "description": "The biggest Wiki Dictionary in Sanskrit language",
+      "language": "sa",
+      "parentCategory": "Encyclopedia",
+      "categories": [
+        "programming"
+      ],
+      "keywords": [
+        "the",
+        "biggest",
+        "wiki",
+        "dictionary",
+        "sanskrit",
+        "language",
+        "wiktionary",
+        "category",
+        "pictures",
+        "videos",
+        "details",
+        "yes",
+        "ftindex",
+        "encyclopedia"
+      ],
+      "tags": [
+        "wiktionary",
+        "_category:wiktionary",
+        "_pictures:no",
+        "_videos:no",
+        "_details:yes",
+        "_ftindex:yes"
+      ],
+      "basePriority": 5
+    },
+    {
+      "zimName": "devdocs_en_threejs_2026-03",
+      "title": "Three.js Docs",
+      "description": "Three.js documentation, by DevDocs",
+      "language": "en",
+      "parentCategory": "Programming",
+      "categories": [
+        "programming"
+      ],
+      "keywords": [
+        "three",
+        "docs",
+        "documentation",
+        "devdocs",
+        "threejs",
+        "ftindex",
+        "pictures",
+        "yes",
+        "videos",
+        "details",
+        "programming"
+      ],
+      "tags": [
+        "devdocs",
+        "threejs",
+        "_ftindex:no",
+        "_pictures:yes",
+        "_videos:yes",
+        "_details:yes"
+      ],
+      "basePriority": 5
+    },
+    {
+      "zimName": "zimgit-medicine_en_2024-08",
+      "title": "Medical Library",
+      "description": "A collection of books pertaining to field and emergency medicine.",
+      "language": "en",
+      "parentCategory": "Medicine",
+      "categories": [
+        "medicine"
+      ],
+      "keywords": [
+        "medical",
+        "library",
+        "collection",
+        "books",
+        "pertaining",
+        "field",
+        "and",
+        "emergency",
+        "medicine",
+        "preppers",
+        "ftindex",
+        "pictures",
+        "yes",
+        "videos",
+        "details"
+      ],
+      "tags": [
+        "preppers",
+        "medical",
+        "_ftindex:no",
+        "_pictures:yes",
+        "_videos:yes",
+        "_details:yes"
+      ],
+      "basePriority": 5
+    },
+    {
+      "zimName": "devdocs_en_moment-timezone_2026-06",
+      "title": "Moment.js Timezone Docs",
+      "description": "Moment.js Timezone documentation, by DevDocs",
+      "language": "en",
+      "parentCategory": "Programming",
+      "categories": [
+        "programming"
+      ],
+      "keywords": [
+        "moment",
+        "timezone",
+        "docs",
+        "documentation",
+        "devdocs",
+        "ftindex",
+        "pictures",
+        "yes",
+        "videos",
+        "details",
+        "programming"
+      ],
+      "tags": [
+        "devdocs",
+        "moment_timezone",
+        "_ftindex:no",
+        "_pictures:yes",
+        "_videos:yes",
+        "_details:yes"
+      ],
+      "basePriority": 5
+    },
+    {
+      "zimName": "devdocs_en_react-router_2026-07",
+      "title": "React Router Docs",
+      "description": "React Router documentation, by DevDocs",
+      "language": "en",
+      "parentCategory": "Programming",
+      "categories": [
+        "programming"
+      ],
+      "keywords": [
+        "react",
+        "router",
+        "docs",
+        "documentation",
+        "devdocs",
+        "ftindex",
+        "pictures",
+        "yes",
+        "videos",
+        "details",
+        "programming"
+      ],
+      "tags": [
+        "devdocs",
+        "react_router",
+        "_ftindex:no",
+        "_pictures:yes",
+        "_videos:yes",
+        "_details:yes"
+      ],
+      "basePriority": 5
+    },
+    {
+      "zimName": "restarters_en_all_maxi_2026-04",
+      "title": "Restarters",
+      "description": "How things work and how to fix them",
+      "language": "en",
+      "parentCategory": "Encyclopedia",
+      "categories": [
+        "repair",
+        "guides"
+      ],
+      "keywords": [
+        "restarters",
+        "how",
+        "things",
+        "work",
+        "and",
+        "fix",
+        "them",
+        "preppers",
+        "pictures",
+        "yes",
+        "videos",
+        "details",
+        "ftindex",
+        "encyclopedia"
+      ],
+      "tags": [
+        "preppers",
+        "restarters",
+        "_pictures:yes",
+        "_videos:no",
+        "_details:yes",
+        "_ftindex:yes"
+      ],
+      "basePriority": 5
+    },
+    {
+      "zimName": "gutenberg_en_lcc-pm_2026-03",
+      "title": "Project Gutenberg Library",
+      "description": "Hyperborean, Indian, and artificial languages",
+      "language": "en",
+      "parentCategory": "Books",
+      "categories": [
+        "programming"
+      ],
+      "keywords": [
+        "project",
+        "gutenberg",
+        "library",
+        "hyperborean",
+        "indian",
+        "and",
+        "artificial",
+        "languages",
+        "category",
+        "ftindex",
+        "pictures",
+        "yes",
+        "videos",
+        "details",
+        "books"
+      ],
+      "tags": [
+        "_category:gutenberg",
+        "gutenberg",
+        "_ftindex:no",
+        "_pictures:yes",
+        "_videos:yes",
+        "_details:yes"
+      ],
+      "basePriority": 5
+    },
+    {
+      "zimName": "devdocs_en_gcc_2026-08",
+      "title": "GCC Docs",
+      "description": "GCC documentation, by DevDocs",
+      "language": "en",
+      "parentCategory": "Programming",
+      "categories": [
+        "programming"
+      ],
+      "keywords": [
+        "gcc",
+        "docs",
+        "documentation",
+        "devdocs",
+        "ftindex",
+        "pictures",
+        "yes",
+        "videos",
+        "details",
+        "programming"
+      ],
+      "tags": [
+        "devdocs",
+        "gcc",
+        "_ftindex:no",
+        "_pictures:yes",
+        "_videos:yes",
+        "_details:yes"
+      ],
+      "basePriority": 5
+    },
+    {
+      "zimName": "devdocs_en_postgresql_2026-08",
+      "title": "PostgreSQL Docs",
+      "description": "PostgreSQL documentation, by DevDocs",
+      "language": "en",
+      "parentCategory": "Programming",
+      "categories": [
+        "programming"
+      ],
+      "keywords": [
+        "postgresql",
+        "docs",
+        "documentation",
+        "devdocs",
+        "ftindex",
+        "pictures",
+        "yes",
+        "videos",
+        "details",
+        "programming"
+      ],
+      "tags": [
+        "devdocs",
+        "postgresql",
+        "_ftindex:no",
+        "_pictures:yes",
+        "_videos:yes",
+        "_details:yes"
+      ],
+      "basePriority": 5
+    },
+    {
+      "zimName": "devdocs_en_opentsdb_2026-07",
+      "title": "OpenTSDB Docs",
+      "description": "OpenTSDB documentation, by DevDocs",
+      "language": "en",
+      "parentCategory": "Programming",
+      "categories": [
+        "programming"
+      ],
+      "keywords": [
+        "opentsdb",
+        "docs",
+        "documentation",
+        "devdocs",
+        "ftindex",
+        "pictures",
+        "yes",
+        "videos",
+        "details",
+        "programming"
+      ],
+      "tags": [
+        "devdocs",
+        "opentsdb",
+        "_ftindex:no",
+        "_pictures:yes",
+        "_videos:yes",
+        "_details:yes"
+      ],
+      "basePriority": 5
+    },
+    {
+      "zimName": "termux_en_all_maxi_2022-12",
+      "title": "Termux Wiki",
+      "description": "Offline Termux wiki",
+      "language": "en",
+      "parentCategory": "Documents",
+      "categories": [
+        "general"
+      ],
+      "keywords": [
+        "termux",
+        "wiki",
+        "offline",
+        "pictures",
+        "yes",
+        "videos",
+        "details",
+        "ftindex",
+        "documents"
+      ],
+      "tags": [
+        "termux",
+        "_pictures:yes",
+        "_videos:no",
+        "_details:yes",
+        "_ftindex:yes"
+      ],
+      "basePriority": 5
+    },
+    {
+      "zimName": "wikisource_en_all_maxi_2026-05",
+      "title": "Wikisource",
+      "description": "Wikisource is an library of public domain texts",
+      "language": "en",
+      "parentCategory": "Encyclopedia",
+      "categories": [
+        "programming"
+      ],
+      "keywords": [
+        "wikisource",
+        "library",
+        "public",
+        "domain",
+        "texts",
+        "category",
+        "pictures",
+        "yes",
+        "videos",
+        "details",
+        "ftindex",
+        "encyclopedia"
+      ],
+      "tags": [
+        "wikisource",
+        "_category:wikisource",
+        "_pictures:yes",
+        "_videos:no",
+        "_details:yes",
+        "_ftindex:yes"
+      ],
+      "basePriority": 5
+    },
+    {
+      "zimName": "freecodecamp_en_coding-interview-prep_2026-05",
+      "title": "FreeCodeCamp Interview Prep",
+      "description": "Coding exercises",
+      "language": "en",
+      "parentCategory": "Programming",
+      "categories": [
+        "programming"
+      ],
+      "keywords": [
+        "freecodecamp",
+        "interview",
+        "prep",
+        "coding",
+        "exercises",
+        "fcc",
+        "ftindex",
+        "pictures",
+        "yes",
+        "videos",
+        "details",
+        "programming"
+      ],
+      "tags": [
+        "FCC",
+        "freeCodeCamp",
+        "_ftindex:no",
+        "_pictures:yes",
+        "_videos:yes",
+        "_details:yes"
+      ],
+      "basePriority": 5
+    },
+    {
+      "zimName": "devdocs_en_http_2026-07",
+      "title": "HTTP Docs",
+      "description": "HTTP documentation, by DevDocs",
+      "language": "en",
+      "parentCategory": "Programming",
+      "categories": [
+        "programming"
+      ],
+      "keywords": [
+        "http",
+        "docs",
+        "documentation",
+        "devdocs",
+        "ftindex",
+        "pictures",
+        "yes",
+        "videos",
+        "details",
+        "programming"
+      ],
+      "tags": [
+        "devdocs",
+        "http",
+        "_ftindex:no",
+        "_pictures:yes",
+        "_videos:yes",
+        "_details:yes"
+      ],
+      "basePriority": 5
+    },
+    {
+      "zimName": "devdocs_en_kotlin_2026-07",
+      "title": "Kotlin Docs",
+      "description": "Kotlin documentation, by DevDocs",
+      "language": "en",
+      "parentCategory": "Programming",
+      "categories": [
+        "programming"
+      ],
+      "keywords": [
+        "kotlin",
+        "docs",
+        "documentation",
+        "devdocs",
+        "ftindex",
+        "pictures",
+        "yes",
+        "videos",
+        "details",
+        "programming"
+      ],
+      "tags": [
+        "devdocs",
+        "kotlin",
+        "_ftindex:no",
+        "_pictures:yes",
+        "_videos:yes",
+        "_details:yes"
+      ],
+      "basePriority": 5
+    },
+    {
+      "zimName": "devdocs_en_requests_2026-07",
+      "title": "Requests Docs",
+      "description": "Requests documentation, by DevDocs",
+      "language": "en",
+      "parentCategory": "Programming",
+      "categories": [
+        "programming"
+      ],
+      "keywords": [
+        "requests",
+        "docs",
+        "documentation",
+        "devdocs",
+        "ftindex",
+        "pictures",
+        "yes",
+        "videos",
+        "details",
+        "programming"
+      ],
+      "tags": [
+        "devdocs",
+        "requests",
+        "_ftindex:no",
+        "_pictures:yes",
+        "_videos:yes",
+        "_details:yes"
+      ],
+      "basePriority": 5
+    },
+    {
+      "zimName": "devdocs_en_javascript_2026-07",
+      "title": "JavaScript Docs",
+      "description": "JavaScript documentation, by DevDocs",
+      "language": "en",
+      "parentCategory": "Programming",
+      "categories": [
+        "programming"
+      ],
+      "keywords": [
+        "javascript",
+        "docs",
+        "documentation",
+        "devdocs",
+        "ftindex",
+        "pictures",
+        "yes",
+        "videos",
+        "details",
+        "programming"
+      ],
+      "tags": [
+        "devdocs",
+        "javascript",
+        "_ftindex:no",
+        "_pictures:yes",
+        "_videos:yes",
+        "_details:yes"
+      ],
+      "basePriority": 5
+    },
+    {
+      "zimName": "devdocs_en_bottle_2026-07",
+      "title": "Bottle Docs",
+      "description": "Bottle documentation, by DevDocs",
+      "language": "en",
+      "parentCategory": "Programming",
+      "categories": [
+        "programming"
+      ],
+      "keywords": [
+        "bottle",
+        "docs",
+        "documentation",
+        "devdocs",
+        "ftindex",
+        "pictures",
+        "yes",
+        "videos",
+        "details",
+        "programming"
+      ],
+      "tags": [
+        "devdocs",
+        "bottle",
+        "_ftindex:no",
+        "_pictures:yes",
+        "_videos:yes",
+        "_details:yes"
+      ],
+      "basePriority": 5
+    },
+    {
+      "zimName": "devdocs_en_markdown_2026-07",
+      "title": "Markdown Docs",
+      "description": "Markdown documentation, by DevDocs",
+      "language": "en",
+      "parentCategory": "Programming",
+      "categories": [
+        "programming"
+      ],
+      "keywords": [
+        "markdown",
+        "docs",
+        "documentation",
+        "devdocs",
+        "ftindex",
+        "pictures",
+        "yes",
+        "videos",
+        "details",
+        "programming"
+      ],
+      "tags": [
+        "devdocs",
+        "markdown",
+        "_ftindex:no",
+        "_pictures:yes",
+        "_videos:yes",
+        "_details:yes"
+      ],
+      "basePriority": 5
+    },
+    {
+      "zimName": "devdocs_en_click_2026-04",
+      "title": "click Docs",
+      "description": "click documentation, by DevDocs",
+      "language": "en",
+      "parentCategory": "Programming",
+      "categories": [
+        "programming"
+      ],
+      "keywords": [
+        "click",
+        "docs",
+        "documentation",
+        "devdocs",
+        "ftindex",
+        "pictures",
+        "yes",
+        "videos",
+        "details",
+        "programming"
+      ],
+      "tags": [
+        "devdocs",
+        "click",
+        "_ftindex:no",
+        "_pictures:yes",
+        "_videos:yes",
+        "_details:yes"
+      ],
+      "basePriority": 5
+    },
+    {
+      "zimName": "devdocs_en_latex_2026-05",
+      "title": "LaTeX Docs",
+      "description": "LaTeX documentation, by DevDocs",
+      "language": "en",
+      "parentCategory": "Programming",
+      "categories": [
+        "programming"
+      ],
+      "keywords": [
+        "latex",
+        "docs",
+        "documentation",
+        "devdocs",
+        "ftindex",
+        "pictures",
+        "yes",
+        "videos",
+        "details",
+        "programming"
+      ],
+      "tags": [
+        "devdocs",
+        "latex",
+        "_ftindex:no",
+        "_pictures:yes",
+        "_videos:yes",
+        "_details:yes"
+      ],
+      "basePriority": 5
+    },
+    {
+      "zimName": "devdocs_en_zsh_2026-04",
+      "title": "Zsh Docs",
+      "description": "Zsh documentation, by DevDocs",
+      "language": "en",
+      "parentCategory": "Programming",
+      "categories": [
+        "programming"
+      ],
+      "keywords": [
+        "zsh",
+        "docs",
+        "documentation",
+        "devdocs",
+        "ftindex",
+        "pictures",
+        "yes",
+        "videos",
+        "details",
+        "programming"
+      ],
+      "tags": [
+        "devdocs",
+        "zsh",
+        "_ftindex:no",
+        "_pictures:yes",
+        "_videos:yes",
+        "_details:yes"
+      ],
+      "basePriority": 5
+    },
+    {
+      "zimName": "devdocs_en_sanctuary_2026-07",
+      "title": "Sanctuary Docs",
+      "description": "Sanctuary documentation, by DevDocs",
+      "language": "en",
+      "parentCategory": "Programming",
+      "categories": [
+        "programming"
+      ],
+      "keywords": [
+        "sanctuary",
+        "docs",
+        "documentation",
+        "devdocs",
+        "ftindex",
+        "pictures",
+        "yes",
+        "videos",
+        "details",
+        "programming"
+      ],
+      "tags": [
+        "devdocs",
+        "sanctuary",
+        "_ftindex:no",
+        "_pictures:yes",
+        "_videos:yes",
+        "_details:yes"
+      ],
+      "basePriority": 5
+    },
+    {
+      "zimName": "devdocs_en_htmx_2026-07",
+      "title": "htmx Docs",
+      "description": "htmx documentation, by DevDocs",
+      "language": "en",
+      "parentCategory": "Programming",
+      "categories": [
+        "programming"
+      ],
+      "keywords": [
+        "htmx",
+        "docs",
+        "documentation",
+        "devdocs",
+        "ftindex",
+        "pictures",
+        "yes",
+        "videos",
+        "details",
+        "programming"
+      ],
+      "tags": [
+        "devdocs",
+        "htmx",
+        "_ftindex:no",
+        "_pictures:yes",
+        "_videos:yes",
+        "_details:yes"
+      ],
+      "basePriority": 5
+    },
+    {
+      "zimName": "wikipedia_hi_all_maxi_2026-07",
+      "title": "विकिपीडिया",
+      "description": "हिन्दी में विकिपीडिया का ऑफ़लाइन संस्करण",
+      "language": "hi",
+      "parentCategory": "Encyclopedia",
+      "categories": [
+        "programming",
+        "general"
+      ],
+      "keywords": [
+        "wikipedia",
+        "category",
+        "pictures",
+        "yes",
+        "videos",
+        "details",
+        "ftindex",
+        "encyclopedia",
+        "general knowledge",
+        "history",
+        "geography",
+        "science",
+        "biography",
+        "overview",
+        "capital",
+        "france"
+      ],
+      "tags": [
+        "wikipedia",
+        "_category:wikipedia",
+        "_pictures:yes",
+        "_videos:no",
+        "_details:yes",
+        "_ftindex:yes"
+      ],
+      "basePriority": 6
+    },
+    {
+      "zimName": "devdocs_en_jquery_2026-07",
+      "title": "jQuery Docs",
+      "description": "jQuery documentation, by DevDocs",
+      "language": "en",
+      "parentCategory": "Programming",
+      "categories": [
+        "programming"
+      ],
+      "keywords": [
+        "jquery",
+        "docs",
+        "documentation",
+        "devdocs",
+        "ftindex",
+        "pictures",
+        "yes",
+        "videos",
+        "details",
+        "programming"
+      ],
+      "tags": [
+        "devdocs",
+        "jquery",
+        "_ftindex:no",
+        "_pictures:yes",
+        "_videos:yes",
+        "_details:yes"
+      ],
+      "basePriority": 5
+    },
+    {
+      "zimName": "devdocs_en_rxjs_2026-05",
+      "title": "RxJS Docs",
+      "description": "RxJS documentation, by DevDocs",
+      "language": "en",
+      "parentCategory": "Programming",
+      "categories": [
+        "programming"
+      ],
+      "keywords": [
+        "rxjs",
+        "docs",
+        "documentation",
+        "devdocs",
+        "ftindex",
+        "pictures",
+        "yes",
+        "videos",
+        "details",
+        "programming"
+      ],
+      "tags": [
+        "devdocs",
+        "rxjs",
+        "_ftindex:no",
+        "_pictures:yes",
+        "_videos:yes",
+        "_details:yes"
+      ],
+      "basePriority": 5
+    },
+    {
+      "zimName": "devdocs_en_esbuild_2026-07",
+      "title": "esbuild Docs",
+      "description": "esbuild documentation, by DevDocs",
+      "language": "en",
+      "parentCategory": "Programming",
+      "categories": [
+        "programming"
+      ],
+      "keywords": [
+        "esbuild",
+        "docs",
+        "documentation",
+        "devdocs",
+        "ftindex",
+        "pictures",
+        "yes",
+        "videos",
+        "details",
+        "programming"
+      ],
+      "tags": [
+        "devdocs",
+        "esbuild",
+        "_ftindex:no",
+        "_pictures:yes",
+        "_videos:yes",
+        "_details:yes"
+      ],
+      "basePriority": 5
+    },
+    {
+      "zimName": "devdocs_en_html_2026-07",
+      "title": "HTML Docs",
+      "description": "HTML documentation, by DevDocs",
+      "language": "en",
+      "parentCategory": "Programming",
+      "categories": [
+        "programming"
+      ],
+      "keywords": [
+        "html",
+        "docs",
+        "documentation",
+        "devdocs",
+        "ftindex",
+        "pictures",
+        "yes",
+        "videos",
+        "details",
+        "programming"
+      ],
+      "tags": [
+        "devdocs",
+        "html",
+        "_ftindex:no",
+        "_pictures:yes",
+        "_videos:yes",
+        "_details:yes"
+      ],
+      "basePriority": 5
+    },
+    {
+      "zimName": "libretexts.org_en_med_2025-01",
+      "title": "Medicine LibreTexts",
+      "description": "Medicine courses and bookshelves from LibreTexts.org",
+      "language": "en",
+      "parentCategory": "LibreTexts",
+      "categories": [
+        "medicine"
+      ],
+      "keywords": [
+        "medicine",
+        "libretexts",
+        "courses",
+        "and",
+        "bookshelves",
+        "from",
+        "org",
+        "ftindex",
+        "pictures",
+        "yes",
+        "videos",
+        "details"
+      ],
+      "tags": [
+        "medicine",
+        "_ftindex:no",
+        "_pictures:yes",
+        "_videos:yes",
+        "_details:yes"
+      ],
+      "basePriority": 5
+    },
+    {
+      "zimName": "ifixit_en_all_2025-12",
+      "title": "iFixit in English",
+      "description": "iFixit is a global community of people helping each other repair things. Let's …",
+      "language": "en",
+      "parentCategory": "Encyclopedia",
+      "categories": [
+        "programming",
+        "repair"
+      ],
+      "keywords": [
+        "ifixit",
+        "english",
+        "global",
+        "community",
+        "people",
+        "helping",
+        "each",
+        "other",
+        "repair",
+        "things",
+        "let",
+        "category",
+        "pictures",
+        "yes",
+        "videos",
+        "ftindex",
+        "details",
+        "encyclopedia",
+        "replace",
+        "battery",
+        "screen",
+        "teardown",
+        "hardware",
+        "tool",
+        "part",
+        "iphone",
+        "fix"
+      ],
+      "tags": [
+        "_category:iFixit",
+        "iFixit",
+        "_pictures:yes",
+        "_videos:yes",
+        "_ftindex:no",
+        "_details:yes"
+      ],
+      "basePriority": 9
+    },
+    {
+      "zimName": "wikipedia_en_all_nopic_2026-06",
+      "title": "Wikipedia",
+      "description": "The free encyclopedia",
+      "language": "en",
+      "parentCategory": "Encyclopedia",
+      "categories": [
+        "programming",
+        "general"
+      ],
+      "keywords": [
+        "wikipedia",
+        "the",
+        "free",
+        "encyclopedia",
+        "category",
+        "pictures",
+        "videos",
+        "details",
+        "yes",
+        "ftindex",
+        "general knowledge",
+        "history",
+        "geography",
+        "science",
+        "biography",
+        "overview",
+        "capital",
+        "france"
+      ],
+      "tags": [
+        "wikipedia",
+        "_category:wikipedia",
+        "_pictures:no",
+        "_videos:no",
+        "_details:yes",
+        "_ftindex:yes"
+      ],
+      "basePriority": 6
+    },
+    {
+      "zimName": "devdocs_en_bash_2026-04",
+      "title": "Bash Docs",
+      "description": "Bash documentation, by DevDocs",
+      "language": "en",
+      "parentCategory": "Programming",
+      "categories": [
+        "linux",
+        "programming"
+      ],
+      "keywords": [
+        "bash",
+        "docs",
+        "documentation",
+        "devdocs",
+        "ftindex",
+        "pictures",
+        "yes",
+        "videos",
+        "details",
+        "programming"
+      ],
+      "tags": [
+        "devdocs",
+        "bash",
+        "_ftindex:no",
+        "_pictures:yes",
+        "_videos:yes",
+        "_details:yes"
+      ],
+      "basePriority": 5
+    },
+    {
+      "zimName": "devdocs_en_express_2026-05",
+      "title": "Express Docs",
+      "description": "Express documentation, by DevDocs",
+      "language": "en",
+      "parentCategory": "Programming",
+      "categories": [
+        "programming"
+      ],
+      "keywords": [
+        "express",
+        "docs",
+        "documentation",
+        "devdocs",
+        "ftindex",
+        "pictures",
+        "yes",
+        "videos",
+        "details",
+        "programming"
+      ],
+      "tags": [
+        "devdocs",
+        "express",
+        "_ftindex:no",
+        "_pictures:yes",
+        "_videos:yes",
+        "_details:yes"
+      ],
+      "basePriority": 5
+    },
+    {
+      "zimName": "wikipedia_hi_medicine_maxi_2026-08",
+      "title": "विकी मेड मेडिकल इनसाइक्लोपीडिया हिंदी में",
+      "description": "विकिपीडिया चिकित्सा विश्वकोश",
+      "language": "hi",
+      "parentCategory": "Medical",
+      "categories": [
+        "programming",
+        "medicine",
+        "general"
+      ],
+      "keywords": [
+        "wikipedia",
+        "category",
+        "pictures",
+        "yes",
+        "videos",
+        "details",
+        "ftindex",
+        "medical",
+        "general knowledge",
+        "history",
+        "geography",
+        "science",
+        "biography",
+        "overview",
+        "capital",
+        "france"
+      ],
+      "tags": [
+        "wikipedia",
+        "_category:wikipedia",
+        "_pictures:yes",
+        "_videos:no",
+        "_details:yes",
+        "_ftindex:yes"
+      ],
+      "basePriority": 6
+    },
+    {
+      "zimName": "prunelle_en_interactive-books_2025-02",
+      "title": "Prunelle books",
+      "description": "Books for children",
+      "language": "en",
+      "parentCategory": "Books",
+      "categories": [
+        "general"
+      ],
+      "keywords": [
+        "prunelle",
+        "books",
+        "for",
+        "children",
+        "ftindex",
+        "pictures",
+        "yes",
+        "videos",
+        "details"
+      ],
+      "tags": [
+        "_ftindex:no",
+        "_pictures:yes",
+        "_videos:yes",
+        "_details:yes"
+      ],
+      "basePriority": 5
+    },
+    {
+      "zimName": "devdocs_en_openjdk_2026-05",
+      "title": "OpenJDK Docs",
+      "description": "OpenJDK documentation, by DevDocs",
+      "language": "en",
+      "parentCategory": "Programming",
+      "categories": [
+        "programming"
+      ],
+      "keywords": [
+        "openjdk",
+        "docs",
+        "documentation",
+        "devdocs",
+        "ftindex",
+        "pictures",
+        "yes",
+        "videos",
+        "details",
+        "programming"
+      ],
+      "tags": [
+        "devdocs",
+        "openjdk",
+        "_ftindex:no",
+        "_pictures:yes",
+        "_videos:yes",
+        "_details:yes"
+      ],
+      "basePriority": 5
+    },
+    {
+      "zimName": "devdocs_en_nextjs_2026-04",
+      "title": "Next.js Docs",
+      "description": "Next.js documentation, by DevDocs",
+      "language": "en",
+      "parentCategory": "Programming",
+      "categories": [
+        "programming"
+      ],
+      "keywords": [
+        "next",
+        "docs",
+        "documentation",
+        "devdocs",
+        "nextjs",
+        "ftindex",
+        "pictures",
+        "yes",
+        "videos",
+        "details",
+        "programming"
+      ],
+      "tags": [
+        "devdocs",
+        "nextjs",
+        "_ftindex:no",
+        "_pictures:yes",
+        "_videos:yes",
+        "_details:yes"
+      ],
+      "basePriority": 5
+    },
+    {
+      "zimName": "freecodecamp_en_all_2026-05",
+      "title": "FreeCodeCamp",
+      "description": "All FreeCodeCamp courses",
+      "language": "en",
+      "parentCategory": "Programming",
+      "categories": [
+        "programming"
+      ],
+      "keywords": [
+        "freecodecamp",
+        "all",
+        "courses",
+        "fcc",
+        "ftindex",
+        "pictures",
+        "yes",
+        "videos",
+        "details",
+        "programming"
+      ],
+      "tags": [
+        "FCC",
+        "freeCodeCamp",
+        "_ftindex:no",
+        "_pictures:yes",
+        "_videos:yes",
+        "_details:yes"
+      ],
+      "basePriority": 5
+    },
+    {
+      "zimName": "ethanweed_en_all_2025-11",
+      "title": "Learning statistics - Python",
+      "description": "Introductory statistics class turned into a book",
+      "language": "en",
+      "parentCategory": "Programming",
+      "categories": [
+        "programming"
+      ],
+      "keywords": [
+        "learning",
+        "statistics",
+        "python",
+        "introductory",
+        "class",
+        "turned",
+        "into",
+        "book",
+        "ftindex",
+        "yes",
+        "category",
+        "other",
+        "pictures",
+        "videos",
+        "details",
+        "programming"
+      ],
+      "tags": [
+        "_ftindex:yes",
+        "_category:other",
+        "_pictures:yes",
+        "_videos:yes",
+        "_details:yes"
+      ],
+      "basePriority": 5
+    },
+    {
+      "zimName": "wiktionary_hi_all_nopic_2026-04",
+      "title": "विक्षनरी",
+      "description": "Wiktionary in Hindi Language",
+      "language": "hi",
+      "parentCategory": "Encyclopedia",
+      "categories": [
+        "programming"
+      ],
+      "keywords": [
+        "wiktionary",
+        "hindi",
+        "language",
+        "category",
+        "pictures",
+        "videos",
+        "details",
+        "yes",
+        "ftindex",
+        "encyclopedia"
+      ],
+      "tags": [
+        "wiktionary",
+        "_category:wiktionary",
+        "_pictures:no",
+        "_videos:no",
+        "_details:yes",
+        "_ftindex:yes"
+      ],
+      "basePriority": 5
+    },
+    {
+      "zimName": "devdocs_en_socketio_2026-07",
+      "title": "Socket.IO Docs",
+      "description": "Socket.IO documentation, by DevDocs",
+      "language": "en",
+      "parentCategory": "Programming",
+      "categories": [
+        "programming"
+      ],
+      "keywords": [
+        "socket",
+        "docs",
+        "documentation",
+        "devdocs",
+        "socketio",
+        "ftindex",
+        "pictures",
+        "yes",
+        "videos",
+        "details",
+        "programming"
+      ],
+      "tags": [
+        "devdocs",
+        "socketio",
+        "_ftindex:no",
+        "_pictures:yes",
+        "_videos:yes",
+        "_details:yes"
+      ],
+      "basePriority": 5
+    },
+    {
+      "zimName": "devdocs_en_rust_2026-07",
+      "title": "Rust Docs",
+      "description": "Rust documentation, by DevDocs",
+      "language": "en",
+      "parentCategory": "Documents",
+      "categories": [
+        "programming"
+      ],
+      "keywords": [
+        "rust",
+        "docs",
+        "documentation",
+        "devdocs",
+        "ftindex",
+        "pictures",
+        "yes",
+        "videos",
+        "details",
+        "documents"
+      ],
+      "tags": [
+        "devdocs",
+        "rust",
+        "_ftindex:no",
+        "_pictures:yes",
+        "_videos:yes",
+        "_details:yes"
+      ],
+      "basePriority": 5
+    },
+    {
+      "zimName": "learningstatisticswithr.com_en_all_2026-05",
+      "title": "Learning Statistics with R",
+      "description": "Introductory statistics class turned into a book",
+      "language": "en",
+      "parentCategory": "Programming",
+      "categories": [
+        "programming"
+      ],
+      "keywords": [
+        "learning",
+        "statistics",
+        "with",
+        "introductory",
+        "class",
+        "turned",
+        "into",
+        "book",
+        "ftindex",
+        "yes",
+        "category",
+        "other",
+        "pictures",
+        "videos",
+        "details",
+        "programming"
+      ],
+      "tags": [
+        "_ftindex:yes",
+        "_category:other",
+        "_pictures:yes",
+        "_videos:yes",
+        "_details:yes"
+      ],
+      "basePriority": 5
+    },
+    {
+      "zimName": "alpinelinux_en_all_maxi_2026-07",
+      "title": "Alpine Linux Wiki",
+      "description": "Alpine Linux is a security-oriented, lightweight Linux distribution",
+      "language": "en",
+      "parentCategory": "Programming",
+      "categories": [
+        "linux",
+        "programming"
+      ],
+      "keywords": [
+        "alpine",
+        "linux",
+        "wiki",
+        "security",
+        "oriented",
+        "lightweight",
+        "distribution",
+        "distro",
+        "alpinelinux",
+        "pictures",
+        "yes",
+        "videos",
+        "details",
+        "ftindex",
+        "programming"
+      ],
+      "tags": [
+        "Linux",
+        "distro",
+        "alpinelinux",
+        "_pictures:yes",
+        "_videos:no",
+        "_details:yes",
+        "_ftindex:yes"
+      ],
+      "basePriority": 5
+    },
+    {
+      "zimName": "devdocs_en_react_2026-05",
+      "title": "React Docs",
+      "description": "React documentation, by DevDocs",
+      "language": "en",
+      "parentCategory": "Programming",
+      "categories": [
+        "programming"
+      ],
+      "keywords": [
+        "react",
+        "docs",
+        "documentation",
+        "devdocs",
+        "ftindex",
+        "pictures",
+        "yes",
+        "videos",
+        "details",
+        "programming"
+      ],
+      "tags": [
+        "devdocs",
+        "react",
+        "_ftindex:no",
+        "_pictures:yes",
+        "_videos:yes",
+        "_details:yes"
+      ],
+      "basePriority": 5
+    },
+    {
+      "zimName": "libretexts.org_en_workforce_2026-01",
+      "title": "Workforce LibreTexts",
+      "description": "Workforce courses and bookshelves from LibreTexts.org",
+      "language": "en",
+      "parentCategory": "LibreTexts",
+      "categories": [
+        "general"
+      ],
+      "keywords": [
+        "workforce",
+        "libretexts",
+        "courses",
+        "and",
+        "bookshelves",
+        "from",
+        "org",
+        "ftindex",
+        "pictures",
+        "yes",
+        "videos",
+        "details"
+      ],
+      "tags": [
+        "_ftindex:no",
+        "_pictures:yes",
+        "_videos:yes",
+        "_details:yes"
+      ],
+      "basePriority": 5
+    },
+    {
+      "zimName": "devdocs_en_jekyll_2026-07",
+      "title": "Jekyll Docs",
+      "description": "Jekyll documentation, by DevDocs",
+      "language": "en",
+      "parentCategory": "Programming",
+      "categories": [
+        "programming"
+      ],
+      "keywords": [
+        "jekyll",
+        "docs",
+        "documentation",
+        "devdocs",
+        "ftindex",
+        "pictures",
+        "yes",
+        "videos",
+        "details",
+        "programming"
+      ],
+      "tags": [
+        "devdocs",
+        "jekyll",
+        "_ftindex:no",
+        "_pictures:yes",
+        "_videos:yes",
+        "_details:yes"
+      ],
+      "basePriority": 5
+    },
+    {
+      "zimName": "devdocs_en_requirejs_2026-07",
+      "title": "RequireJS Docs",
+      "description": "RequireJS documentation, by DevDocs",
+      "language": "en",
+      "parentCategory": "Programming",
+      "categories": [
+        "programming"
+      ],
+      "keywords": [
+        "requirejs",
+        "docs",
+        "documentation",
+        "devdocs",
+        "ftindex",
+        "pictures",
+        "yes",
+        "videos",
+        "details",
+        "programming"
+      ],
+      "tags": [
+        "devdocs",
+        "requirejs",
+        "_ftindex:no",
+        "_pictures:yes",
+        "_videos:yes",
+        "_details:yes"
+      ],
+      "basePriority": 5
+    },
+    {
+      "zimName": "devdocs_en_matplotlib_2026-07",
+      "title": "Matplotlib Docs",
+      "description": "Matplotlib documentation, by DevDocs",
+      "language": "en",
+      "parentCategory": "Programming",
+      "categories": [
+        "programming"
+      ],
+      "keywords": [
+        "matplotlib",
+        "docs",
+        "documentation",
+        "devdocs",
+        "ftindex",
+        "pictures",
+        "yes",
+        "videos",
+        "details",
+        "programming"
+      ],
+      "tags": [
+        "devdocs",
+        "matplotlib",
+        "_ftindex:no",
+        "_pictures:yes",
+        "_videos:yes",
+        "_details:yes"
+      ],
+      "basePriority": 5
+    },
+    {
+      "zimName": "devdocs_en_fish_2026-07",
+      "title": "Fish Docs",
+      "description": "Fish documentation, by DevDocs",
+      "language": "en",
+      "parentCategory": "Programming",
+      "categories": [
+        "programming"
+      ],
+      "keywords": [
+        "fish",
+        "docs",
+        "documentation",
+        "devdocs",
+        "ftindex",
+        "pictures",
+        "yes",
+        "videos",
+        "details",
+        "programming"
+      ],
+      "tags": [
+        "devdocs",
+        "fish",
+        "_ftindex:no",
+        "_pictures:yes",
+        "_videos:yes",
+        "_details:yes"
+      ],
+      "basePriority": 5
+    },
+    {
+      "zimName": "devdocs_en_mariadb_2026-07",
+      "title": "MariaDB Docs",
+      "description": "MariaDB documentation, by DevDocs",
+      "language": "en",
+      "parentCategory": "Programming",
+      "categories": [
+        "programming"
+      ],
+      "keywords": [
+        "mariadb",
+        "docs",
+        "documentation",
+        "devdocs",
+        "ftindex",
+        "pictures",
+        "yes",
+        "videos",
+        "details",
+        "programming"
+      ],
+      "tags": [
+        "devdocs",
+        "mariadb",
+        "_ftindex:no",
+        "_pictures:yes",
+        "_videos:yes",
+        "_details:yes"
+      ],
+      "basePriority": 5
+    },
+    {
+      "zimName": "devdocs_en_async_2026-05",
+      "title": "Async Docs",
+      "description": "Async documentation, by DevDocs",
+      "language": "en",
+      "parentCategory": "Programming",
+      "categories": [
+        "programming"
+      ],
+      "keywords": [
+        "async",
+        "docs",
+        "documentation",
+        "devdocs",
+        "ftindex",
+        "pictures",
+        "yes",
+        "videos",
+        "details",
+        "programming"
+      ],
+      "tags": [
+        "devdocs",
+        "async",
+        "_ftindex:no",
+        "_pictures:yes",
+        "_videos:yes",
+        "_details:yes"
+      ],
+      "basePriority": 5
+    },
+    {
+      "zimName": "htdp.org_en_all_2026-05",
+      "title": "How to Design Programs",
+      "description": "Introductory book focused on the program design process",
+      "language": "en",
+      "parentCategory": "Programming",
+      "categories": [
+        "programming",
+        "guides"
+      ],
+      "keywords": [
+        "how",
+        "design",
+        "programs",
+        "introductory",
+        "book",
+        "focused",
+        "the",
+        "program",
+        "process",
+        "ftindex",
+        "yes",
+        "category",
+        "other",
+        "pictures",
+        "videos",
+        "details",
+        "programming"
+      ],
+      "tags": [
+        "_ftindex:yes",
+        "_category:other",
+        "_pictures:yes",
+        "_videos:yes",
+        "_details:yes"
+      ],
+      "basePriority": 5
+    },
+    {
+      "zimName": "devdocs_en_webpack_2026-05",
+      "title": "webpack Docs",
+      "description": "webpack documentation, by DevDocs",
+      "language": "en",
+      "parentCategory": "Programming",
+      "categories": [
+        "programming"
+      ],
+      "keywords": [
+        "webpack",
+        "docs",
+        "documentation",
+        "devdocs",
+        "ftindex",
+        "pictures",
+        "yes",
+        "videos",
+        "details",
+        "programming"
+      ],
+      "tags": [
+        "devdocs",
+        "webpack",
+        "_ftindex:no",
+        "_pictures:yes",
+        "_videos:yes",
+        "_details:yes"
+      ],
+      "basePriority": 5
+    },
+    {
+      "zimName": "libretexts.org_en_math_2026-01",
+      "title": "Mathematics LibreTexts",
+      "description": "Mathematics courses and bookshelves from LibreTexts.org",
+      "language": "en",
+      "parentCategory": "LibreTexts",
+      "categories": [
+        "general"
+      ],
+      "keywords": [
+        "mathematics",
+        "libretexts",
+        "courses",
+        "and",
+        "bookshelves",
+        "from",
+        "org",
+        "ftindex",
+        "pictures",
+        "yes",
+        "videos",
+        "details"
+      ],
+      "tags": [
+        "_ftindex:no",
+        "_pictures:yes",
+        "_videos:yes",
+        "_details:yes"
+      ],
+      "basePriority": 5
+    }
+  ]
+}

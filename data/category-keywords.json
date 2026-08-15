@@ -1,0 +1,10 @@
+{
+  "linux": ["linux", "ubuntu", "arch", "archlinux", "debian", "fedora", "pacman", "aur", "systemd", "terminal", "bash", "shell", "unix"],
+  "programming": ["code", "coding", "programming", "javascript", "typescript", "python", "react", "node", "golang", "go", "cmake", "redux", "leaflet", "pytorch", "liquid", "tensorflow", "gtk", "devdocs", "openlayers", "stack", "overflow"],
+  "medicine": ["fever", "symptom", "disease", "medicine", "medical", "treatment", "infection", "health", "doctor", "hospital", "nhs", "drug", "clinic"],
+  "cooking": ["recipe", "cook", "cooking", "food", "dish", "ingredient", "bake", "fry", "paneer", "kitchen", "meal", "dinner", "breakfast"],
+  "repair": ["repair", "fix", "replace", "broken", "battery", "screen", "teardown", "tool", "hardware", "ifixit", "iphone", "part", "diy"],
+  "automotive": ["car", "engine", "brake", "oil", "tyre", "vehicle", "motorcycle", "auto", "toyota", "honda", "ford"],
+  "guides": ["how to", "howto", "guide", "step by step", "instructions", "tutorial", "wikihow", "diy"],
+  "general": ["wikipedia", "general knowledge", "overview", "history", "geography", "biography", "science", "capital", "country", "city"]
+}
