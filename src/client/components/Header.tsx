@@ -1,6 +1,7 @@
 import React from 'react';
 import { SearchMode } from '../../shared/types.js';
-import { Sun, Moon, Cpu, Wifi, WifiOff } from 'lucide-react';
+import { Sun, Moon, Wifi, WifiOff } from 'lucide-react';
+import { Si4kIcon } from './Si4kIcon.js';
 
 interface HeaderProps {
   mode: SearchMode;
@@ -20,7 +21,7 @@ export const Header: React.FC<HeaderProps> = ({
   return (
     <header className="app-header">
       <a href="#" className="brand-title" onClick={(e) => { e.preventDefault(); onHomeClick(); }}>
-        <Cpu size={22} className="brand-icon" />
+        <Si4kIcon size={26} className="brand-icon" />
         <span>Si4k Search</span>
         <span className="brand-badge">
           {mode === 'local' ? 'Offline Knowledge' : 'Online Knowledge'}

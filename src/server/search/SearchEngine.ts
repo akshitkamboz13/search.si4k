@@ -86,6 +86,21 @@ export class SearchCache {
   public get size(): number {
     return this.cache.size;
   }
+
+  public get estimatedMemoryMB(): number {
+    let bytes = 0;
+    for (const [key, entry] of this.cache.entries()) {
+      bytes += key.length * 2;
+      for (const res of entry.unifiedResults) {
+        bytes += (res.id?.length || 0) * 2;
+        bytes += (res.title?.length || 0) * 2;
+        bytes += (res.description?.length || 0) * 2;
+        bytes += (res.url?.length || 0) * 2;
+        bytes += (res.source?.length || 0) * 2;
+      }
+    }
+    return parseFloat((bytes / (1024 * 1024)).toFixed(2));
+  }
 }
 
 export class SearchEngine {
@@ -95,6 +110,10 @@ export class SearchEngine {
   private sourceRanker: SourceRanker;
   private resultMixer: ResultMixer;
   public searchCache: SearchCache = new SearchCache();
+
+  private activeSessionsCount = 0;
+  private activeSSEConnectionsCount = 0;
+  private sessionQueue: Array<() => void> = [];
 
   constructor(customLibrary?: ZimLibrary | SearchSourceConfig[], customScoring?: ScoringConfig) {
     if (customLibrary && Array.isArray(customLibrary)) {
@@ -143,6 +162,22 @@ export class SearchEngine {
     return this.zimLibrary.getDiscoveredSources();
   }
 
+  public getActiveSessionsCount(): number {
+    return this.activeSessionsCount;
+  }
+
+  public getActiveSSEConnectionsCount(): number {
+    return this.activeSSEConnectionsCount;
+  }
+
+  public incrementSSECount(): void {
+    this.activeSSEConnectionsCount++;
+  }
+
+  public decrementSSECount(): void {
+    this.activeSSEConnectionsCount = Math.max(0, this.activeSSEConnectionsCount - 1);
+  }
+
   public paginateResults(
     unifiedList: SearchResult[],
     requestedPage: number = 1,
@@ -171,6 +206,47 @@ export class SearchEngine {
       hasPreviousPage: page > 1,
       results: pageResults,
     };
+  }
+
+  private async acquireSessionSlot(signal?: AbortSignal): Promise<void> {
+    const maxSessions = config.search.maxConcurrentSessions || 2;
+    if (this.activeSessionsCount < maxSessions) {
+      this.activeSessionsCount++;
+      return;
+    }
+
+    return new Promise<void>((resolve, reject) => {
+      const onAbort = () => {
+        const idx = this.sessionQueue.indexOf(run);
+        if (idx !== -1) this.sessionQueue.splice(idx, 1);
+        reject(new Error('Search session aborted while queued'));
+      };
+
+      const run = () => {
+        if (signal?.aborted) {
+          onAbort();
+        } else {
+          this.activeSessionsCount++;
+          if (signal) signal.removeEventListener('abort', onAbort);
+          resolve();
+        }
+      };
+
+      if (signal) {
+        if (signal.aborted) return onAbort();
+        signal.addEventListener('abort', onAbort, { once: true });
+      }
+
+      this.sessionQueue.push(run);
+    });
+  }
+
+  private releaseSessionSlot(): void {
+    this.activeSessionsCount = Math.max(0, this.activeSessionsCount - 1);
+    if (this.sessionQueue.length > 0) {
+      const next = this.sessionQueue.shift();
+      if (next) next();
+    }
   }
 
   /**
@@ -211,59 +287,64 @@ export class SearchEngine {
     let cached = this.searchCache.get(cacheKey);
 
     if (!cached) {
-      const allDiscovered = await this.zimLibrary.getDiscoveredSources();
-      const langSources = allDiscovered.filter(s => s.lang === lang || !s.lang);
+      await this.acquireSessionSlot();
+      try {
+        const allDiscovered = await this.zimLibrary.getDiscoveredSources();
+        const langSources = allDiscovered.filter(s => s.lang === lang || !s.lang);
 
-      const relevanceSelection = this.sourceRelevance.selectRelevantSources(trimmedQuery, langSources, 16);
-      const selectedZims = relevanceSelection.allRankedSources;
+        const relevanceSelection = this.sourceRelevance.selectRelevantSources(trimmedQuery, langSources, 16);
+        const selectedZims = relevanceSelection.allRankedSources;
 
-      const kiwixProvider = this.providers.get('kiwix');
-      if (kiwixProvider && 'setSources' in kiwixProvider) {
-        (kiwixProvider as any).setSources(selectedZims);
-      }
-
-      const groups: SourceResultsGroup[] = [];
-      const sourceCounts: Record<string, { count: number; effectivePriority?: number }> = {};
-
-      for (const source of selectedZims) {
-        const provider = this.providers.get(source.provider);
-        if (!provider) continue;
-
-        try {
-          const sourceResults = await provider.search(trimmedQuery, { mode, lang });
-          const matchingResults = sourceResults.filter(r => !r.sourceId || r.sourceId === source.id);
-
-          groups.push({
-            sourceId: source.id,
-            sourceName: source.name,
-            effectivePriority: source.basePriority,
-            results: matchingResults,
-          });
-
-          sourceCounts[source.name] = {
-            count: matchingResults.length,
-            effectivePriority: source.basePriority,
-          };
-        } catch (err) {
-          console.error(`[SearchEngine] Error querying source '${source.name}':`, err);
+        const kiwixProvider = this.providers.get('kiwix');
+        if (kiwixProvider && 'setSources' in kiwixProvider) {
+          (kiwixProvider as any).setSources(selectedZims);
         }
+
+        const groups: SourceResultsGroup[] = [];
+        const sourceCounts: Record<string, { count: number; effectivePriority?: number }> = {};
+
+        for (const source of selectedZims) {
+          const provider = this.providers.get(source.provider);
+          if (!provider) continue;
+
+          try {
+            const sourceResults = await provider.search(trimmedQuery, { mode, lang });
+            const matchingResults = sourceResults.filter(r => !r.sourceId || r.sourceId === source.id);
+
+            groups.push({
+              sourceId: source.id,
+              sourceName: source.name,
+              effectivePriority: source.basePriority,
+              results: matchingResults,
+            });
+
+            sourceCounts[source.name] = {
+              count: matchingResults.length,
+              effectivePriority: source.basePriority,
+            };
+          } catch (err) {
+            console.error(`[SearchEngine] Error querying source '${source.name}':`, err);
+          }
+        }
+
+        const totalCandidatesReceived = groups.reduce((acc, g) => acc + g.results.length, 0);
+        const unifiedResults = this.resultMixer.mixResults(groups, 500, trimmedQuery);
+
+        console.log(`[Mixer]`);
+        console.log(`inputCandidates=${totalCandidatesReceived}`);
+        console.log(`outputCandidates=${unifiedResults.length}\n`);
+
+        cached = {
+          key: cacheKey,
+          unifiedResults,
+          sourceCounts,
+          timestamp: Date.now(),
+        };
+
+        this.searchCache.set(cacheKey, cached);
+      } finally {
+        this.releaseSessionSlot();
       }
-
-      const totalCandidatesReceived = groups.reduce((acc, g) => acc + g.results.length, 0);
-      const unifiedResults = this.resultMixer.mixResults(groups, 500, trimmedQuery);
-
-      console.log(`[Mixer]`);
-      console.log(`inputCandidates=${totalCandidatesReceived}`);
-      console.log(`outputCandidates=${unifiedResults.length}\n`);
-
-      cached = {
-        key: cacheKey,
-        unifiedResults,
-        sourceCounts,
-        timestamp: Date.now(),
-      };
-
-      this.searchCache.set(cacheKey, cached);
     }
 
     const requestedPage = options.page ?? 1;
@@ -298,11 +379,11 @@ export class SearchEngine {
   }
 
   /**
-   * Progressive / Streaming Search Engine Worker
+   * Progressive / Streaming Search Engine Worker with Session Queue & Disconnect Abort Support
    */
   async searchProgressive(
     query: string,
-    options: SearchOptions = {},
+    options: SearchOptions & { signal?: AbortSignal; isAborted?: () => boolean } = {},
     onEvent: (payload: StreamEventPayload) => void
   ): Promise<void> {
     const startedAt = performance.now();
@@ -310,7 +391,7 @@ export class SearchEngine {
     const lang = options.lang || 'en';
     const pageSize = options.pageSize || 20;
     const requestedPage = options.page || 1;
-    const maxConcurrency = options.maxConcurrency || config.kiwix.maxConcurrentSearches || 8;
+    const maxConcurrency = options.maxConcurrency || config.search.maxZimWorkers || config.kiwix.maxConcurrentSearches || 4;
 
     const trimmedQuery = query ? query.trim() : '';
 
@@ -377,222 +458,240 @@ export class SearchEngine {
       return;
     }
 
-    const allDiscovered = await this.zimLibrary.getDiscoveredSources();
-    const langSources = allDiscovered.filter(s => s.lang === lang || !s.lang);
+    await this.acquireSessionSlot(options.signal);
 
-    const relevanceSelection = this.sourceRelevance.selectRelevantSources(trimmedQuery, langSources, 16);
-    const prioritySources = relevanceSelection.prioritySources;
-    const remainingSources = relevanceSelection.remainingSources;
-    const rankedSources = relevanceSelection.allRankedSources;
-    const totalSourcesCount = rankedSources.length;
+    try {
+      const allDiscovered = await this.zimLibrary.getDiscoveredSources();
+      const langSources = allDiscovered.filter(s => s.lang === lang || !s.lang);
 
-    console.log(`\n[QUERY] ${trimmedQuery}`);
-    console.log(`[Search] priority sources: ${prioritySources.length}`);
-    console.log(`[Search] remaining sources: ${remainingSources.length}\n`);
+      const relevanceSelection = this.sourceRelevance.selectRelevantSources(trimmedQuery, langSources, 16);
+      const prioritySources = relevanceSelection.prioritySources;
+      const remainingSources = relevanceSelection.remainingSources;
+      const rankedSources = relevanceSelection.allRankedSources;
+      const totalSourcesCount = rankedSources.length;
 
-    let pendingSources = totalSourcesCount;
-    let completedSources = 0;
+      console.log(`\n[QUERY] ${trimmedQuery}`);
+      console.log(`[Search] priority sources: ${prioritySources.length}`);
+      console.log(`[Search] remaining sources: ${remainingSources.length}\n`);
 
-    onEvent({
-      event: 'progress',
-      data: {
-        query: trimmedQuery,
-        mode,
-        pendingSources,
-        completedSources: 0,
-        totalSourcesCount,
-        statusText: `Searching ${totalSourcesCount} sources...`,
-      },
-    });
+      let pendingSources = totalSourcesCount;
+      let completedSources = 0;
 
-    const groups: SourceResultsGroup[] = [];
-    const sourceCounts: Record<string, { count: number; effectivePriority?: number }> = {};
-
-    let activeWorkers = 0;
-    let queueIndex = 0;
-    let flushTimer: NodeJS.Timeout | null = null;
-    let isFinished = false;
-
-    const emitCurrentBatch = () => {
-      const totalCandidatesReceived = groups.reduce((acc, g) => acc + g.results.length, 0);
-      const unifiedResults = this.resultMixer.mixResults(groups, 500, trimmedQuery);
-      const paginated = this.paginateResults(unifiedResults, requestedPage, pageSize);
-      const executionTimeMs = getElapsedMs();
-
-      console.log(`[Mixer]`);
-      console.log(`inputCandidates=${totalCandidatesReceived}`);
-      console.log(`outputCandidates=${unifiedResults.length}\n`);
-
-      console.log(`[Pagination]`);
-      console.log(`totalResults=${unifiedResults.length}`);
-      console.log(`pageSize=${pageSize}`);
-      console.log(`page=${requestedPage}\n`);
-
-      const statusText = pendingSources > 0 ? `Searching ${pendingSources} sources...` : 'Search complete';
-
-      const payloadData: SearchResponse = {
-        query: trimmedQuery,
-        mode,
-        results: unifiedResults,
-        sources: { ...sourceCounts },
-        pagination: {
-          page: paginated.page,
-          pageSize: paginated.pageSize,
-          totalResults: paginated.totalResults,
-          totalPages: paginated.totalPages,
-          hasNextPage: paginated.hasNextPage,
-          hasPreviousPage: paginated.hasPreviousPage,
-        },
-        meta: {
+      onEvent({
+        event: 'progress',
+        data: {
+          query: trimmedQuery,
           mode,
-          total: paginated.totalResults,
-          executionTimeMs,
-          providers: this.getRegisteredProviders(),
-          isStreaming: pendingSources > 0,
           pendingSources,
-          completedSources,
+          completedSources: 0,
           totalSourcesCount,
-          statusText,
+          statusText: `Searching ${totalSourcesCount} sources...`,
         },
+      });
+
+      const groups: SourceResultsGroup[] = [];
+      const sourceCounts: Record<string, { count: number; effectivePriority?: number }> = {};
+
+      let activeWorkers = 0;
+      let queueIndex = 0;
+      let flushTimer: NodeJS.Timeout | null = null;
+      let isFinished = false;
+
+      const emitCurrentBatch = () => {
+        if (options.isAborted?.() || options.signal?.aborted) return;
+        const totalCandidatesReceived = groups.reduce((acc, g) => acc + g.results.length, 0);
+        const unifiedResults = this.resultMixer.mixResults(groups, 500, trimmedQuery);
+        const paginated = this.paginateResults(unifiedResults, requestedPage, pageSize);
+        const executionTimeMs = getElapsedMs();
+
+        console.log(`[Mixer]`);
+        console.log(`inputCandidates=${totalCandidatesReceived}`);
+        console.log(`outputCandidates=${unifiedResults.length}\n`);
+
+        console.log(`[Pagination]`);
+        console.log(`totalResults=${unifiedResults.length}`);
+        console.log(`pageSize=${pageSize}`);
+        console.log(`page=${requestedPage}\n`);
+
+        const statusText = pendingSources > 0 ? `Searching ${pendingSources} sources...` : 'Search complete';
+
+        const payloadData: SearchResponse = {
+          query: trimmedQuery,
+          mode,
+          results: unifiedResults,
+          sources: { ...sourceCounts },
+          pagination: {
+            page: paginated.page,
+            pageSize: paginated.pageSize,
+            totalResults: paginated.totalResults,
+            totalPages: paginated.totalPages,
+            hasNextPage: paginated.hasNextPage,
+            hasPreviousPage: paginated.hasPreviousPage,
+          },
+          meta: {
+            mode,
+            total: paginated.totalResults,
+            executionTimeMs,
+            providers: this.getRegisteredProviders(),
+            isStreaming: pendingSources > 0,
+            pendingSources,
+            completedSources,
+            totalSourcesCount,
+            statusText,
+          },
+        };
+
+        onEvent({ event: 'results', data: payloadData });
       };
 
-      // NOTE: Do NOT store intermediate batches in searchCache!
-      onEvent({ event: 'results', data: payloadData });
-    };
-
-    const scheduleFlush = (immediate: boolean = false) => {
-      if (immediate) {
-        if (flushTimer) {
-          clearTimeout(flushTimer);
-          flushTimer = null;
-        }
-        if (!isFinished) {
-          emitCurrentBatch();
-        }
-        return;
-      }
-
-      if (flushTimer) return;
-      flushTimer = setTimeout(() => {
-        flushTimer = null;
-        if (!isFinished) {
-          emitCurrentBatch();
-        }
-      }, 50);
-    };
-
-    return new Promise<void>((resolve) => {
-      const processNextInQueue = () => {
-        if (queueIndex >= totalSourcesCount && activeWorkers === 0) {
-          isFinished = true;
+      const scheduleFlush = (immediate: boolean = false) => {
+        if (immediate) {
           if (flushTimer) {
             clearTimeout(flushTimer);
             flushTimer = null;
           }
-
-          const totalCandidatesReceived = groups.reduce((acc, g) => acc + g.results.length, 0);
-          const finalUnified = this.resultMixer.mixResults(groups, 500, trimmedQuery);
-          const paginated = this.paginateResults(finalUnified, requestedPage, pageSize);
-          const finalExecutionTimeMs = getElapsedMs();
-
-          console.log(`\n[GLOBAL]`);
-          console.log(`candidates before mixing: ${totalCandidatesReceived}`);
-          console.log(`candidates after mixing: ${finalUnified.length}`);
-          console.log(`[Search] final results: ${finalUnified.length}\n`);
-
-          // CRITICAL: Cache ONLY upon complete search session
-          this.searchCache.set(cacheKey, {
-            unifiedResults: finalUnified,
-            sourceCounts: { ...sourceCounts },
-          });
-
-          const finalPayload: SearchResponse = {
-            query: trimmedQuery,
-            mode,
-            results: finalUnified,
-            sources: { ...sourceCounts },
-            pagination: {
-              page: paginated.page,
-              pageSize: paginated.pageSize,
-              totalResults: paginated.totalResults,
-              totalPages: paginated.totalPages,
-              hasNextPage: paginated.hasNextPage,
-              hasPreviousPage: paginated.hasPreviousPage,
-            },
-            meta: {
-              mode,
-              total: paginated.totalResults,
-              executionTimeMs: finalExecutionTimeMs,
-              providers: this.getRegisteredProviders(),
-              isStreaming: false,
-              pendingSources: 0,
-              completedSources: totalSourcesCount,
-              totalSourcesCount,
-              statusText: 'Search complete',
-            },
-          };
-
-          onEvent({ event: 'results', data: finalPayload });
-          onEvent({ event: 'complete', data: finalPayload });
-          resolve();
+          if (!isFinished) {
+            emitCurrentBatch();
+          }
           return;
         }
 
-        while (activeWorkers < maxConcurrency && queueIndex < totalSourcesCount) {
-          const source = rankedSources[queueIndex++];
-          activeWorkers++;
-
-          console.log(`[Search] started: ${source.name}`);
-
-          (async () => {
-            let hasResults = false;
-            let resultsCount = 0;
-            try {
-              const provider = this.providers.get(source.provider);
-              if (provider) {
-                let results: SearchResult[] = [];
-                if (source.provider === 'kiwix' && 'searchZimSource' in provider) {
-                  results = await (provider as any).searchZimSource(source, trimmedQuery, mode);
-                } else {
-                  results = await provider.search(trimmedQuery, { mode, lang });
-                }
-
-                const matchingResults = results.filter((r: SearchResult) => !r.sourceId || r.sourceId === source.id);
-                resultsCount = matchingResults.length;
-
-                groups.push({
-                  sourceId: source.id,
-                  sourceName: source.name,
-                  effectivePriority: source.basePriority,
-                  results: matchingResults,
-                });
-
-                sourceCounts[source.name] = {
-                  count: matchingResults.length,
-                  effectivePriority: source.basePriority,
-                };
-                if (matchingResults.length > 0) {
-                  hasResults = true;
-                }
-              }
-            } catch (err) {
-              console.warn(`[SearchEngine] Progressive search failed for ZIM '${source.name}':`, err);
-            } finally {
-              activeWorkers--;
-              completedSources++;
-              pendingSources = Math.max(0, totalSourcesCount - completedSources);
-
-              console.log(`[Search] completed: ${source.name}, results=${resultsCount}`);
-              console.log(`[Search] sources searched: ${completedSources}/${totalSourcesCount}`);
-
-              scheduleFlush(hasResults);
-              processNextInQueue();
-            }
-          })();
-        }
+        if (flushTimer) return;
+        flushTimer = setTimeout(() => {
+          flushTimer = null;
+          if (!isFinished) {
+            emitCurrentBatch();
+          }
+        }, 50);
       };
 
-      processNextInQueue();
-    });
+      await new Promise<void>((resolve) => {
+        const processNextInQueue = () => {
+          if (options.isAborted?.() || options.signal?.aborted) {
+            isFinished = true;
+            if (flushTimer) {
+              clearTimeout(flushTimer);
+              flushTimer = null;
+            }
+            resolve();
+            return;
+          }
+
+          if (queueIndex >= totalSourcesCount && activeWorkers === 0) {
+            isFinished = true;
+            if (flushTimer) {
+              clearTimeout(flushTimer);
+              flushTimer = null;
+            }
+
+            const totalCandidatesReceived = groups.reduce((acc, g) => acc + g.results.length, 0);
+            const finalUnified = this.resultMixer.mixResults(groups, 500, trimmedQuery);
+            const paginated = this.paginateResults(finalUnified, requestedPage, pageSize);
+            const finalExecutionTimeMs = getElapsedMs();
+
+            console.log(`\n[GLOBAL]`);
+            console.log(`candidates before mixing: ${totalCandidatesReceived}`);
+            console.log(`candidates after mixing: ${finalUnified.length}`);
+            console.log(`[Search] final results: ${finalUnified.length}\n`);
+
+            // CRITICAL: Cache ONLY upon complete search session
+            this.searchCache.set(cacheKey, {
+              unifiedResults: finalUnified,
+              sourceCounts: { ...sourceCounts },
+            });
+
+            const finalPayload: SearchResponse = {
+              query: trimmedQuery,
+              mode,
+              results: finalUnified,
+              sources: { ...sourceCounts },
+              pagination: {
+                page: paginated.page,
+                pageSize: paginated.pageSize,
+                totalResults: paginated.totalResults,
+                totalPages: paginated.totalPages,
+                hasNextPage: paginated.hasNextPage,
+                hasPreviousPage: paginated.hasPreviousPage,
+              },
+              meta: {
+                mode,
+                total: paginated.totalResults,
+                executionTimeMs: finalExecutionTimeMs,
+                providers: this.getRegisteredProviders(),
+                isStreaming: false,
+                pendingSources: 0,
+                completedSources: totalSourcesCount,
+                totalSourcesCount,
+                statusText: 'Search complete',
+              },
+            };
+
+            onEvent({ event: 'results', data: finalPayload });
+            onEvent({ event: 'complete', data: finalPayload });
+            resolve();
+            return;
+          }
+
+          while (activeWorkers < maxConcurrency && queueIndex < totalSourcesCount) {
+            if (options.isAborted?.() || options.signal?.aborted) break;
+
+            const source = rankedSources[queueIndex++];
+            activeWorkers++;
+
+            console.log(`[Search] started: ${source.name}`);
+
+            (async () => {
+              let hasResults = false;
+              let resultsCount = 0;
+              try {
+                const provider = this.providers.get(source.provider);
+                if (provider && !options.isAborted?.() && !options.signal?.aborted) {
+                  let results: SearchResult[] = [];
+                  if (source.provider === 'kiwix' && 'searchZimSource' in provider) {
+                    results = await (provider as any).searchZimSource(source, trimmedQuery, mode, options.signal);
+                  } else {
+                    results = await provider.search(trimmedQuery, { mode, lang });
+                  }
+
+                  const matchingResults = results.filter((r: SearchResult) => !r.sourceId || r.sourceId === source.id);
+                  resultsCount = matchingResults.length;
+
+                  groups.push({
+                    sourceId: source.id,
+                    sourceName: source.name,
+                    effectivePriority: source.basePriority,
+                    results: matchingResults,
+                  });
+
+                  sourceCounts[source.name] = {
+                    count: matchingResults.length,
+                    effectivePriority: source.basePriority,
+                  };
+                  if (matchingResults.length > 0) {
+                    hasResults = true;
+                  }
+                }
+              } catch (err) {
+                console.warn(`[SearchEngine] Progressive search failed for ZIM '${source.name}':`, err);
+              } finally {
+                activeWorkers--;
+                completedSources++;
+                pendingSources = Math.max(0, totalSourcesCount - completedSources);
+
+                console.log(`[Search] completed: ${source.name}, results=${resultsCount}`);
+                console.log(`[Search] sources searched: ${completedSources}/${totalSourcesCount}`);
+
+                scheduleFlush(hasResults);
+                processNextInQueue();
+              }
+            })();
+          }
+        };
+
+        processNextInQueue();
+      });
+    } finally {
+      this.releaseSessionSlot();
+    }
   }
 }

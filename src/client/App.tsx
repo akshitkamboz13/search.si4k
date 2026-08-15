@@ -7,6 +7,7 @@ import { LoadingState } from './components/LoadingState.js';
 import { ErrorState } from './components/ErrorState.js';
 import { streamSearchResults, fetchEnvironment } from './services/api.js';
 import { BookOpen, MapPin, Database } from 'lucide-react';
+import { Si4kIcon } from './components/Si4kIcon.js';
 
 export const App: React.FC = () => {
   const [query, setQuery] = useState<string>('');
@@ -255,6 +256,9 @@ export const App: React.FC = () => {
       <main className={`main-content ${!hasSearched ? 'centered' : ''}`}>
         {!hasSearched && (
           <div className="hero-section">
+            <div style={{ display: 'inline-flex', marginBottom: '1rem', padding: '0.5rem', borderRadius: '16px', background: 'var(--bg-card)', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-md)' }}>
+              <Si4kIcon size={64} />
+            </div>
             <h1 className="hero-title">
               Offline <span>Knowledge</span> Engine
             </h1>

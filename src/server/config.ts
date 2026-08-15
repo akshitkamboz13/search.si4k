@@ -23,6 +23,9 @@ export interface SearchConfig {
   keywordWeight: number;
   basePriorityWeight: number;
   minSourceScore: number;
+  maxConcurrentSessions: number;
+  maxZimWorkers: number;
+  requestTimeoutMs: number;
 }
 
 export interface CacheConfig {
@@ -77,6 +80,9 @@ export const config: Config = {
     keywordWeight: parseFloat(process.env.SEARCH_KEYWORD_WEIGHT || '10'),
     basePriorityWeight: parseFloat(process.env.SEARCH_BASE_PRIORITY_WEIGHT || '1'),
     minSourceScore: parseFloat(process.env.SEARCH_MIN_SOURCE_SCORE || '5'),
+    maxConcurrentSessions: parseInt(process.env.SEARCH_MAX_CONCURRENT || '2', 10),
+    maxZimWorkers: parseInt(process.env.SEARCH_MAX_ZIM_WORKERS || '4', 10),
+    requestTimeoutMs: parseInt(process.env.SEARCH_REQUEST_TIMEOUT_MS || '10000', 10),
   },
   cache: {
     enabled: process.env.SEARCH_CACHE_ENABLED !== 'false',

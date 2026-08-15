@@ -3,6 +3,7 @@ import { SearchEngine } from '../search/SearchEngine.js';
 import { SourceRelevance } from '../search/SourceRelevance.js';
 import { EnvironmentDetector } from '../search/EnvironmentDetector.js';
 import { SearchMode, StreamEventPayload } from '../../shared/types.js';
+import { config } from '../config.js';
 
 export function createSearchRouter(searchEngine: SearchEngine): Router {
   const router = Router();
@@ -11,7 +12,6 @@ export function createSearchRouter(searchEngine: SearchEngine): Router {
 
   /**
    * GET /api/environment (Automatic Environment Detection API)
-   * Returns: { environment: 'local' | 'internet', mode: 'local' | 'online', publicUrl: string }
    */
   router.get('/environment', (req: Request, res: Response) => {
     const detection = envDetector.detectEnvironment(req);
@@ -21,6 +21,38 @@ export function createSearchRouter(searchEngine: SearchEngine): Router {
       publicUrl: detection.publicUrl,
       clientIp: detection.clientIp,
       isDevOverride: detection.isDevOverride,
+    });
+  });
+
+  /**
+   * GET /api/debug/resources (Development-only Resource & Memory Diagnostics API)
+   */
+  router.get('/debug/resources', (req: Request, res: Response) => {
+    if (config.nodeEnv !== 'development') {
+      res.status(404).json({ error: 'Endpoint not available in production' });
+      return;
+    }
+
+    const mem = process.memoryUsage();
+    const toMB = (bytes: number) => parseFloat((bytes / (1024 * 1024)).toFixed(2));
+
+    res.json({
+      process: {
+        rssMB: toMB(mem.rss),
+        heapUsedMB: toMB(mem.heapUsed),
+        heapTotalMB: toMB(mem.heapTotal),
+        externalMB: toMB(mem.external),
+        arrayBuffersMB: toMB(mem.arrayBuffers || 0),
+      },
+      cache: {
+        entries: searchEngine.searchCache.size,
+        estimatedMemoryMB: searchEngine.searchCache.estimatedMemoryMB,
+      },
+      search: {
+        activeSessions: searchEngine.getActiveSessionsCount(),
+        activeProviders: searchEngine.getRegisteredProviders().length,
+        activeSSEConnections: searchEngine.getActiveSSEConnectionsCount(),
+      },
     });
   });
 
@@ -61,9 +93,15 @@ export function createSearchRouter(searchEngine: SearchEngine): Router {
     res.setHeader('X-Accel-Buffering', 'no');
     res.flushHeaders();
 
+    searchEngine.incrementSSECount();
+
+    const abortController = new AbortController();
     let clientDisconnected = false;
+
     req.on('close', () => {
       clientDisconnected = true;
+      abortController.abort();
+      searchEngine.decrementSSECount();
     });
 
     const sendSseEvent = (payload: StreamEventPayload) => {
@@ -76,17 +114,31 @@ export function createSearchRouter(searchEngine: SearchEngine): Router {
     };
 
     try {
-      await searchEngine.searchProgressive(q, { mode, lang, page, pageSize }, (payload) => {
-        sendSseEvent(payload);
-      });
+      await searchEngine.searchProgressive(
+        q,
+        {
+          mode,
+          lang,
+          page,
+          pageSize,
+          signal: abortController.signal,
+          isAborted: () => clientDisconnected || abortController.signal.aborted,
+        },
+        (payload) => {
+          sendSseEvent(payload);
+        }
+      );
     } catch (err) {
-      console.error('[searchRouter] SSE stream error:', err);
-      sendSseEvent({
-        event: 'error',
-        data: { message: err instanceof Error ? err.message : 'Streaming search failed' },
-      });
+      if (!clientDisconnected) {
+        console.error('[searchRouter] SSE stream error:', err);
+        sendSseEvent({
+          event: 'error',
+          data: { message: err instanceof Error ? err.message : 'Streaming search failed' },
+        });
+      }
     } finally {
       if (!clientDisconnected) {
+        searchEngine.decrementSSECount();
         res.end();
       }
     }

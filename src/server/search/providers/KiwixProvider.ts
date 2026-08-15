@@ -60,10 +60,11 @@ export class KiwixProvider implements SearchProvider {
   /**
    * Helper to fetch a single HTML page from Kiwix search endpoint
    */
-  private async fetchHtmlPage(internalUrl: string, zimName: string, query: string, start: number): Promise<string | null> {
+  private async fetchHtmlPage(internalUrl: string, zimName: string, query: string, start: number, signal?: AbortSignal): Promise<string | null> {
     const searchUrl = `${internalUrl}/search?content=${encodeURIComponent(zimName)}&pattern=${encodeURIComponent(query)}&start=${start}`;
     try {
       const response = await fetch(searchUrl, {
+        signal,
         headers: {
           'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
           'User-Agent': 'Si4k-Search-Engine/1.0',
@@ -75,6 +76,9 @@ export class KiwixProvider implements SearchProvider {
       }
       return await response.text();
     } catch (err) {
+      if (signal?.aborted || (err instanceof Error && err.name === 'AbortError')) {
+        return null;
+      }
       console.error(`[KiwixProvider] Fetch error for '${zimName}' start=${start}:`, err);
       return null;
     }
@@ -99,16 +103,17 @@ export class KiwixProvider implements SearchProvider {
   async searchZimSource(
     source: SearchSourceConfig,
     query: string,
-    mode: SearchMode = 'local'
+    mode: SearchMode = 'local',
+    signal?: AbortSignal
   ): Promise<SearchResult[]> {
-    if (!query || !query.trim()) return [];
+    if (!query || !query.trim() || signal?.aborted) return [];
 
     const trimmedQuery = query.trim();
     const { internalUrl, publicUrl } = this.getUrlsForMode(mode);
 
     // 1. Fetch initial Page 1 (start=0)
-    const firstHtml = await this.fetchHtmlPage(internalUrl, source.zimName, trimmedQuery, 0);
-    if (!firstHtml) {
+    const firstHtml = await this.fetchHtmlPage(internalUrl, source.zimName, trimmedQuery, 0, signal);
+    if (!firstHtml || signal?.aborted) {
       console.log(`[Kiwix]\nsource=${source.name}\nrawCandidates=0\ncandidateLimit=${this.maxCandidatesPerSource}\ncandidatesAfterLimit=0\n`);
       return [];
     }
@@ -124,7 +129,7 @@ export class KiwixProvider implements SearchProvider {
     const pageSize = 25;
     const targetCandidateLimit = this.maxCandidatesPerSource;
 
-    if (kiwixReportedTotal > pageSize && accumulatedResults.length < targetCandidateLimit) {
+    if (kiwixReportedTotal > pageSize && accumulatedResults.length < targetCandidateLimit && !signal?.aborted) {
       const pageStarts: number[] = [];
       for (let start = pageSize; start < Math.min(kiwixReportedTotal, targetCandidateLimit); start += pageSize) {
         pageStarts.push(start);
@@ -132,11 +137,11 @@ export class KiwixProvider implements SearchProvider {
 
       // Fetch remaining pages concurrently
       const pageHtmls = await Promise.all(
-        pageStarts.map(start => this.fetchHtmlPage(internalUrl, source.zimName, trimmedQuery, start))
+        pageStarts.map(start => this.fetchHtmlPage(internalUrl, source.zimName, trimmedQuery, start, signal))
       );
 
       for (const html of pageHtmls) {
-        if (html) {
+        if (html && !signal?.aborted) {
           const pageItems = this.parseKiwixHtml(html, source, publicUrl, seenPaths);
           allParsedCount += pageItems.length;
           accumulatedResults.push(...pageItems);

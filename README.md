@@ -1,10 +1,30 @@
-# Si4k Search Engine (MVP)
+# Si4k Search Engine
 
-Unified offline-first knowledge search engine for home servers and local knowledge datasets.
+Unified, high-performance offline-first knowledge search engine for Kiwix, Wikipedia, wikiHow, iFixit, Stack Overflow, and local ZIM collections. Optimized for low-resource hardware (e.g. Intel i5 5th-Gen servers).
 
 ---
 
-## 1. Project Structure
+## Key Features & Architecture
+
+- **Two-Wave Priority Search Model**:
+  - Wave 1 searches high-relevance prioritized ZIM sources (e.g. ArchWiki for Arch Linux queries, Stack Overflow for code queries).
+  - Wave 2 continues searching all remaining eligible ZIM sources in the library.
+  - Priority determines search order, **never search scope** — search terminates only after full library traversal.
+- **Progressive SSE Result Streaming**:
+  - Emits progressive result batches over Server-Sent Events (SSE) as ZIM sources complete.
+  - Real-time client rendering with monotonic execution time tracking (`executionTimeMs`).
+- **User-Configurable LRU Search Cache**:
+  - Deterministic caching controlled via `.env` (`SEARCH_CACHE_ENABLED`, `SEARCH_CACHE_TTL_SECONDS`, `SEARCH_CACHE_MAX_ENTRIES`).
+  - Only complete search sessions are cached. In-progress queries bypass cache to prevent partial result pollution.
+- **Server Concurrency Protection & Resource Efficiency**:
+  - Strict concurrency limits (`SEARCH_MAX_CONCURRENT`, `SEARCH_MAX_ZIM_WORKERS`, `SEARCH_REQUEST_TIMEOUT_MS`) to protect CPU and memory on modest hardware.
+  - Automatic `AbortSignal` handling cancels worker HTTP fetches when clients disconnect.
+- **100% Offline & Self-Contained UI**:
+  - Standalone SVG logo (`Si4kIcon`), inline SVG favicon, zero external network fonts/CDNs, and native system font stack.
+
+---
+
+## Project Structure
 
 ```
 search.si4k.online/
@@ -22,42 +42,35 @@ search.si4k.online/
 │   │   ├── index.ts           # Express server entry point & static server
 │   │   ├── config.ts          # Central environment configuration loader
 │   │   ├── search/
-│   │   │   ├── SearchEngine.ts # Provider-agnostic search engine core
-│   │   │   ├── types.ts       # SearchProvider interface definition
+│   │   │   ├── SearchEngine.ts # Core search engine session manager & session queue
+│   │   │   ├── resultCache.ts  # Deterministic LRU result cache
+│   │   │   ├── zimDiscovery.ts # Dynamic ZIM library discovery & source ranker
+│   │   │   ├── resultMixer.ts  # Adaptive result mixer & candidate limit filter
+│   │   │   ├── articleRanker.ts # Category & keyword article relevance ranker
 │   │   │   └── providers/
 │   │   │       ├── KiwixProvider.ts     # Encapsulated Kiwix ZIM search provider
-│   │   │       ├── KiwixProvider.test.ts # Unit test verifying URL safety
-│   │   │       └── README.md            # Guide for adding new search providers
+│   │   │       └── KiwixProvider.test.ts # Unit test verifying Kiwix provider
 │   │   └── api/
-│   │       └── searchRouter.ts # GET /api/search HTTP route handler
+│   │       └── searchRouter.ts # SSE /api/search stream endpoint
 │   └── client/
 │       ├── main.tsx           # React DOM entry point
 │       ├── App.tsx            # Main search application component
-│       ├── index.css          # Modern light-default search engine styling
+│       ├── index.css          # Offline system-font search engine styling
 │       ├── components/
 │       │   ├── Header.tsx     # Brand logo, mode selector, and theme toggle
 │       │   ├── SearchBar.tsx  # Large search input bar with Enter key support
-│       │   ├── SearchResults.tsx # Results display with source tags
+│       │   ├── SearchResults.tsx # Progressive search results view with stream status
 │       │   ├── ResultCard.tsx # Article snippet card component
+│       │   ├── Si4kIcon.tsx   # Offline SVG brand icon
 │       │   ├── LoadingState.tsx # Skeleton loading animation
 │       │   └── ErrorState.tsx # Friendly error alert display
 │       └── services/
-│           └── api.ts         # Frontend API client for /api/search
+│           └── api.ts         # SSE streaming client for /api/search
 ```
 
 ---
 
-## 2. How to Install Dependencies
-
-Make sure Node.js (v18+) is installed on your system. Run:
-
-```bash
-npm install
-```
-
----
-
-## 3. How to Configure KIWIX_URL & KIWIX_PUBLIC_URL
+## Environment Configuration
 
 Copy `.env.example` to `.env`:
 
@@ -65,137 +78,95 @@ Copy `.env.example` to `.env`:
 cp .env.example .env
 ```
 
-Edit `.env` according to your environment:
+### `.env` Parameters
 
-- **`KIWIX_URL`**: Server-to-server API request URL used by backend node process to query `kiwix-serve`.
-  - Development Laptop: `http://si4k-server.local:8080`
-  - Production Server: `http://localhost:8080`
-- **`KIWIX_PUBLIC_URL`**: Target URL exposed in search result links for user browsers to open articles.
-  - Development / LAN Mode: `http://si4k-server.local:8080`
-  - Internet Production Mode: `https://wiki.si4k.online`
-- **`PORT`**: Server HTTP port (default: `3000`).
-- **`NODE_ENV`**: Set to `development` or `production`.
+```ini
+# Server Configuration
+PORT=3000
+NODE_ENV=development
+
+# Network Detection Configuration
+ENVIRONMENT_OVERRIDE=auto
+LOCAL_NETWORKS=192.168.0.0/16,10.0.0.0/8,172.16.0.0/12,127.0.0.1/32,::1/128
+
+# Kiwix Target URLs
+KIWIX_LOCAL_URL=http://localhost:8080
+KIWIX_LOCAL_PUBLIC_URL=http://localhost:8080
+KIWIX_ONLINE_URL=http://localhost:8080
+KIWIX_ONLINE_PUBLIC_URL=https://wiki.example.com
+
+# Kiwix Data & Metadata Paths
+KIWIX_DATA_DIR=/var/kiwix/data
+KIWIX_LIBRARY_XML=/var/kiwix/data/Metadata/library.xml
+
+# Limits & Weights
+KIWIX_CANDIDATE_LIMIT=100
+MAX_CONCURRENT_ZIM_SEARCHES=8
+
+# Server Concurrency & Protection
+SEARCH_MAX_CONCURRENT=2
+SEARCH_MAX_ZIM_WORKERS=4
+SEARCH_REQUEST_TIMEOUT_MS=10000
+
+# Search Cache Controls
+SEARCH_CACHE_ENABLED=true
+SEARCH_CACHE_TTL_SECONDS=300
+SEARCH_CACHE_MAX_ENTRIES=100
+SEARCH_CACHE_DEBUG=true
+```
 
 ---
 
-## 4. How to Run Development Mode
+## Development & Testing
 
-Run frontend (Vite port `5173`) and backend Express server (`PORT 3000`) concurrently with hot-reloading:
+### Installation
+
+```bash
+npm install
+```
+
+### Running Development Server
+
+Start the frontend (Vite port `5173`) and Express backend (`PORT 3000`) concurrently:
 
 ```bash
 npm run dev
 ```
 
-Then open `http://localhost:5173` in your browser. Requests to `/api/search` are automatically proxied to `http://localhost:3000/api/search`.
+### Running Automated Test Suite
+
+Execute all TypeScript checks and unit/integration tests:
+
+```bash
+npx tsc --noEmit && npm test
+```
 
 ---
 
-## 5. How to Build Production
+## Production Deployment
 
-Compile both the React Vite client and the TypeScript Express backend into the `dist/` directory:
+### Build Production Bundle
 
 ```bash
 npm run build
 ```
 
-This generates:
-- `dist/client/`: Compiled production single-page frontend application.
-- `dist/server/`: Compiled Node.js backend server JavaScript code.
+This compiles:
+- `dist/client/`: Static single-page web app.
+- `dist/server/`: Express backend bundle.
 
----
-
-## 6. How to Start Production
-
-Set `NODE_ENV=production` and start the server:
+### Start Production Server
 
 ```bash
 npm start
 ```
 
-### Systemd Production Deployment
-
-1. Copy the built project to `/opt/si4k/search`:
-   ```bash
-   sudo mkdir -p /opt/si4k/search
-   sudo cp -r dist package.json package-lock.json node_modules /opt/si4k/search/
-   ```
-2. Copy the systemd service file:
-   ```bash
-   sudo cp systemd/si4k-search.service /etc/systemd/system/
-   ```
-3. Enable and start the service:
-   ```bash
-   sudo systemctl daemon-reload
-   sudo systemctl enable si4k-search
-   sudo systemctl start si4k-search
-   ```
-
----
-
-## 7. How to Test the Kiwix Provider
-
-A dedicated test is included to verify that `KiwixProvider` successfully parses search results and **never returns localhost or internal URLs to the browser**:
-
-Run the automated test:
+### Systemd Service Setup
 
 ```bash
-npm test
+sudo mkdir -p /opt/si4k/search
+sudo cp -r dist package.json package-lock.json node_modules /opt/si4k/search/
+sudo cp systemd/si4k-search.service /etc/systemd/system/
+sudo systemctl daemon-reload
+sudo systemctl enable --now si4k-search
 ```
-
-Expected output:
-```
---- Running KiwixProvider Production URL Test ---
-Parsed 2 results.
-Checking result: "How to Repair a Hole in a Wall" -> https://wiki.si4k.online/wikihow_en_all_2023-05/A/Repair_a_Hole_in_a_Wall.html
-Checking result: "Delhi" -> https://wiki.si4k.online/wikipedia_en_all_maxi_2023-11/A/Delhi.html
-✅ PASS: All Kiwix result URLs properly use KIWIX_PUBLIC_URL and never expose localhost!
-```
-
----
-
-## 8. How to Add a Future Provider (OSM, Books, Documents, etc.)
-
-1. Create a new provider file in `src/server/search/providers/YourProvider.ts` implementing `SearchProvider`:
-
-```typescript
-import { SearchProvider } from '../types.js';
-import { SearchResult, SearchOptions } from '../../../shared/types.js';
-
-export class OSMProvider implements SearchProvider {
-  readonly name = 'osm';
-
-  async search(query: string, options?: SearchOptions): Promise<SearchResult[]> {
-    // Query OSM/Nominatim database...
-    return [
-      {
-        id: `osm-${Date.now()}`,
-        source: 'OpenStreetMap',
-        provider: this.name,
-        type: 'place',
-        title: query,
-        description: 'Location from offline OpenStreetMap dataset',
-        url: `https://maps.si4k.online/?q=${encodeURIComponent(query)}`,
-      },
-    ];
-  }
-}
-```
-
-2. Register the provider in `src/server/index.ts`:
-
-```typescript
-import { OSMProvider } from './search/providers/OSMProvider.js';
-
-searchEngine.registerProvider(new OSMProvider());
-```
-
-`SearchEngine` automatically executes all registered providers in parallel without needing code changes to the core search engine or API handlers.
-
----
-
-## 9. Assumptions Made
-
-1. **Kiwix Search Endpoint**: `kiwix-serve` exposes search queries via HTTP at `${KIWIX_URL}/search?q={query}`. `KiwixProvider` parses HTML output cleanly using Cheerio.
-2. **URL Mapping**: Server-to-server API calls use `KIWIX_URL`, whereas browser-facing links use `KIWIX_PUBLIC_URL`.
-3. **Provider Ranking**: In MVP, results maintain raw provider ordering. Unified cross-provider re-scoring will be implemented when multiple providers are activated.
-4. **Search Modes**: The API supports `?mode=local` and `?mode=online`. In the MVP, both query the local offline providers.
