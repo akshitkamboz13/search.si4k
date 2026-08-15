@@ -1,22 +1,28 @@
 import * as cheerio from 'cheerio';
 import { SearchProvider } from '../types.js';
-import { SearchResult, SearchOptions, SearchSourceConfig } from '../../../shared/types.js';
+import { SearchResult, SearchOptions, SearchSourceConfig, SearchMode } from '../../../shared/types.js';
 
 export interface KiwixProviderOptions {
-  internalUrl: string;    // Server-to-server HTTP request base URL (KIWIX_URL)
-  publicUrl: string;      // Public URL exposed to browser clients (KIWIX_PUBLIC_URL)
+  localUrl: string;           // Local internal backend URL (KIWIX_LOCAL_URL)
+  localPublicUrl: string;     // Local public browser URL (KIWIX_LOCAL_PUBLIC_URL)
+  onlineUrl?: string;         // Online internal backend URL (KIWIX_ONLINE_URL)
+  onlinePublicUrl?: string;   // Online public browser URL (KIWIX_ONLINE_PUBLIC_URL)
   sources?: SearchSourceConfig[];
 }
 
 export class KiwixProvider implements SearchProvider {
   readonly name = 'kiwix';
-  private internalUrl: string;
-  private publicUrl: string;
+  private localUrl: string;
+  private localPublicUrl: string;
+  private onlineUrl: string;
+  private onlinePublicUrl: string;
   private sourcesList: SearchSourceConfig[] = [];
 
   constructor(options: KiwixProviderOptions) {
-    this.internalUrl = options.internalUrl.replace(/\/$/, '');
-    this.publicUrl = options.publicUrl.replace(/\/$/, '');
+    this.localUrl = options.localUrl.replace(/\/$/, '');
+    this.localPublicUrl = options.localPublicUrl.replace(/\/$/, '');
+    this.onlineUrl = (options.onlineUrl || options.localUrl).replace(/\/$/, '');
+    this.onlinePublicUrl = (options.onlinePublicUrl || options.localPublicUrl).replace(/\/$/, '');
 
     if (options.sources) {
       this.setSources(options.sources);
@@ -32,14 +38,36 @@ export class KiwixProvider implements SearchProvider {
   }
 
   /**
-   * Search full-text contents inside a single ZIM file independently.
-   * Endpoint: GET /search?content={zimName}&pattern={query}
+   * Resolve internal backend URL and public browser target URL based on mode
    */
-  async searchZimSource(source: SearchSourceConfig, query: string): Promise<SearchResult[]> {
+  public getUrlsForMode(mode: SearchMode = 'local') {
+    if (mode === 'online') {
+      return {
+        internalUrl: this.onlineUrl,
+        publicUrl: this.onlinePublicUrl,
+      };
+    }
+    return {
+      internalUrl: this.localUrl,
+      publicUrl: this.localPublicUrl,
+    };
+  }
+
+  /**
+   * Search full-text contents inside a single ZIM file independently for a given mode.
+   */
+  async searchZimSource(
+    source: SearchSourceConfig,
+    query: string,
+    mode: SearchMode = 'local'
+  ): Promise<SearchResult[]> {
     if (!query || !query.trim()) return [];
 
     const trimmedQuery = query.trim();
-    const searchUrl = `${this.internalUrl}/search?content=${encodeURIComponent(source.zimName)}&pattern=${encodeURIComponent(trimmedQuery)}`;
+    const { internalUrl, publicUrl } = this.getUrlsForMode(mode);
+
+    // Kiwix search endpoint: /search?content={zimName}&pattern={query}
+    const searchUrl = `${internalUrl}/search?content=${encodeURIComponent(source.zimName)}&pattern=${encodeURIComponent(trimmedQuery)}`;
 
     try {
       const response = await fetch(searchUrl, {
@@ -50,33 +78,34 @@ export class KiwixProvider implements SearchProvider {
       });
 
       if (!response.ok) {
-        console.warn(`[KiwixProvider] ${source.name} (${source.zimName}) request returned HTTP ${response.status}`);
+        console.warn(`[KiwixProvider] ${source.name} (${source.zimName}) request returned HTTP ${response.status} from ${searchUrl}`);
         return [];
       }
 
       const html = await response.text();
-      return this.parseKiwixHtml(html, source);
+      return this.parseKiwixHtml(html, source, publicUrl);
     } catch (err) {
-      console.error(`[KiwixProvider] Error querying ZIM '${source.zimName}' (${source.name}):`, err);
+      console.error(`[KiwixProvider] Error querying ZIM '${source.zimName}' (${source.name}) at ${searchUrl}:`, err);
       return [];
     }
   }
 
   /**
-   * Execute full-text search across all enabled ZIM sources in parallel.
+   * Execute full-text search across all enabled ZIM sources in parallel for requested mode.
    */
-  async search(query: string, _options?: SearchOptions): Promise<SearchResult[]> {
+  async search(query: string, options: SearchOptions = {}): Promise<SearchResult[]> {
     if (!query || !query.trim()) return [];
 
     const trimmedQuery = query.trim();
+    const mode = options.mode || 'local';
     const activeSources = this.sourcesList;
 
-    console.log(`[KiwixProvider] Searching ${activeSources.length} ZIM sources for "${trimmedQuery}"`);
+    const { internalUrl, publicUrl } = this.getUrlsForMode(mode);
+    console.log(`[KiwixProvider] [Mode: ${mode}] Searching ${activeSources.length} ZIM sources via ${internalUrl} (Public target: ${publicUrl}) for "${trimmedQuery}"`);
 
-    // Issue parallel searches for each ZIM independently
     const searchPromises = activeSources.map(async (source) => {
-      const results = await this.searchZimSource(source, trimmedQuery);
-      console.log(`[KiwixProvider] ${source.name} -> ${results.length} results`);
+      const results = await this.searchZimSource(source, trimmedQuery, mode);
+      console.log(`[KiwixProvider] [Mode: ${mode}] ${source.name} -> ${results.length} results`);
       return results;
     });
 
@@ -85,17 +114,15 @@ export class KiwixProvider implements SearchProvider {
   }
 
   /**
-   * Parses HTML response from kiwix-serve /search?content=...&pattern=...
-   * Selects items inside .results ul li or div.results li
+   * Parses HTML response from kiwix-serve search output.
    */
-  public parseKiwixHtml(html: string, source: SearchSourceConfig): SearchResult[] {
+  public parseKiwixHtml(html: string, source: SearchSourceConfig, publicUrl: string = this.localPublicUrl): SearchResult[] {
     if (!html || !html.trim()) return [];
 
     const $ = cheerio.load(html);
     const results: SearchResult[] = [];
     const seenPaths = new Set<string>();
 
-    // Select result items from kiwix-serve HTML
     const listItems = $('.results ul li, div.results li, .results li');
 
     if (listItems.length > 0) {
@@ -105,19 +132,16 @@ export class KiwixProvider implements SearchProvider {
         if (!link.length) return;
 
         const rawHref = link.attr('href') || '';
-        // Extract ACTUAL article title from <a> tag
         const title = link.text().trim();
-        // Extract ACTUAL text snippet from <cite> tag
         const snippet = item.find('cite').first().text().trim();
 
         if (title && rawHref && !rawHref.startsWith('javascript:')) {
-          const res = this.formatResult(title, rawHref, snippet, source, seenPaths);
+          const res = this.formatResult(title, rawHref, snippet, source, publicUrl, seenPaths);
           if (res) results.push(res);
         }
       });
     }
 
-    // Generic fallback if listItems container is absent
     if (results.length === 0) {
       $('a[href]').each((_, el) => {
         const link = $(el);
@@ -126,7 +150,7 @@ export class KiwixProvider implements SearchProvider {
 
         if (title && title.length > 1 && rawHref && !rawHref.startsWith('javascript:') && !rawHref.startsWith('#')) {
           const citeText = link.parent().find('cite').text().trim() || link.parent().text().replace(title, '').trim();
-          const res = this.formatResult(title, rawHref, citeText, source, seenPaths);
+          const res = this.formatResult(title, rawHref, citeText, source, publicUrl, seenPaths);
           if (res) results.push(res);
         }
       });
@@ -136,18 +160,18 @@ export class KiwixProvider implements SearchProvider {
   }
 
   /**
-   * Formats result, enforces KIWIX_PUBLIC_URL, and deduplicates within the SAME ZIM.
+   * Formats raw result into SearchResult object.
    */
   public formatResult(
     title: string,
     rawHref: string,
     snippet: string,
     source: SearchSourceConfig,
+    publicUrl: string,
     seenPaths: Set<string>
   ): SearchResult | null {
     let cleanPath = rawHref;
 
-    // Strip hostname if absolute URL
     if (cleanPath.startsWith('http://') || cleanPath.startsWith('https://')) {
       try {
         const parsed = new URL(cleanPath);
@@ -161,32 +185,28 @@ export class KiwixProvider implements SearchProvider {
       cleanPath = '/' + cleanPath;
     }
 
-    // Ensure path includes the exact zimName
-    // Patterns: /content/{zimName}/... OR /{zimName}/...
     if (!cleanPath.includes(source.zimName)) {
       cleanPath = `/content/${source.zimName}${cleanPath}`;
     }
 
-    // Deduplicate only identical results from the SAME ZIM
     const dedupeKey = `${source.zimName}:${cleanPath}`;
     if (seenPaths.has(dedupeKey)) {
       return null;
     }
     seenPaths.add(dedupeKey);
 
-    // Build browser-facing URL strictly using KIWIX_PUBLIC_URL
-    const publicUrl = `${this.publicUrl}${cleanPath}`;
+    const targetUrl = `${publicUrl}${cleanPath}`;
 
     return {
-      id: dedupeKey,                // Deterministic ID: zimName:path
-      source: source.name,         // Exact source name (e.g. "wikiHow", "Wikipedia", "iFixit", "Arch Wiki")
-      provider: 'kiwix',           // Provider name
-      zimName: source.zimName,     // Exact ZIM name
+      id: dedupeKey,
+      source: source.name,
+      provider: 'kiwix',
+      zimName: source.zimName,
       sourceId: source.id,
       type: 'article',
-      title,                        // Actual article title from Kiwix HTML <a> tag
-      description: snippet || `Article from ${source.name}`, // Actual snippet
-      url: publicUrl,              // Uses KIWIX_PUBLIC_URL
+      title,
+      description: snippet || `Article from ${source.name}`,
+      url: targetUrl,
     };
   }
 }

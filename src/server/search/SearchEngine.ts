@@ -49,7 +49,6 @@ export class SearchEngine {
     const safePageSize = Math.max(1, pageSize);
     const totalPages = totalResults > 0 ? Math.ceil(totalResults / safePageSize) : 1;
 
-    // Sanitize and clamp page
     let page = Math.floor(requestedPage);
     if (isNaN(page) || page < 1) {
       page = 1;
@@ -72,7 +71,7 @@ export class SearchEngine {
   }
 
   /**
-   * Main Search Entry Point with Caching & Unified Pagination
+   * Main Search Entry Point with Server-Side Mode Selection & Caching
    */
   async search(query: string, options: SearchOptions = {}): Promise<SearchResponse> {
     const startTime = Date.now();
@@ -96,20 +95,22 @@ export class SearchEngine {
           hasNextPage: false,
           hasPreviousPage: false,
         },
-        meta: { total: 0, executionTimeMs: 0, providers: this.getRegisteredProviders() },
+        meta: {
+          mode,
+          total: 0,
+          executionTimeMs: 0,
+          providers: this.getRegisteredProviders(),
+        },
       };
     }
 
     const cacheKey = `${trimmedQuery.toLowerCase()}:${mode}:${lang}`;
     let cached = this.queryCache.get(cacheKey);
 
-    // If cache expired or absent, perform candidate search & mixing
     if (!cached || (Date.now() - cached.timestamp > this.ttlMs)) {
-      // 1. Calculate query-dependent source relevance (effectivePriority)
       const rankedSources = this.sourceRanker.rankSources(this.sources, trimmedQuery);
       const activeSources = rankedSources.filter(s => s.lang === lang || !s.lang);
 
-      // 2. Fetch candidate results per active source
       const groups: SourceResultsGroup[] = [];
       const sourceCounts: Record<string, { count: number; effectivePriority?: number }> = {};
 
@@ -118,7 +119,6 @@ export class SearchEngine {
         if (!provider) continue;
 
         try {
-          // Fetch candidate pool for this ZIM source
           const sourceResults = await provider.search(trimmedQuery, { mode, lang });
           const matchingResults = sourceResults.filter(r => !r.sourceId || r.sourceId === source.id);
 
@@ -138,8 +138,6 @@ export class SearchEngine {
         }
       }
 
-      // 3. Perform source-aware result mixing to create the full unified ordered result list
-      // Max candidate capacity set to 140
       const unifiedResults = this.resultMixer.mixResults(groups, 140);
 
       cached = {
@@ -150,7 +148,6 @@ export class SearchEngine {
 
       this.queryCache.set(cacheKey, cached);
 
-      // Maintain LRU size limit of 100 queries
       if (this.queryCache.size > 100) {
         const firstKey = this.queryCache.keys().next().value;
         if (firstKey) this.queryCache.delete(firstKey);
@@ -159,7 +156,6 @@ export class SearchEngine {
       console.log(`[SearchEngine] Cache HIT for key '${cacheKey}'`);
     }
 
-    // 4. Paginate the unified ordered result set
     const requestedPage = options.page ?? 1;
     const paginationResult = this.paginateResults(cached.unifiedResults, requestedPage, pageSize);
 
@@ -177,6 +173,7 @@ export class SearchEngine {
         hasPreviousPage: paginationResult.hasPreviousPage,
       },
       meta: {
+        mode,
         total: paginationResult.results.length,
         executionTimeMs: Date.now() - startTime,
         providers: this.getRegisteredProviders(),

@@ -19,8 +19,10 @@ app.use(express.json());
 const searchEngine = new SearchEngine();
 
 const kiwixProvider = new KiwixProvider({
-  internalUrl: config.kiwixUrl,
-  publicUrl: config.kiwixPublicUrl,
+  localUrl: config.kiwixLocalUrl,
+  localPublicUrl: config.kiwixLocalPublicUrl,
+  onlineUrl: config.kiwixOnlineUrl,
+  onlinePublicUrl: config.kiwixOnlinePublicUrl,
   sources: searchEngine.getSources(),
 });
 
@@ -37,8 +39,12 @@ app.get('/api/health', (_req, res) => {
     mode: config.nodeEnv,
     providers: searchEngine.getRegisteredProviders(),
     sourcesCount: searchEngine.getSources().length,
-    kiwixUrl: config.kiwixUrl,
-    kiwixPublicUrl: config.kiwixPublicUrl,
+    config: {
+      kiwixLocalUrl: config.kiwixLocalUrl,
+      kiwixLocalPublicUrl: config.kiwixLocalPublicUrl,
+      kiwixOnlineUrl: config.kiwixOnlineUrl,
+      kiwixOnlinePublicUrl: config.kiwixOnlinePublicUrl,
+    },
   });
 });
 
@@ -55,12 +61,14 @@ if (config.nodeEnv === 'production') {
 app.listen(config.port, () => {
   console.log(`====================================================`);
   console.log(` Si4k Search Engine Running`);
-  console.log(` Mode:           ${config.nodeEnv}`);
-  console.log(` Port:           ${config.port}`);
-  console.log(` Kiwix Internal: ${config.kiwixUrl}`);
-  console.log(` Kiwix Public:   ${config.kiwixPublicUrl}`);
-  console.log(` Providers:      ${searchEngine.getRegisteredProviders().join(', ')}`);
-  console.log(` Sources:        ${searchEngine.getSources().map(s => s.name).join(', ')}`);
+  console.log(` Mode:               ${config.nodeEnv}`);
+  console.log(` Port:               ${config.port}`);
+  console.log(` Kiwix Local URL:    ${config.kiwixLocalUrl}`);
+  console.log(` Kiwix Local Public: ${config.kiwixLocalPublicUrl}`);
+  console.log(` Kiwix Online URL:   ${config.kiwixOnlineUrl}`);
+  console.log(` Kiwix Online Public:${config.kiwixOnlinePublicUrl}`);
+  console.log(` Providers:          ${searchEngine.getRegisteredProviders().join(', ')}`);
+  console.log(` Sources:            ${searchEngine.getSources().map(s => s.name).join(', ')}`);
   console.log(`====================================================`);
 });
 

@@ -26,7 +26,7 @@ export interface SearchResult {
   type: string;          // e.g. "article"
   title: string;
   description: string;
-  url: string;           // Target URL using KIWIX_PUBLIC_URL
+  url: string;           // Target URL using KIWIX_LOCAL_PUBLIC_URL or KIWIX_ONLINE_PUBLIC_URL
   zimName?: string;      // ZIM book identifier
   score?: number;
   sourceId?: string;
@@ -47,6 +47,7 @@ export interface SearchResponse {
     hasPreviousPage: boolean;
   };
   meta: {
+    mode: SearchMode;
     total: number;
     executionTimeMs: number;
     providers: string[];
