@@ -9,13 +9,22 @@ export interface SourceResultsGroup {
 
 export class ResultMixer {
   /**
-   * Mix results across sources adaptively for a target page size (default 20).
+   * Mix results across sources adaptively for a target size (default 140).
+   * Sorting is 100% deterministic:
+   * 1. Effective source priority descending
+   * 2. Alphabetical sourceName tie-breaker
+   * 3. Native provider result ranking
    */
-  public mixResults(groups: SourceResultsGroup[], targetSize: number = 20): SearchResult[] {
+  public mixResults(groups: SourceResultsGroup[], targetSize: number = 140): SearchResult[] {
     if (groups.length === 0) return [];
 
-    // 1. Sort source groups by effective priority descending
-    const sortedGroups = [...groups].sort((a, b) => b.effectivePriority - a.effectivePriority);
+    // 1. Sort source groups by effective priority descending with deterministic tie-breaker
+    const sortedGroups = [...groups].sort((a, b) => {
+      if (b.effectivePriority !== a.effectivePriority) {
+        return b.effectivePriority - a.effectivePriority;
+      }
+      return a.sourceName.localeCompare(b.sourceName);
+    });
 
     // Filter out groups with 0 results
     const activeGroups = sortedGroups.filter(g => g.results.length > 0);
@@ -54,6 +63,7 @@ export class ResultMixer {
 
         if (currentPicked < cap && pool.remaining.length > 0) {
           const item = pool.remaining.shift()!;
+          item.sourceId = pool.group.sourceId;
           item.effectivePriority = pool.group.effectivePriority;
           mixedResults.push(item);
           sourcePickedCounts[pool.group.sourceId] += 1;
@@ -63,7 +73,6 @@ export class ResultMixer {
     }
 
     // Pass 2: Adaptive deficit redistribution
-    // If we haven't reached targetSize (20), take available results from higher priority sources that have remaining items
     while (mixedResults.length < targetSize) {
       let candidateFound = false;
 
@@ -73,6 +82,7 @@ export class ResultMixer {
         const pool = pools[i];
         if (pool.remaining.length > 0) {
           const item = pool.remaining.shift()!;
+          item.sourceId = pool.group.sourceId;
           item.effectivePriority = pool.group.effectivePriority;
           mixedResults.push(item);
           sourcePickedCounts[pool.group.sourceId] += 1;
