@@ -13,10 +13,17 @@ export interface KiwixConfig {
   maxConcurrentSearches: number;
 }
 
+export interface SearchConfig {
+  keywordWeight: number;
+  basePriorityWeight: number;
+  minSourceScore: number;
+}
+
 export interface Config {
   port: number;
   nodeEnv: string;
   kiwix: KiwixConfig;
+  search: SearchConfig;
 }
 
 const dataDir = process.env.KIWIX_DATA_DIR || '/mnt/knowledge';
@@ -39,5 +46,10 @@ export const config: Config = {
     onlineUrl: defaultOnlineUrl.replace(/\/$/, ''),
     onlinePublicUrl: defaultOnlinePublicUrl.replace(/\/$/, ''),
     maxConcurrentSearches: parseInt(process.env.MAX_CONCURRENT_ZIM_SEARCHES || '8', 10),
+  },
+  search: {
+    keywordWeight: parseFloat(process.env.SEARCH_KEYWORD_WEIGHT || '10'),
+    basePriorityWeight: parseFloat(process.env.SEARCH_BASE_PRIORITY_WEIGHT || '1'),
+    minSourceScore: parseFloat(process.env.SEARCH_MIN_SOURCE_SCORE || '5'),
   },
 };

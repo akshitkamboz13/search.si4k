@@ -1,9 +1,11 @@
 import { Router, Request, Response } from 'express';
 import { SearchEngine } from '../search/SearchEngine.js';
+import { SourceRelevance } from '../search/SourceRelevance.js';
 import { SearchMode, StreamEventPayload } from '../../shared/types.js';
 
 export function createSearchRouter(searchEngine: SearchEngine): Router {
   const router = Router();
+  const sourceRelevance = new SourceRelevance();
 
   /**
    * GET /api/search (Standard non-streaming endpoint for backward compatibility)
@@ -34,7 +36,6 @@ export function createSearchRouter(searchEngine: SearchEngine): Router {
     const page = parseInt(typeof req.query.page === 'string' ? req.query.page : '1', 10);
     const pageSize = parseInt(typeof req.query.pageSize === 'string' ? req.query.pageSize : '20', 10);
 
-    // Set Server-Sent Events Headers
     res.setHeader('Content-Type', 'text/event-stream');
     res.setHeader('Cache-Control', 'no-cache');
     res.setHeader('Connection', 'keep-alive');
@@ -69,6 +70,39 @@ export function createSearchRouter(searchEngine: SearchEngine): Router {
       if (!clientDisconnected) {
         res.end();
       }
+    }
+  });
+
+  /**
+   * GET /api/search/debug (Development-only Explain/Debug Routing API)
+   */
+  router.get('/search/debug', async (req: Request, res: Response) => {
+    try {
+      const q = typeof req.query.q === 'string' ? req.query.q : '';
+      const allDiscovered = await searchEngine.getDiscoveredSources();
+      const relevanceResult = sourceRelevance.selectRelevantSources(q, allDiscovered, 20);
+
+      res.json({
+        query: q,
+        categories: relevanceResult.intents.map(i => ({
+          name: i.name,
+          score: i.score,
+          priority: i.priority,
+          matchedKeywords: i.matchedKeywords,
+        })),
+        sources: relevanceResult.scoredRanks.map(r => ({
+          zimName: r.source.zimName,
+          title: r.source.name,
+          effectivePriority: r.effectivePriority,
+          keywordPriority: r.keywordPriority,
+          basePriority: r.basePriority,
+          intersectionBonus: r.intersectionBonus,
+          matchedCategories: r.matchedCategories,
+          matchedKeywords: r.matchedKeywords,
+        })),
+      });
+    } catch (err) {
+      res.status(500).json({ error: 'Debug routing failed', message: String(err) });
     }
   });
 

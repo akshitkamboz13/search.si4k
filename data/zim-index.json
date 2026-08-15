@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-08-15T05:23:43.387Z",
+  "generatedAt": "2026-08-15T05:29:53.666Z",
   "totalSources": 133,
   "sources": [
     {
@@ -10,9 +10,7 @@
       "language": "en",
       "parentCategory": "Programming",
       "categories": [
-        "programming",
-        "technology",
-        "automotive"
+        "programming"
       ],
       "keywords": [
         "cmake",
@@ -43,9 +41,7 @@
       "language": "en",
       "parentCategory": "Programming",
       "categories": [
-        "programming",
-        "technology",
-        "automotive"
+        "programming"
       ],
       "keywords": [
         "leaflet",
@@ -76,9 +72,7 @@
       "language": "en",
       "parentCategory": "Programming",
       "categories": [
-        "programming",
-        "technology",
-        "automotive"
+        "programming"
       ],
       "keywords": [
         "docs",
@@ -109,7 +103,6 @@
       "parentCategory": "Books",
       "categories": [
         "programming",
-        "technology",
         "literature"
       ],
       "keywords": [
@@ -142,8 +135,7 @@
       "language": "en",
       "parentCategory": "Programming",
       "categories": [
-        "programming",
-        "technology"
+        "programming"
       ],
       "keywords": [
         "stack",
@@ -179,9 +171,7 @@
       "language": "en",
       "parentCategory": "Programming",
       "categories": [
-        "programming",
-        "technology",
-        "automotive"
+        "programming"
       ],
       "keywords": [
         "redux",
@@ -212,9 +202,7 @@
       "language": "en",
       "parentCategory": "Programming",
       "categories": [
-        "programming",
-        "technology",
-        "automotive"
+        "programming"
       ],
       "keywords": [
         "apache",
@@ -247,9 +235,7 @@
       "language": "en",
       "parentCategory": "Programming",
       "categories": [
-        "programming",
-        "technology",
-        "automotive"
+        "programming"
       ],
       "keywords": [
         "pytorch",
@@ -280,9 +266,7 @@
       "language": "en",
       "parentCategory": "Programming",
       "categories": [
-        "programming",
-        "technology",
-        "automotive"
+        "programming"
       ],
       "keywords": [
         "liquid",
@@ -313,9 +297,7 @@
       "language": "en",
       "parentCategory": "Programming",
       "categories": [
-        "programming",
-        "technology",
-        "automotive"
+        "programming"
       ],
       "keywords": [
         "tensorflow",
@@ -348,8 +330,7 @@
       "parentCategory": "Programming",
       "categories": [
         "linux",
-        "programming",
-        "technology"
+        "programming"
       ],
       "keywords": [
         "unix",
@@ -387,9 +368,7 @@
       "language": "en",
       "parentCategory": "Programming",
       "categories": [
-        "programming",
-        "technology",
-        "automotive"
+        "programming"
       ],
       "keywords": [
         "gtk",
@@ -420,9 +399,7 @@
       "language": "en",
       "parentCategory": "Programming",
       "categories": [
-        "programming",
-        "technology",
-        "automotive"
+        "programming"
       ],
       "keywords": [
         "django",
@@ -454,9 +431,8 @@
       "parentCategory": "Medicine",
       "categories": [
         "programming",
-        "technology",
-        "automotive",
         "medicine",
+        "automotive",
         "science"
       ],
       "keywords": [
@@ -495,9 +471,7 @@
       "parentCategory": "Books",
       "categories": [
         "programming",
-        "technology",
         "science",
-        "history",
         "literature"
       ],
       "keywords": [
@@ -531,9 +505,7 @@
       "language": "en",
       "parentCategory": "Programming",
       "categories": [
-        "programming",
-        "technology",
-        "automotive"
+        "programming"
       ],
       "keywords": [
         "openlayers",
@@ -565,7 +537,6 @@
       "parentCategory": "Books",
       "categories": [
         "programming",
-        "technology",
         "literature"
       ],
       "keywords": [
@@ -599,9 +570,7 @@
       "parentCategory": "Programming",
       "categories": [
         "linux",
-        "programming",
-        "technology",
-        "automotive"
+        "programming"
       ],
       "keywords": [
         "linux",
@@ -634,9 +603,7 @@
       "language": "en",
       "parentCategory": "Programming",
       "categories": [
-        "programming",
-        "technology",
-        "automotive"
+        "programming"
       ],
       "keywords": [
         "web",
@@ -669,9 +636,7 @@
       "language": "en",
       "parentCategory": "Programming",
       "categories": [
-        "programming",
-        "technology",
-        "automotive"
+        "programming"
       ],
       "keywords": [
         "numpy",
@@ -702,8 +667,6 @@
       "language": "en",
       "parentCategory": "LibreTexts",
       "categories": [
-        "linux",
-        "technology",
         "literature"
       ],
       "keywords": [
@@ -735,9 +698,7 @@
       "language": "en",
       "parentCategory": "Programming",
       "categories": [
-        "programming",
-        "technology",
-        "automotive"
+        "programming"
       ],
       "keywords": [
         "jsdoc",
@@ -768,9 +729,7 @@
       "language": "en",
       "parentCategory": "Programming",
       "categories": [
-        "programming",
-        "technology",
-        "automotive"
+        "programming"
       ],
       "keywords": [
         "scala",
@@ -801,9 +760,7 @@
       "language": "en",
       "parentCategory": "Programming",
       "categories": [
-        "programming",
-        "technology",
-        "automotive"
+        "programming"
       ],
       "keywords": [
         "electron",
@@ -834,8 +791,6 @@
       "language": "en",
       "parentCategory": "LibreTexts",
       "categories": [
-        "linux",
-        "technology",
         "science",
         "literature"
       ],
@@ -868,9 +823,7 @@
       "language": "en",
       "parentCategory": "Programming",
       "categories": [
-        "programming",
-        "technology",
-        "automotive"
+        "programming"
       ],
       "keywords": [
         "lua",
@@ -901,9 +854,7 @@
       "language": "en",
       "parentCategory": "Programming",
       "categories": [
-        "programming",
-        "technology",
-        "automotive"
+        "programming"
       ],
       "keywords": [
         "nginx",
@@ -934,9 +885,7 @@
       "language": "en",
       "parentCategory": "Documents",
       "categories": [
-        "programming",
-        "technology",
-        "automotive"
+        "programming"
       ],
       "keywords": [
         "docs",
@@ -966,9 +915,7 @@
       "language": "en",
       "parentCategory": "Programming",
       "categories": [
-        "programming",
-        "technology",
-        "automotive"
+        "programming"
       ],
       "keywords": [
         "opengl",
@@ -999,9 +946,7 @@
       "language": "en",
       "parentCategory": "Programming",
       "categories": [
-        "programming",
-        "technology",
-        "automotive"
+        "programming"
       ],
       "keywords": [
         "docker",
@@ -1033,7 +978,6 @@
       "parentCategory": "Medicine",
       "categories": [
         "programming",
-        "technology",
         "medicine",
         "general"
       ],
@@ -1069,9 +1013,7 @@
       "language": "en",
       "parentCategory": "Programming",
       "categories": [
-        "programming",
-        "technology",
-        "automotive"
+        "programming"
       ],
       "keywords": [
         "typescript",
@@ -1102,9 +1044,7 @@
       "language": "en",
       "parentCategory": "Programming",
       "categories": [
-        "programming",
-        "technology",
-        "automotive"
+        "programming"
       ],
       "keywords": [
         "vue",
@@ -1135,9 +1075,7 @@
       "language": "en",
       "parentCategory": "Programming",
       "categories": [
-        "programming",
-        "technology",
-        "automotive"
+        "programming"
       ],
       "keywords": [
         "laravel",
@@ -1168,9 +1106,7 @@
       "language": "en",
       "parentCategory": "Programming",
       "categories": [
-        "programming",
-        "technology",
-        "automotive"
+        "programming"
       ],
       "keywords": [
         "eslint",
@@ -1201,8 +1137,6 @@
       "language": "en",
       "parentCategory": "LibreTexts",
       "categories": [
-        "linux",
-        "technology",
         "science",
         "literature"
       ],
@@ -1236,7 +1170,6 @@
       "parentCategory": "Encyclopedia",
       "categories": [
         "programming",
-        "technology",
         "literature",
         "general"
       ],
@@ -1273,7 +1206,6 @@
       "parentCategory": "Misc",
       "categories": [
         "programming",
-        "technology",
         "cooking"
       ],
       "keywords": [
@@ -1311,9 +1243,7 @@
       "language": "en",
       "parentCategory": "Programming",
       "categories": [
-        "programming",
-        "technology",
-        "automotive"
+        "programming"
       ],
       "keywords": [
         "git",
@@ -1344,9 +1274,7 @@
       "language": "en",
       "parentCategory": "Programming",
       "categories": [
-        "programming",
-        "technology",
-        "automotive"
+        "programming"
       ],
       "keywords": [
         "python",
@@ -1377,9 +1305,7 @@
       "language": "en",
       "parentCategory": "Programming",
       "categories": [
-        "programming",
-        "technology",
-        "automotive"
+        "programming"
       ],
       "keywords": [
         "docs",
@@ -1411,7 +1337,6 @@
       "parentCategory": "Books",
       "categories": [
         "programming",
-        "technology",
         "geography",
         "literature"
       ],
@@ -1447,9 +1372,7 @@
       "language": "en",
       "parentCategory": "Programming",
       "categories": [
-        "programming",
-        "technology",
-        "automotive"
+        "programming"
       ],
       "keywords": [
         "pandas",
@@ -1480,8 +1403,7 @@
       "language": "en",
       "parentCategory": "Documents",
       "categories": [
-        "linux",
-        "technology"
+        "linux"
       ],
       "keywords": [
         "archwiki",
@@ -1524,7 +1446,6 @@
       "parentCategory": "Books",
       "categories": [
         "programming",
-        "technology",
         "science",
         "literature"
       ],
@@ -1558,8 +1479,7 @@
       "language": "en",
       "parentCategory": "Programming",
       "categories": [
-        "programming",
-        "technology"
+        "programming"
       ],
       "keywords": [
         "wikitech",
@@ -1593,9 +1513,7 @@
       "language": "en",
       "parentCategory": "Programming",
       "categories": [
-        "programming",
-        "technology",
-        "automotive"
+        "programming"
       ],
       "keywords": [
         "gnuplot",
@@ -1626,8 +1544,6 @@
       "language": "en",
       "parentCategory": "LibreTexts",
       "categories": [
-        "linux",
-        "technology",
         "science",
         "literature"
       ],
@@ -1661,7 +1577,6 @@
       "parentCategory": "Books",
       "categories": [
         "programming",
-        "technology",
         "literature"
       ],
       "keywords": [
@@ -1695,8 +1610,8 @@
       "language": "pa",
       "parentCategory": "Encyclopedia",
       "categories": [
+        "india",
         "programming",
-        "technology",
         "general"
       ],
       "keywords": [
@@ -1732,9 +1647,7 @@
       "language": "en",
       "parentCategory": "Programming",
       "categories": [
-        "programming",
-        "technology",
-        "automotive"
+        "programming"
       ],
       "keywords": [
         "css",
@@ -1766,7 +1679,6 @@
       "parentCategory": "Books",
       "categories": [
         "programming",
-        "technology",
         "literature"
       ],
       "keywords": [
@@ -1801,8 +1713,6 @@
       "categories": [
         "linux",
         "programming",
-        "technology",
-        "automotive",
         "geography",
         "guides"
       ],
@@ -1854,9 +1764,7 @@
       "language": "en",
       "parentCategory": "Programming",
       "categories": [
-        "programming",
-        "technology",
-        "automotive"
+        "programming"
       ],
       "keywords": [
         "npm",
@@ -1887,9 +1795,7 @@
       "language": "en",
       "parentCategory": "Programming",
       "categories": [
-        "programming",
-        "technology",
-        "automotive"
+        "programming"
       ],
       "keywords": [
         "web",
@@ -1922,7 +1828,6 @@
       "parentCategory": "wikiHow",
       "categories": [
         "programming",
-        "technology",
         "guides"
       ],
       "keywords": [
@@ -1961,7 +1866,6 @@
       "parentCategory": "Books",
       "categories": [
         "programming",
-        "technology",
         "medicine",
         "literature"
       ],
@@ -1995,9 +1899,7 @@
       "language": "en",
       "parentCategory": "Programming",
       "categories": [
-        "programming",
-        "technology",
-        "automotive"
+        "programming"
       ],
       "keywords": [
         "node",
@@ -2028,9 +1930,8 @@
       "language": "en",
       "parentCategory": "Medicine",
       "categories": [
-        "technology",
-        "automotive",
         "medicine",
+        "automotive",
         "general"
       ],
       "keywords": [
@@ -2065,9 +1966,7 @@
       "language": "en",
       "parentCategory": "Programming",
       "categories": [
-        "programming",
-        "technology",
-        "automotive"
+        "programming"
       ],
       "keywords": [
         "crystal",
@@ -2098,8 +1997,6 @@
       "language": "en",
       "parentCategory": "LibreTexts",
       "categories": [
-        "linux",
-        "technology",
         "science",
         "literature"
       ],
@@ -2132,8 +2029,6 @@
       "language": "en",
       "parentCategory": "LibreTexts",
       "categories": [
-        "linux",
-        "technology",
         "automotive",
         "literature"
       ],
@@ -2167,9 +2062,7 @@
       "language": "en",
       "parentCategory": "Programming",
       "categories": [
-        "programming",
-        "technology",
-        "automotive"
+        "programming"
       ],
       "keywords": [
         "axios",
@@ -2200,9 +2093,7 @@
       "language": "en",
       "parentCategory": "Encyclopedia",
       "categories": [
-        "linux",
         "programming",
-        "technology",
         "general"
       ],
       "keywords": [
@@ -2237,7 +2128,6 @@
       "parentCategory": "Encyclopedia",
       "categories": [
         "programming",
-        "technology",
         "general"
       ],
       "keywords": [
@@ -2272,7 +2162,6 @@
       "parentCategory": "Medicine",
       "categories": [
         "programming",
-        "technology",
         "medicine"
       ],
       "keywords": [
@@ -2309,9 +2198,7 @@
       "language": "en",
       "parentCategory": "Programming",
       "categories": [
-        "programming",
-        "technology",
-        "automotive"
+        "programming"
       ],
       "keywords": [
         "nix",
@@ -2342,9 +2229,7 @@
       "language": "en",
       "parentCategory": "Programming",
       "categories": [
-        "programming",
-        "technology",
-        "automotive"
+        "programming"
       ],
       "keywords": [
         "gnu",
@@ -2376,8 +2261,7 @@
       "language": "en",
       "parentCategory": "Programming",
       "categories": [
-        "programming",
-        "technology"
+        "programming"
       ],
       "keywords": [
         "freecodecamp",
@@ -2408,9 +2292,7 @@
       "language": "en",
       "parentCategory": "Programming",
       "categories": [
-        "programming",
-        "technology",
-        "automotive"
+        "programming"
       ],
       "keywords": [
         "date",
@@ -2442,8 +2324,6 @@
       "language": "en",
       "parentCategory": "LibreTexts",
       "categories": [
-        "linux",
-        "technology",
         "mathematics",
         "literature"
       ],
@@ -2477,7 +2357,6 @@
       "parentCategory": "Education",
       "categories": [
         "programming",
-        "technology",
         "science",
         "mathematics"
       ],
@@ -2513,9 +2392,7 @@
       "language": "en",
       "parentCategory": "Programming",
       "categories": [
-        "programming",
-        "technology",
-        "automotive"
+        "programming"
       ],
       "keywords": [
         "tailwind",
@@ -2548,9 +2425,7 @@
       "language": "en",
       "parentCategory": "Programming",
       "categories": [
-        "programming",
-        "technology",
-        "automotive"
+        "programming"
       ],
       "keywords": [
         "ruby",
@@ -2581,9 +2456,7 @@
       "language": "en",
       "parentCategory": "Programming",
       "categories": [
-        "programming",
-        "technology",
-        "automotive"
+        "programming"
       ],
       "keywords": [
         "mongoose",
@@ -2614,9 +2487,7 @@
       "language": "en",
       "parentCategory": "Books",
       "categories": [
-        "linux",
         "programming",
-        "technology",
         "literature"
       ],
       "keywords": [
@@ -2655,9 +2526,7 @@
       "language": "en",
       "parentCategory": "Programming",
       "categories": [
-        "programming",
-        "technology",
-        "automotive"
+        "programming"
       ],
       "keywords": [
         "nginx",
@@ -2691,7 +2560,6 @@
       "parentCategory": "Encyclopedia",
       "categories": [
         "programming",
-        "technology",
         "general"
       ],
       "keywords": [
@@ -2727,9 +2595,7 @@
       "language": "en",
       "parentCategory": "Programming",
       "categories": [
-        "programming",
-        "technology",
-        "automotive"
+        "programming"
       ],
       "keywords": [
         "three",
@@ -2762,7 +2628,6 @@
       "parentCategory": "Medicine",
       "categories": [
         "programming",
-        "technology",
         "medicine",
         "literature"
       ],
@@ -2800,9 +2665,7 @@
       "language": "en",
       "parentCategory": "Programming",
       "categories": [
-        "programming",
-        "technology",
-        "automotive"
+        "programming"
       ],
       "keywords": [
         "moment",
@@ -2834,9 +2697,7 @@
       "language": "en",
       "parentCategory": "Programming",
       "categories": [
-        "programming",
-        "technology",
-        "automotive"
+        "programming"
       ],
       "keywords": [
         "react",
@@ -2868,7 +2729,6 @@
       "language": "en",
       "parentCategory": "Encyclopedia",
       "categories": [
-        "technology",
         "repair",
         "science",
         "guides",
@@ -2907,8 +2767,8 @@
       "language": "en",
       "parentCategory": "Books",
       "categories": [
+        "india",
         "programming",
-        "technology",
         "literature"
       ],
       "keywords": [
@@ -2945,9 +2805,7 @@
       "language": "en",
       "parentCategory": "Programming",
       "categories": [
-        "programming",
-        "technology",
-        "automotive"
+        "programming"
       ],
       "keywords": [
         "gcc",
@@ -2978,9 +2836,7 @@
       "language": "en",
       "parentCategory": "Programming",
       "categories": [
-        "programming",
-        "technology",
-        "automotive"
+        "programming"
       ],
       "keywords": [
         "postgresql",
@@ -3011,9 +2867,7 @@
       "language": "en",
       "parentCategory": "Programming",
       "categories": [
-        "programming",
-        "technology",
-        "automotive"
+        "programming"
       ],
       "keywords": [
         "opentsdb",
@@ -3044,7 +2898,7 @@
       "language": "en",
       "parentCategory": "Documents",
       "categories": [
-        "technology"
+        "general"
       ],
       "keywords": [
         "termux",
@@ -3074,7 +2928,6 @@
       "parentCategory": "Encyclopedia",
       "categories": [
         "programming",
-        "technology",
         "literature",
         "general"
       ],
@@ -3109,8 +2962,7 @@
       "language": "en",
       "parentCategory": "Programming",
       "categories": [
-        "programming",
-        "technology"
+        "programming"
       ],
       "keywords": [
         "freecodecamp",
@@ -3143,9 +2995,7 @@
       "language": "en",
       "parentCategory": "Programming",
       "categories": [
-        "programming",
-        "technology",
-        "automotive"
+        "programming"
       ],
       "keywords": [
         "http",
@@ -3176,9 +3026,7 @@
       "language": "en",
       "parentCategory": "Programming",
       "categories": [
-        "programming",
-        "technology",
-        "automotive"
+        "programming"
       ],
       "keywords": [
         "kotlin",
@@ -3209,9 +3057,7 @@
       "language": "en",
       "parentCategory": "Programming",
       "categories": [
-        "programming",
-        "technology",
-        "automotive"
+        "programming"
       ],
       "keywords": [
         "requests",
@@ -3242,9 +3088,7 @@
       "language": "en",
       "parentCategory": "Programming",
       "categories": [
-        "programming",
-        "technology",
-        "automotive"
+        "programming"
       ],
       "keywords": [
         "javascript",
@@ -3275,9 +3119,7 @@
       "language": "en",
       "parentCategory": "Programming",
       "categories": [
-        "programming",
-        "technology",
-        "automotive"
+        "programming"
       ],
       "keywords": [
         "bottle",
@@ -3308,9 +3150,7 @@
       "language": "en",
       "parentCategory": "Programming",
       "categories": [
-        "programming",
-        "technology",
-        "automotive"
+        "programming"
       ],
       "keywords": [
         "markdown",
@@ -3342,9 +3182,7 @@
       "parentCategory": "Programming",
       "categories": [
         "linux",
-        "programming",
-        "technology",
-        "automotive"
+        "programming"
       ],
       "keywords": [
         "click",
@@ -3375,9 +3213,7 @@
       "language": "en",
       "parentCategory": "Programming",
       "categories": [
-        "programming",
-        "technology",
-        "automotive"
+        "programming"
       ],
       "keywords": [
         "latex",
@@ -3409,9 +3245,7 @@
       "parentCategory": "Programming",
       "categories": [
         "linux",
-        "programming",
-        "technology",
-        "automotive"
+        "programming"
       ],
       "keywords": [
         "zsh",
@@ -3442,9 +3276,7 @@
       "language": "en",
       "parentCategory": "Programming",
       "categories": [
-        "programming",
-        "technology",
-        "automotive"
+        "programming"
       ],
       "keywords": [
         "sanctuary",
@@ -3475,9 +3307,7 @@
       "language": "en",
       "parentCategory": "Programming",
       "categories": [
-        "programming",
-        "technology",
-        "automotive"
+        "programming"
       ],
       "keywords": [
         "htmx",
@@ -3509,7 +3339,6 @@
       "parentCategory": "Encyclopedia",
       "categories": [
         "programming",
-        "technology",
         "general"
       ],
       "keywords": [
@@ -3547,9 +3376,7 @@
       "language": "en",
       "parentCategory": "Programming",
       "categories": [
-        "programming",
-        "technology",
-        "automotive"
+        "programming"
       ],
       "keywords": [
         "jquery",
@@ -3580,9 +3407,7 @@
       "language": "en",
       "parentCategory": "Programming",
       "categories": [
-        "programming",
-        "technology",
-        "automotive"
+        "programming"
       ],
       "keywords": [
         "rxjs",
@@ -3613,9 +3438,7 @@
       "language": "en",
       "parentCategory": "Programming",
       "categories": [
-        "programming",
-        "technology",
-        "automotive"
+        "programming"
       ],
       "keywords": [
         "esbuild",
@@ -3646,9 +3469,7 @@
       "language": "en",
       "parentCategory": "Programming",
       "categories": [
-        "programming",
-        "technology",
-        "automotive"
+        "programming"
       ],
       "keywords": [
         "html",
@@ -3679,8 +3500,6 @@
       "language": "en",
       "parentCategory": "LibreTexts",
       "categories": [
-        "linux",
-        "technology",
         "medicine",
         "literature"
       ],
@@ -3714,9 +3533,7 @@
       "language": "en",
       "parentCategory": "Encyclopedia",
       "categories": [
-        "linux",
         "programming",
-        "technology",
         "repair",
         "general"
       ],
@@ -3767,7 +3584,6 @@
       "parentCategory": "Encyclopedia",
       "categories": [
         "programming",
-        "technology",
         "general"
       ],
       "keywords": [
@@ -3808,9 +3624,7 @@
       "parentCategory": "Programming",
       "categories": [
         "linux",
-        "programming",
-        "technology",
-        "automotive"
+        "programming"
       ],
       "keywords": [
         "bash",
@@ -3841,9 +3655,7 @@
       "language": "en",
       "parentCategory": "Programming",
       "categories": [
-        "programming",
-        "technology",
-        "automotive"
+        "programming"
       ],
       "keywords": [
         "express",
@@ -3875,7 +3687,6 @@
       "parentCategory": "Medical",
       "categories": [
         "programming",
-        "technology",
         "medicine",
         "general"
       ],
@@ -3914,7 +3725,6 @@
       "language": "en",
       "parentCategory": "Books",
       "categories": [
-        "technology",
         "literature"
       ],
       "keywords": [
@@ -3943,9 +3753,7 @@
       "language": "en",
       "parentCategory": "Programming",
       "categories": [
-        "programming",
-        "technology",
-        "automotive"
+        "programming"
       ],
       "keywords": [
         "openjdk",
@@ -3976,9 +3784,7 @@
       "language": "en",
       "parentCategory": "Programming",
       "categories": [
-        "programming",
-        "technology",
-        "automotive"
+        "programming"
       ],
       "keywords": [
         "next",
@@ -4010,8 +3816,7 @@
       "language": "en",
       "parentCategory": "Programming",
       "categories": [
-        "programming",
-        "technology"
+        "programming"
       ],
       "keywords": [
         "freecodecamp",
@@ -4043,7 +3848,6 @@
       "parentCategory": "Programming",
       "categories": [
         "programming",
-        "technology",
         "mathematics",
         "literature"
       ],
@@ -4082,7 +3886,6 @@
       "parentCategory": "Encyclopedia",
       "categories": [
         "programming",
-        "technology",
         "general"
       ],
       "keywords": [
@@ -4114,10 +3917,7 @@
       "language": "en",
       "parentCategory": "Programming",
       "categories": [
-        "programming",
-        "technology",
-        "repair",
-        "automotive"
+        "programming"
       ],
       "keywords": [
         "socket",
@@ -4149,9 +3949,7 @@
       "language": "en",
       "parentCategory": "Documents",
       "categories": [
-        "programming",
-        "technology",
-        "automotive"
+        "programming"
       ],
       "keywords": [
         "rust",
@@ -4183,7 +3981,6 @@
       "parentCategory": "Programming",
       "categories": [
         "programming",
-        "technology",
         "mathematics",
         "literature"
       ],
@@ -4222,8 +4019,7 @@
       "parentCategory": "Programming",
       "categories": [
         "linux",
-        "programming",
-        "technology"
+        "programming"
       ],
       "keywords": [
         "alpine",
@@ -4260,9 +4056,7 @@
       "language": "en",
       "parentCategory": "Programming",
       "categories": [
-        "programming",
-        "technology",
-        "automotive"
+        "programming"
       ],
       "keywords": [
         "react",
@@ -4293,8 +4087,6 @@
       "language": "en",
       "parentCategory": "LibreTexts",
       "categories": [
-        "linux",
-        "technology",
         "literature"
       ],
       "keywords": [
@@ -4326,9 +4118,7 @@
       "language": "en",
       "parentCategory": "Programming",
       "categories": [
-        "programming",
-        "technology",
-        "automotive"
+        "programming"
       ],
       "keywords": [
         "jekyll",
@@ -4359,9 +4149,7 @@
       "language": "en",
       "parentCategory": "Programming",
       "categories": [
-        "programming",
-        "technology",
-        "automotive"
+        "programming"
       ],
       "keywords": [
         "requirejs",
@@ -4392,9 +4180,7 @@
       "language": "en",
       "parentCategory": "Programming",
       "categories": [
-        "programming",
-        "technology",
-        "automotive"
+        "programming"
       ],
       "keywords": [
         "matplotlib",
@@ -4425,10 +4211,7 @@
       "language": "en",
       "parentCategory": "Programming",
       "categories": [
-        "linux",
-        "programming",
-        "technology",
-        "automotive"
+        "programming"
       ],
       "keywords": [
         "fish",
@@ -4459,9 +4242,7 @@
       "language": "en",
       "parentCategory": "Programming",
       "categories": [
-        "programming",
-        "technology",
-        "automotive"
+        "programming"
       ],
       "keywords": [
         "mariadb",
@@ -4492,9 +4273,7 @@
       "language": "en",
       "parentCategory": "Programming",
       "categories": [
-        "programming",
-        "technology",
-        "automotive"
+        "programming"
       ],
       "keywords": [
         "async",
@@ -4525,9 +4304,7 @@
       "language": "en",
       "parentCategory": "Programming",
       "categories": [
-        "linux",
         "programming",
-        "technology",
         "literature",
         "guides"
       ],
@@ -4566,9 +4343,7 @@
       "language": "en",
       "parentCategory": "Programming",
       "categories": [
-        "programming",
-        "technology",
-        "automotive"
+        "programming"
       ],
       "keywords": [
         "webpack",
@@ -4599,8 +4374,6 @@
       "language": "en",
       "parentCategory": "LibreTexts",
       "categories": [
-        "linux",
-        "technology",
         "mathematics",
         "literature"
       ],

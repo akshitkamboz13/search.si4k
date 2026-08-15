@@ -25,15 +25,37 @@ export interface ZimIndexData {
   sources: IndexedZimSource[];
 }
 
+export interface CategoryIntent {
+  name: string;
+  score: number;
+  priority: number;
+  matchedKeywords: string[];
+}
+
 export class ZimIndexer {
   private libraryXmlPath: string;
   private indexPath: string;
-  private categoryKeywords: Record<string, string[]>;
+  private categoryKeywords: Record<string, { priority: number; keywords: string[] }>;
 
   constructor(libraryXmlPath?: string, indexPath?: string) {
     this.libraryXmlPath = libraryXmlPath || config.kiwix.libraryXml;
     this.indexPath = indexPath || path.join(process.cwd(), 'data', 'zim-index.json');
-    this.categoryKeywords = categoryKeywordsData as Record<string, string[]>;
+    this.categoryKeywords = this.normalizeCategoryKeywords(categoryKeywordsData);
+  }
+
+  private normalizeCategoryKeywords(raw: any): Record<string, { priority: number; keywords: string[] }> {
+    const result: Record<string, { priority: number; keywords: string[] }> = {};
+    for (const [key, val] of Object.entries(raw)) {
+      if (Array.isArray(val)) {
+        result[key] = { priority: 10, keywords: val };
+      } else if (val && typeof val === 'object' && Array.isArray((val as any).keywords)) {
+        result[key] = {
+          priority: (val as any).priority || 10,
+          keywords: (val as any).keywords,
+        };
+      }
+    }
+    return result;
   }
 
   /**
@@ -73,7 +95,6 @@ export class ZimIndexer {
 
       if (!title || !zimName) return;
 
-      // Extract parent directory category from path (e.g. "../ZIM/Education/Programming/devdocs.zim" -> "Programming")
       const parentCategory = this.extractParentCategory(pathAttr);
 
       let lang = item.attr('language') || item.find('language, lang').first().text().trim() || 'en';
@@ -87,13 +108,9 @@ export class ZimIndexer {
       if (!description || description.length < 5) warnings.push('Sparse description');
       if (tags.length === 0) warnings.push('Missing tags');
 
-      // Detect categories from parentCategory, tags, title, description
       const categories = this.detectCategories(zimName, title, description, tags, parentCategory);
-
-      // Extract tokenized keywords
       const extractedKeywords = this.extractKeywords(title, description, tags, parentCategory);
 
-      // Check overrides
       const overrideKey = this.matchOverrideKey(zimName, overrides);
       const sourceOverride = overrideKey ? overrides[overrideKey] : null;
 
@@ -117,14 +134,12 @@ export class ZimIndexer {
       });
     });
 
-    const indexData: ZimIndexData = {
+    return {
       version: 1,
       generatedAt: new Date().toISOString(),
       totalSources: sources.length,
       sources,
     };
-
-    return indexData;
   }
 
   /**
@@ -157,29 +172,48 @@ export class ZimIndexer {
   /**
    * Categorize user query against data/category-keywords.json
    */
-  public categorizeQuery(query: string): Record<string, number> {
-    if (!query || !query.trim()) return {};
+  public categorizeQueryIntents(query: string): CategoryIntent[] {
+    if (!query || !query.trim()) return [];
 
     const normalized = query.toLowerCase().trim();
     const tokens = normalized.split(/\s+/).filter(Boolean);
-    const categoryScores: Record<string, number> = {};
+    const intents: CategoryIntent[] = [];
 
-    for (const [cat, keywords] of Object.entries(this.categoryKeywords)) {
+    for (const [cat, configObj] of Object.entries(this.categoryKeywords)) {
       let score = 0;
-      for (const kw of keywords) {
+      const matchedKeywords: string[] = [];
+
+      for (const kw of configObj.keywords) {
         const kwLower = kw.toLowerCase();
         if (kwLower.includes(' ') && normalized.includes(kwLower)) {
-          score += 5;
+          score += 10;
+          matchedKeywords.push(kwLower);
         } else if (!kwLower.includes(' ') && tokens.includes(kwLower)) {
-          score += 3;
+          score += 5;
+          matchedKeywords.push(kwLower);
         }
       }
+
       if (score > 0) {
-        categoryScores[cat] = score;
+        intents.push({
+          name: cat,
+          score,
+          priority: configObj.priority,
+          matchedKeywords,
+        });
       }
     }
 
-    return categoryScores;
+    return intents.sort((a, b) => b.score - a.score);
+  }
+
+  public categorizeQuery(query: string): Record<string, number> {
+    const intents = this.categorizeQueryIntents(query);
+    const result: Record<string, number> = {};
+    intents.forEach(i => {
+      result[i.name] = i.score;
+    });
+    return result;
   }
 
   private extractParentCategory(pathAttr: string): string {
@@ -204,8 +238,8 @@ export class ZimIndexer {
     const text = `${zimName} ${title} ${description} ${tags.join(' ')} ${parentCategory}`.toLowerCase();
     const categoriesSet = new Set<string>();
 
-    for (const [cat, keywords] of Object.entries(this.categoryKeywords)) {
-      for (const kw of keywords) {
+    for (const [cat, configObj] of Object.entries(this.categoryKeywords)) {
+      for (const kw of configObj.keywords) {
         if (text.includes(kw.toLowerCase())) {
           categoriesSet.add(cat);
           break;
@@ -236,9 +270,6 @@ export class ZimIndexer {
     return Array.from(new Set(tokens)).slice(0, 20);
   }
 
-  /**
-   * Print comprehensive index report to console
-   */
   public printIndexReport(indexData: ZimIndexData): void {
     console.log(`====================================================`);
     console.log(` Si4k ZIM Index Report`);
