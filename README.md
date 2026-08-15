@@ -1,6 +1,90 @@
 # Si4k Search Engine
 
-Unified, high-performance offline-first knowledge search engine for Kiwix, Wikipedia, wikiHow, iFixit, Stack Overflow, and local ZIM collections. Optimized for modest home servers and offline knowledge infrastructure.
+Unified, high-performance offline-first knowledge search engine for Kiwix and local ZIM collections including Wikipedia, wikiHow, iFixit, Stack Overflow, and other datasets. Optimized for modest home servers and offline knowledge infrastructure.
+
+![Si4k Search screenshot](docs/images/search.png)
+
+---
+
+## Why Si4k?
+
+Kiwix makes offline knowledge available, but large ZIM collections can contain hundreds of independent knowledge sources.
+
+Si4k Search provides a unified search layer across those sources.
+
+Instead of:
+
+```
+User ──→ one ZIM ──→ search
+```
+
+Si4k provides:
+
+```
+User ──→ Si4k Search ──→ relevant ZIMs ──→ unified results
+```
+
+- **Priority-Aware Search**: Dynamically routes queries to intent-matched ZIM sources first (e.g., ArchWiki for Linux setup queries, Stack Overflow for coding questions).
+- **Progressive Results**: Streams search matches to the user in real-time over SSE as individual ZIM sources complete.
+- **Full-Library Traversal**: Never terminates early or restricts total candidate search scope — continues traversing the entire library to guarantee deterministic completeness.
+- **Unified Pagination & Ranking**: Interleaves and re-ranks articles from multiple ZIMs using keyword frequency, category match, and source priority.
+- **Modest Hardware Optimization**: Designed to run efficiently on low-resource home servers (such as older Intel i5 5th-Gen servers).
+- **Configurable Deployment**: Easy to deploy via Docker, Docker Compose, or standalone Node.js daemon.
+
+---
+
+## Architecture Overview
+
+```
+                         ┌─────────────────┐
+                         │   User Query    │
+                         └────────┬────────┘
+                                  │
+                                  ▼
+                       ┌─────────────────────┐
+                       │ Query / Intent      │
+                       │ Classification      │
+                       └─────────┬───────────┘
+                                 │
+                    ┌────────────┴────────────┐
+                    ▼                         ▼
+              Priority Sources          Remaining Sources
+                    │                         │
+                    └────────────┬────────────┘
+                                 ▼
+                       ┌──────────────────┐
+                       │ Kiwix Providers  │
+                       └────────┬─────────┘
+                                ▼
+                       ┌──────────────────┐
+                       │ Result Mixer     │
+                       │ + Ranking        │
+                       └────────┬─────────┘
+                                ▼
+                       ┌──────────────────┐
+                       │ Progressive SSE  │
+                       └────────┬─────────┘
+                                ▼
+                         Search Results
+```
+
+### Key Components
+
+- **Two-Wave Priority Search Model**:
+  - **Wave 1**: Searches high-relevance prioritized ZIM sources.
+  - **Wave 2**: Continues searching remaining eligible ZIM sources until the configured search scope is exhausted or the search is cancelled.
+  - Priority determines search order, **never search scope**.
+- **Progressive SSE Result Streaming**:
+  - Emits progressive result batches over Server-Sent Events (SSE) as ZIM sources complete.
+  - Real-time client rendering with monotonic execution time tracking (`executionTimeMs`).
+- **User-Configurable LRU Search Cache**:
+  - Deterministic caching controlled via `.env` (`SEARCH_CACHE_ENABLED`, `SEARCH_CACHE_TTL_SECONDS`, `SEARCH_CACHE_MAX_ENTRIES`).
+  - Only complete search sessions enter the cache to prevent partial result pollution.
+- **Server Concurrency Valve & Resource Protection**:
+  - Queue-backed concurrency controls (`SEARCH_MAX_CONCURRENT=2`, `SEARCH_MAX_ZIM_WORKERS=4`, `SEARCH_REQUEST_TIMEOUT_MS=10000`).
+  - Automatic `AbortSignal` propagation cancels worker HTTP fetches when clients disconnect.
+- **Offline-first & Self-Contained UI**:
+  - Standalone inline SVG logo (`Si4kIcon`), inline SVG favicon, zero external network fonts/CDNs, and native system font stack.
 
 ---
 
@@ -35,23 +119,23 @@ docker run -d \
 
 ---
 
-## Key Architecture & Features
+## Performance & Benchmarks
 
-- **Two-Wave Priority Search Model**:
-  - **Wave 1**: Searches high-relevance prioritized ZIM sources (e.g., ArchWiki for Linux/Arch queries, Stack Overflow for code queries).
-  - **Wave 2**: Traverses all remaining eligible ZIM sources in the library.
-  - Priority determines search order, **never search scope** — search finishes only after full library traversal.
-- **Progressive SSE Result Streaming**:
-  - Emits progressive result batches over Server-Sent Events (SSE) as ZIM sources complete.
-  - Real-time client rendering with monotonic execution time tracking (`executionTimeMs`).
-- **User-Configurable LRU Search Cache**:
-  - Deterministic caching controlled via `.env` (`SEARCH_CACHE_ENABLED`, `SEARCH_CACHE_TTL_SECONDS`, `SEARCH_CACHE_MAX_ENTRIES`).
-  - Only complete search sessions enter the cache to prevent partial result pollution.
-- **Server Concurrency Valve & Resource Efficiency**:
-  - Strict queue-backed concurrency controls (`SEARCH_MAX_CONCURRENT=2`, `SEARCH_MAX_ZIM_WORKERS=4`, `SEARCH_REQUEST_TIMEOUT_MS=10000`).
-  - Automatic `AbortSignal` propagation cancels worker HTTP fetches when clients disconnect.
-- **100% Offline & Self-Contained UI**:
-  - Standalone inline SVG logo (`Si4kIcon`), inline SVG favicon, zero external network fonts/CDNs, and native system font stack.
+In current development benchmarks, Si4k Search remained around **160–230 MB RSS** memory under the tested workloads. Actual usage depends on query volume, ZIM count, concurrency, and configuration.
+
+### Development Benchmark Summary
+
+| Workload / Metric | Result |
+| :--- | ---: |
+| **ZIM sources searched** | 127 ZIM collections |
+| **Concurrent search sessions** | 2 |
+| **ZIM workers / search** | 4 |
+| **Peak Node RSS Memory** | ~230 MB |
+| **1 Uncached Search (Full Library Traversal)** | ~25 s |
+| **10 Concurrent Requests** | 0 failures / timeouts |
+| **Sustained Memory Leak Test (20 searches)** | No memory growth observed |
+
+*Note: Benchmarks were performed on the development host. Target-server performance will vary by hardware, storage, network, and ZIM configuration.*
 
 ---
 
@@ -81,7 +165,7 @@ docker run -d \
   ```bash
   curl http://localhost:3000/api/health
   ```
-  Returns `200 OK` with status:
+  Returns `200 OK`:
   ```json
   {
     "status": "ok",
@@ -123,15 +207,6 @@ Expected directory layout on host:
 
 ---
 
-## Resource Configuration & Limits
-
-For modest server hardware (e.g. Intel i5 5th-Gen servers, 4GB–8GB RAM):
-
-- **Internal Concurrency Valve**: Keep `SEARCH_MAX_CONCURRENT=2` and `SEARCH_MAX_ZIM_WORKERS=4`. This prevents CPU saturation during heavy concurrent search traffic.
-- **Memory Overhead**: Si4k Search uses only **~160MB–230MB RSS** memory. No restrictive Docker RAM caps are required.
-
----
-
 ## Graceful Shutdown
 
 During container shutdown or restarting (`docker stop` or `docker compose down`), Node.js catches `SIGTERM` and `SIGINT`:
@@ -161,18 +236,6 @@ npx tsc --noEmit && npm test
 ```bash
 npx tsx src/server/dockerVerification.test.ts
 ```
-
----
-
-## Troubleshooting
-
-1. **`GET /api/health/ready` returns 503 Service Unavailable**:
-   - Check if `KIWIX_URL` matches your Kiwix server address.
-   - Verify network accessibility: `curl http://<KIWIX_HOST>:8080/`.
-2. **Search results link to unreachable URLs**:
-   - Ensure `KIWIX_PUBLIC_URL` matches the address accessible by your client browser.
-3. **No ZIM sources discovered**:
-   - Verify `KIWIX_LIBRARY_XML` path points to a valid `library.xml` file.
 
 ---
 
@@ -214,3 +277,37 @@ User Query ──→ Language Detection
 - Pipeline: `Search ──→ Top N Ranked Results ──→ SummaryProvider ──→ Grounded Summary + Source Citations`.
 - Core search remains 100% operational without an AI model.
 
+---
+
+## Troubleshooting
+
+1. **`GET /api/health/ready` returns 503 Service Unavailable**:
+   - Check if `KIWIX_URL` matches your Kiwix server address.
+   - Verify network accessibility: `curl http://<KIWIX_HOST>:8080/`.
+2. **Search results link to unreachable URLs**:
+   - Ensure `KIWIX_PUBLIC_URL` matches the address accessible by your client browser.
+3. **No ZIM sources discovered**:
+   - Verify `KIWIX_LIBRARY_XML` path points to a valid `library.xml` file.
+
+---
+
+## Contributing
+
+Contributions are welcome! Key areas where contributions are particularly useful:
+
+- Search providers (OSM, PDF, EPUB, Structured Datasets)
+- Ranking & relevance algorithms
+- ZIM discovery & categorization
+- Performance & memory optimization
+- Multilingual language support & dictionaries
+- Local AI / Summary providers
+- UI / UX enhancements
+- Docker & home-server deployment guides
+
+---
+
+## License
+
+Si4k Search is open-source software licensed under the [MIT License](LICENSE).
+
+*Note: Individual ZIM datasets, books, and articles indexed by Kiwix may have their own licenses and redistribution terms. Check the license of each specific dataset before redistributing ZIM files.*
