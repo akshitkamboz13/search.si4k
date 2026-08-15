@@ -1,10 +1,86 @@
 {
-  "linux": ["linux", "ubuntu", "arch", "archlinux", "debian", "fedora", "pacman", "aur", "systemd", "terminal", "bash", "shell", "unix"],
-  "programming": ["code", "coding", "programming", "javascript", "typescript", "python", "react", "node", "golang", "go", "cmake", "redux", "leaflet", "pytorch", "liquid", "tensorflow", "gtk", "devdocs", "openlayers", "stack", "overflow"],
-  "medicine": ["fever", "symptom", "disease", "medicine", "medical", "treatment", "infection", "health", "doctor", "hospital", "nhs", "drug", "clinic"],
-  "cooking": ["recipe", "cook", "cooking", "food", "dish", "ingredient", "bake", "fry", "paneer", "kitchen", "meal", "dinner", "breakfast"],
-  "repair": ["repair", "fix", "replace", "broken", "battery", "screen", "teardown", "tool", "hardware", "ifixit", "iphone", "part", "diy"],
-  "automotive": ["car", "engine", "brake", "oil", "tyre", "vehicle", "motorcycle", "auto", "toyota", "honda", "ford"],
-  "guides": ["how to", "howto", "guide", "step by step", "instructions", "tutorial", "wikihow", "diy"],
-  "general": ["wikipedia", "general knowledge", "overview", "history", "geography", "biography", "science", "capital", "country", "city"]
+  "linux": [
+    "linux", "ubuntu", "arch", "archlinux", "debian", "fedora", "centos", "redhat", "alpine", "gentoo",
+    "pacman", "aur", "apt", "dpkg", "yum", "dnf", "systemd", "init", "kernel", "terminal", "bash", "zsh",
+    "sh", "shell", "cli", "command line", "grep", "sed", "awk", "chmod", "chown", "sudo", "root", "unix",
+    "bsd", "freebsd", "posix", "man page", "manpage"
+  ],
+  "programming": [
+    "code", "coding", "programming", "developer", "software", "algorithm", "data structure", "api", "sdk",
+    "javascript", "typescript", "python", "java", "c++", "cpp", "c#", "golang", "go", "rust", "ruby", "php",
+    "swift", "kotlin", "scala", "haskell", "html", "css", "sql", "git", "github", "react", "vue", "angular",
+    "node", "express", "django", "flask", "fastapi", "spring", "docker", "kubernetes", "cmake", "redux",
+    "leaflet", "pytorch", "liquid", "tensorflow", "gtk", "devdocs", "openlayers", "stack overflow", "bug",
+    "compiler", "interpreter", "debug", "testing", "refactor", "framework", "library"
+  ],
+  "technology": [
+    "technology", "tech", "computer", "computing", "network", "networking", "internet", "web", "server",
+    "cloud", "aws", "azure", "gcp", "security", "cybersecurity", "encryption", "crypto", "firewall", "vpn",
+    "database", "postgres", "mysql", "mongodb", "redis", "hardware", "cpu", "gpu", "ram", "ssd", "motherboard",
+    "processor", "embedded", "iot", "robotics", "ai", "machine learning", "deep learning", "neural network"
+  ],
+  "electronics": [
+    "electronics", "electronic", "circuit", "microcontroller", "arduino", "raspberry pi", "pcb", "resistor",
+    "capacitor", "transistor", "diode", "led", "voltage", "current", "power supply", "soldering", "schematic",
+    "sensor", "semiconductor", "integrated circuit", "chip", "logic gate", "oscilloscope", "multimeter"
+  ],
+  "repair": [
+    "repair", "fix", "replace", "broken", "troubleshoot", "maintenance", "battery", "screen", "teardown",
+    "tool", "hardware", "ifixit", "iphone", "android", "smartphone", "laptop", "pc", "console", "playstation",
+    "xbox", "nintendo", "part", "assembly", "disassembly", "soldering", "diy", "spare part", "socket", "wrench",
+    "screwdriver", "pliers"
+  ],
+  "automotive": [
+    "car", "automobile", "automotive", "engine", "motor", "transmission", "gearbox", "clutch", "brake",
+    "suspension", "steering", "oil", "coolant", "radiator", "tyre", "tire", "wheel", "exhaust", "muffler",
+    "vehicle", "motorcycle", "bike", "truck", "ev", "electric vehicle", "toyota", "honda", "ford", "bmw",
+    "mercedes", "nissan", "chevy", "mechanic", "dashboard", "spark plug"
+  ],
+  "medicine": [
+    "medicine", "medical", "health", "healthcare", "disease", "illness", "infection", "virus", "bacteria",
+    "symptom", "fever", "pain", "treatment", "cure", "therapy", "drug", "medication", "prescription", "antibiotic",
+    "vaccine", "doctor", "physician", "nurse", "hospital", "clinic", "surgery", "surgeon", "pharmacology",
+    "anatomy", "physiology", "pathology", "cardiology", "neurology", "oncology", "pediatrics", "psychiatry",
+    "nhs", "first aid", "emergency", "diagnosis"
+  ],
+  "cooking": [
+    "recipe", "cook", "cooking", "culinary", "food", "dish", "meal", "cuisine", "ingredient", "bake", "baking",
+    "roast", "fry", "grill", "boil", "steam", "saute", "kitchen", "chef", "paneer", "curry", "pasta", "pizza",
+    "soup", "salad", "dessert", "cake", "bread", "pastry", "sauce", "spice", "herb", "dinner", "lunch",
+    "breakfast", "snack", "cocktail", "beverage", "drink"
+  ],
+  "science": [
+    "science", "scientific", "physics", "quantum", "relativity", "mechanics", "thermodynamics", "optics",
+    "chemistry", "element", "compound", "molecule", "atom", "organic chemistry", "biology", "cell", "genetics",
+    "dna", "rna", "evolution", "ecology", "organism", "botany", "zoology", "astronomy", "astrophysics", "space",
+    "planet", "star", "galaxy", "universe", "geology", "earth science", "environment"
+  ],
+  "mathematics": [
+    "mathematics", "math", "maths", "algebra", "calculus", "geometry", "trigonometry", "arithmetic", "statistics",
+    "probability", "number theory", "equation", "formula", "theorem", "proof", "matrix", "vector", "integral",
+    "derivative", "logarithm", "prime number", "geometry"
+  ],
+  "history": [
+    "history", "historical", "ancient", "medieval", "modern history", "civilization", "empire", "kingdom",
+    "dynasty", "war", "battle", "revolution", "world war", "military", "army", "navy", "archaeology",
+    "artifact", "historian", "roman", "greek", "egyptian", "renaissance", "industrial revolution"
+  ],
+  "geography": [
+    "geography", "geographic", "map", "atlas", "globe", "country", "nation", "state", "city", "capital",
+    "continent", "ocean", "sea", "river", "mountain", "lake", "island", "desert", "climate", "weather",
+    "demographics", "population", "travel", "tourism", "border"
+  ],
+  "literature": [
+    "literature", "literary", "book", "novel", "fiction", "non-fiction", "story", "prose", "poetry", "poem",
+    "author", "writer", "play", "drama", "classic", "gutenberg", "project gutenberg", "library", "reading",
+    "essay", "biography", "autobiography", "mythology", "folklore", "philosophy"
+  ],
+  "guides": [
+    "how to", "howto", "guide", "step by step", "instructions", "tutorial", "walkthrough", "manual", "handbook",
+    "tips", "tricks", "wikihow", "diy", "self help", "explanation"
+  ],
+  "general": [
+    "wikipedia", "general knowledge", "encyclopedia", "overview", "summary", "reference", "dictionary",
+    "fact", "information", "article", "overview"
+  ]
 }
