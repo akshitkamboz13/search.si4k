@@ -17,6 +17,9 @@ export interface SelectedSourcesResult {
   moderatelyRelevant: DiscoveredZim[];
   generalFallback: DiscoveredZim[];
   selectedSources: DiscoveredZim[];
+  prioritySources: DiscoveredZim[];
+  remainingSources: DiscoveredZim[];
+  allRankedSources: DiscoveredZim[];
   intents: CategoryIntent[];
   scoredRanks: SourceRoutingScore[];
 }
@@ -30,20 +33,25 @@ export class SourceRelevance {
 
   /**
    * Refactored ZIM Search Routing:
-   * Driven primarily by query keyword/category matches, with predefined basePriority fallback.
+   * Priority ZIM selection determines search order, NEVER search scope.
+   * Orders all eligible ZIMs in the library into Wave 1 (Priority sources) and Wave 2 (Remaining sources).
    */
   public selectRelevantSources(
     query: string,
     discoveredSources: DiscoveredZim[],
-    maxSourcesToQuery: number = 10
+    priorityThresholdCount: number = 16
   ): SelectedSourcesResult {
     if (!query || !query.trim() || discoveredSources.length === 0) {
-      const fallback = discoveredSources.slice(0, maxSourcesToQuery);
+      const priority = discoveredSources.slice(0, priorityThresholdCount);
+      const remaining = discoveredSources.slice(priorityThresholdCount);
       return {
         highlyRelevant: [],
         moderatelyRelevant: [],
-        generalFallback: fallback,
-        selectedSources: fallback,
+        generalFallback: priority,
+        selectedSources: priority,
+        prioritySources: priority,
+        remainingSources: remaining,
+        allRankedSources: discoveredSources,
         intents: [],
         scoredRanks: [],
       };
@@ -54,13 +62,11 @@ export class SourceRelevance {
 
     // 1. Detect query intent categories
     const intents = this.zimIndexer.categorizeQueryIntents(normalizedQuery);
-    const matchedCategoryNames = intents.map(i => i.name);
 
     const keywordWeight = config.search.keywordWeight || 10;
     const basePriorityWeight = config.search.basePriorityWeight || 1;
-    const minSourceScore = config.search.minSourceScore || 5;
 
-    // 2. Score each discovered ZIM source
+    // 2. Score every single discovered ZIM source in the library
     const scoredRanks: SourceRoutingScore[] = discoveredSources.map(source => {
       let keywordPriority = 0;
       let intersectionBonus = 0;
@@ -87,7 +93,7 @@ export class SourceRelevance {
       if (uniqueMatchedCats.length === 1) {
         intersectionBonus += 10;
       } else if (uniqueMatchedCats.length >= 2) {
-        intersectionBonus += 35; // 20 base + 15 intersection bonus
+        intersectionBonus += 35;
       }
 
       // B. Metadata matching (Title, Tags, Parent Category, Keywords)
@@ -105,7 +111,6 @@ export class SourceRelevance {
             keywordPriority += 6;
             matchedKeywords.push(token);
           }
-          // Loose description match is kept very low (+1)
           if (descLower.includes(token)) {
             keywordPriority += 1;
           }
@@ -129,71 +134,33 @@ export class SourceRelevance {
       };
     });
 
-    // Sort all ZIMs by effectivePriority descending
+    // Sort ALL ZIMs in the library by effectivePriority descending
     scoredRanks.sort((a, b) => b.effectivePriority - a.effectivePriority);
+
+    const allRankedSources = scoredRanks.map(r => r.source);
+
+    // Wave 1: Priority sources (Top N highest priority sources)
+    const prioritySources = allRankedSources.slice(0, Math.min(priorityThresholdCount, allRankedSources.length));
+
+    // Wave 2: Remaining sources (All other ZIMs in the library)
+    const remainingSources = allRankedSources.slice(prioritySources.length);
 
     // Development logging for search routing decisions
     if (config.nodeEnv === 'development') {
       console.log(`\n[SearchRouting] Query: "${normalizedQuery}"`);
       console.log(`[SearchRouting] Detected Categories:`, intents.map(i => `${i.name} (score=${i.score})`).join(', ') || 'None');
-      console.log(`[SearchRouting] Top ZIM Routing:`);
-      scoredRanks.slice(0, 8).forEach(r => {
-        console.log(` - ${r.source.name.padEnd(25, ' ')} score=${r.effectivePriority} (kwPrio=${r.keywordPriority}, basePrio=${r.basePriority}, cats=[${r.matchedCategories.join(',')}])`);
-      });
-    }
-
-    const highlyRelevant: DiscoveredZim[] = [];
-    const moderatelyRelevant: DiscoveredZim[] = [];
-    const generalFallback: DiscoveredZim[] = [];
-
-    for (const rank of scoredRanks) {
-      if (rank.effectivePriority >= 100) {
-        highlyRelevant.push(rank.source);
-      } else if (rank.effectivePriority >= minSourceScore) {
-        moderatelyRelevant.push(rank.source);
-      } else if (rank.source.category === 'general' || rank.source.zimName.includes('wikipedia') || rank.source.zimName.includes('gutenberg')) {
-        generalFallback.push(rank.source);
-      }
-    }
-
-    const selected: DiscoveredZim[] = [];
-
-    // Wave 1: Highest relevance ZIMs
-    for (const s of highlyRelevant) {
-      if (selected.length < maxSourcesToQuery && !selected.some(x => x.id === s.id)) {
-        selected.push(s);
-      }
-    }
-
-    // Wave 2: Next relevant ZIMs
-    for (const s of moderatelyRelevant) {
-      if (selected.length < maxSourcesToQuery && !selected.some(x => x.id === s.id)) {
-        selected.push(s);
-      }
-    }
-
-    // Wave 3: General fallback ZIMs
-    for (const s of generalFallback) {
-      if (selected.length < maxSourcesToQuery && !selected.some(x => x.id === s.id)) {
-        selected.push(s);
-      }
-    }
-
-    // Fallback if less than 4 sources selected
-    if (selected.length < 4) {
-      for (const item of scoredRanks) {
-        if (selected.length >= maxSourcesToQuery) break;
-        if (!selected.some(x => x.id === item.source.id)) {
-          selected.push(item.source);
-        }
-      }
+      console.log(`[SearchRouting] Priority Sources (${prioritySources.length}):`, prioritySources.map(s => s.name).join(', '));
+      console.log(`[SearchRouting] Remaining Sources (${remainingSources.length}):`, remainingSources.length);
     }
 
     return {
-      highlyRelevant,
-      moderatelyRelevant,
-      generalFallback,
-      selectedSources: selected,
+      highlyRelevant: prioritySources,
+      moderatelyRelevant: [],
+      generalFallback: remainingSources,
+      selectedSources: prioritySources,
+      prioritySources,
+      remainingSources,
+      allRankedSources,
       intents,
       scoredRanks,
     };

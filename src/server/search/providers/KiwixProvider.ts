@@ -1,6 +1,7 @@
 import * as cheerio from 'cheerio';
 import { SearchProvider } from '../types.js';
 import { SearchResult, SearchOptions, SearchSourceConfig, SearchMode } from '../../../shared/types.js';
+import { config } from '../../config.js';
 
 export interface KiwixProviderOptions {
   localUrl: string;           // Local internal backend URL (KIWIX_LOCAL_URL)
@@ -8,6 +9,7 @@ export interface KiwixProviderOptions {
   onlineUrl?: string;         // Online internal backend URL (KIWIX_ONLINE_URL)
   onlinePublicUrl?: string;   // Online public browser URL (KIWIX_ONLINE_PUBLIC_URL)
   sources?: SearchSourceConfig[];
+  maxCandidatesPerSource?: number; // Target per-source candidate pool limit (defaults to KIWIX_CANDIDATE_LIMIT)
 }
 
 export class KiwixProvider implements SearchProvider {
@@ -17,12 +19,14 @@ export class KiwixProvider implements SearchProvider {
   private onlineUrl: string;
   private onlinePublicUrl: string;
   private sourcesList: SearchSourceConfig[] = [];
+  private maxCandidatesPerSource: number;
 
   constructor(options: KiwixProviderOptions) {
     this.localUrl = options.localUrl.replace(/\/$/, '');
     this.localPublicUrl = options.localPublicUrl.replace(/\/$/, '');
     this.onlineUrl = (options.onlineUrl || options.localUrl).replace(/\/$/, '');
     this.onlinePublicUrl = (options.onlinePublicUrl || options.localPublicUrl).replace(/\/$/, '');
+    this.maxCandidatesPerSource = options.maxCandidatesPerSource !== undefined ? options.maxCandidatesPerSource : (config.kiwix.candidateLimit || 100);
 
     if (options.sources) {
       this.setSources(options.sources);
@@ -54,7 +58,43 @@ export class KiwixProvider implements SearchProvider {
   }
 
   /**
-   * Search full-text contents inside a single ZIM file independently for a given mode.
+   * Helper to fetch a single HTML page from Kiwix search endpoint
+   */
+  private async fetchHtmlPage(internalUrl: string, zimName: string, query: string, start: number): Promise<string | null> {
+    const searchUrl = `${internalUrl}/search?content=${encodeURIComponent(zimName)}&pattern=${encodeURIComponent(query)}&start=${start}`;
+    try {
+      const response = await fetch(searchUrl, {
+        headers: {
+          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+          'User-Agent': 'Si4k-Search-Engine/1.0',
+        },
+      });
+
+      if (!response.ok) {
+        return null;
+      }
+      return await response.text();
+    } catch (err) {
+      console.error(`[KiwixProvider] Fetch error for '${zimName}' start=${start}:`, err);
+      return null;
+    }
+  }
+
+  /**
+   * Parse total matches reported by Kiwix HTML (e.g., "Results 1-25 of 312")
+   */
+  public parseKiwixReportedTotal(html: string): number {
+    if (!html) return 0;
+    const match = html.match(/Results\s*<b>\d+-\d+<\/b>\s*of\s*<b>([\d,]+)<\/b>/i);
+    if (match && match[1]) {
+      const parsed = parseInt(match[1].replace(/,/g, ''), 10);
+      return isNaN(parsed) ? 0 : parsed;
+    }
+    return 0;
+  }
+
+  /**
+   * Search full-text contents inside a single ZIM file across multiple pages up to maxCandidatesPerSource.
    */
   async searchZimSource(
     source: SearchSourceConfig,
@@ -66,28 +106,54 @@ export class KiwixProvider implements SearchProvider {
     const trimmedQuery = query.trim();
     const { internalUrl, publicUrl } = this.getUrlsForMode(mode);
 
-    // Kiwix search endpoint: /search?content={zimName}&pattern={query}
-    const searchUrl = `${internalUrl}/search?content=${encodeURIComponent(source.zimName)}&pattern=${encodeURIComponent(trimmedQuery)}`;
-
-    try {
-      const response = await fetch(searchUrl, {
-        headers: {
-          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-          'User-Agent': 'Si4k-Search-Engine/1.0',
-        },
-      });
-
-      if (!response.ok) {
-        console.warn(`[KiwixProvider] ${source.name} (${source.zimName}) request returned HTTP ${response.status} from ${searchUrl}`);
-        return [];
-      }
-
-      const html = await response.text();
-      return this.parseKiwixHtml(html, source, publicUrl);
-    } catch (err) {
-      console.error(`[KiwixProvider] Error querying ZIM '${source.zimName}' (${source.name}) at ${searchUrl}:`, err);
+    // 1. Fetch initial Page 1 (start=0)
+    const firstHtml = await this.fetchHtmlPage(internalUrl, source.zimName, trimmedQuery, 0);
+    if (!firstHtml) {
+      console.log(`[Kiwix]\nsource=${source.name}\nrawCandidates=0\ncandidateLimit=${this.maxCandidatesPerSource}\ncandidatesAfterLimit=0\n`);
       return [];
     }
+
+    const kiwixReportedTotal = this.parseKiwixReportedTotal(firstHtml);
+    const seenPaths = new Set<string>();
+    const page0Results = this.parseKiwixHtml(firstHtml, source, publicUrl, seenPaths);
+    let allParsedCount = page0Results.length;
+
+    const accumulatedResults: SearchResult[] = [...page0Results];
+
+    // 2. Fetch additional pages if Kiwix reports more matches than 25
+    const pageSize = 25;
+    const targetCandidateLimit = this.maxCandidatesPerSource;
+
+    if (kiwixReportedTotal > pageSize && accumulatedResults.length < targetCandidateLimit) {
+      const pageStarts: number[] = [];
+      for (let start = pageSize; start < Math.min(kiwixReportedTotal, targetCandidateLimit); start += pageSize) {
+        pageStarts.push(start);
+      }
+
+      // Fetch remaining pages concurrently
+      const pageHtmls = await Promise.all(
+        pageStarts.map(start => this.fetchHtmlPage(internalUrl, source.zimName, trimmedQuery, start))
+      );
+
+      for (const html of pageHtmls) {
+        if (html) {
+          const pageItems = this.parseKiwixHtml(html, source, publicUrl, seenPaths);
+          allParsedCount += pageItems.length;
+          accumulatedResults.push(...pageItems);
+          if (accumulatedResults.length >= targetCandidateLimit) {
+            break;
+          }
+        }
+      }
+    }
+
+    const finalResults = accumulatedResults.slice(0, targetCandidateLimit);
+    const rawCandidates = kiwixReportedTotal || allParsedCount;
+
+    // Required Diagnostics Log per Source
+    console.log(`[Kiwix]\nsource=${source.name}\nrawCandidates=${rawCandidates}\ncandidateLimit=${targetCandidateLimit}\ncandidatesAfterLimit=${finalResults.length}\n`);
+
+    return finalResults;
   }
 
   /**
@@ -105,7 +171,6 @@ export class KiwixProvider implements SearchProvider {
 
     const searchPromises = activeSources.map(async (source) => {
       const results = await this.searchZimSource(source, trimmedQuery, mode);
-      console.log(`[KiwixProvider] [Mode: ${mode}] ${source.name} -> ${results.length} results`);
       return results;
     });
 
@@ -116,12 +181,16 @@ export class KiwixProvider implements SearchProvider {
   /**
    * Parses HTML response from kiwix-serve search output.
    */
-  public parseKiwixHtml(html: string, source: SearchSourceConfig, publicUrl: string = this.localPublicUrl): SearchResult[] {
+  public parseKiwixHtml(
+    html: string,
+    source: SearchSourceConfig,
+    publicUrl: string = this.localPublicUrl,
+    seenPaths: Set<string> = new Set<string>()
+  ): SearchResult[] {
     if (!html || !html.trim()) return [];
 
     const $ = cheerio.load(html);
     const results: SearchResult[] = [];
-    const seenPaths = new Set<string>();
 
     const listItems = $('.results ul li, div.results li, .results li');
 

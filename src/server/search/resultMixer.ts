@@ -1,4 +1,5 @@
 import { SearchResult } from '../../shared/types.js';
+import { ArticleScorer } from './ArticleScorer.js';
 
 export interface SourceResultsGroup {
   sourceId: string;
@@ -8,91 +9,68 @@ export interface SourceResultsGroup {
 }
 
 export class ResultMixer {
+  private articleScorer: ArticleScorer;
+
+  constructor() {
+    this.articleScorer = new ArticleScorer();
+  }
+
   /**
-   * Mix results across sources adaptively for a target size (default 140).
-   * Sorting is 100% deterministic:
-   * 1. Effective source priority descending
-   * 2. Alphabetical sourceName tie-breaker
-   * 3. Native provider result ranking
+   * Mix and rank results across sources query-aware for a target size (default 140).
+   * 
+   * Scoring formula per article:
+   * finalScore = nativeSearchScore + keywordMatchScore + categoryMatchScore + effectiveSourcePriority
+   * 
+   * Deterministic sorting:
+   * 1. finalScore descending
+   * 2. nativeSearchScore descending
+   * 3. title alphabetical tie-breaker
    */
-  public mixResults(groups: SourceResultsGroup[], targetSize: number = 140): SearchResult[] {
+  public mixResults(groups: SourceResultsGroup[], targetSize: number = 140, query: string = ''): SearchResult[] {
     if (groups.length === 0) return [];
 
-    // 1. Sort source groups by effective priority descending with deterministic tie-breaker
-    const sortedGroups = [...groups].sort((a, b) => {
-      if (b.effectivePriority !== a.effectivePriority) {
-        return b.effectivePriority - a.effectivePriority;
-      }
-      return a.sourceName.localeCompare(b.sourceName);
-    });
+    const allScoredResults: SearchResult[] = [];
 
-    // Filter out groups with 0 results
-    const activeGroups = sortedGroups.filter(g => g.results.length > 0);
-    if (activeGroups.length === 0) return [];
+    // 1. Score every article inside each source group relative to the query
+    for (const group of groups) {
+      if (group.results.length === 0) continue;
 
-    // Create pools of remaining results per source
-    const pools = activeGroups.map(g => ({
-      group: g,
-      remaining: [...g.results],
-    }));
-
-    const mixedResults: SearchResult[] = [];
-    const sourcePickedCounts: Record<string, number> = {};
-    activeGroups.forEach(g => { sourcePickedCounts[g.sourceId] = 0; });
-
-    // Calculate initial allocation caps per rank position
-    // Rank 0: 6, Rank 1: 5, Rank 2: 4, Rank 3+: 3
-    const initialCaps = activeGroups.map((_, index) => {
-      if (index === 0) return 6;
-      if (index === 1) return 5;
-      if (index === 2) return 4;
-      return 3;
-    });
-
-    // Pass 1: Round-robin pick up to initial caps
-    let addedInPass = true;
-    while (mixedResults.length < targetSize && addedInPass) {
-      addedInPass = false;
-
-      for (let i = 0; i < pools.length; i++) {
-        if (mixedResults.length >= targetSize) break;
-
-        const pool = pools[i];
-        const cap = initialCaps[i];
-        const currentPicked = sourcePickedCounts[pool.group.sourceId];
-
-        if (currentPicked < cap && pool.remaining.length > 0) {
-          const item = pool.remaining.shift()!;
-          item.sourceId = pool.group.sourceId;
-          item.effectivePriority = pool.group.effectivePriority;
-          mixedResults.push(item);
-          sourcePickedCounts[pool.group.sourceId] += 1;
-          addedInPass = true;
-        }
-      }
+      group.results.forEach((item, index) => {
+        this.articleScorer.scoreArticle(
+          item,
+          query,
+          { basePriority: 5, effectivePriority: group.effectivePriority, categories: [group.sourceName.toLowerCase()] },
+          index
+        );
+        allScoredResults.push(item);
+      });
     }
 
-    // Pass 2: Adaptive deficit redistribution
-    while (mixedResults.length < targetSize) {
-      let candidateFound = false;
+    if (allScoredResults.length === 0) return [];
 
-      for (let i = 0; i < pools.length; i++) {
-        if (mixedResults.length >= targetSize) break;
-
-        const pool = pools[i];
-        if (pool.remaining.length > 0) {
-          const item = pool.remaining.shift()!;
-          item.sourceId = pool.group.sourceId;
-          item.effectivePriority = pool.group.effectivePriority;
-          mixedResults.push(item);
-          sourcePickedCounts[pool.group.sourceId] += 1;
-          candidateFound = true;
-        }
+    // 2. Deterministic cross-source sorting by finalScore DESC
+    allScoredResults.sort((a, b) => {
+      const scoreA = a.finalScore ?? 0;
+      const scoreB = b.finalScore ?? 0;
+      if (scoreB !== scoreA) {
+        return scoreB - scoreA;
       }
+      const nativeA = a.nativeSearchScore ?? 0;
+      const nativeB = b.nativeSearchScore ?? 0;
+      if (nativeB !== nativeA) {
+        return nativeB - nativeA;
+      }
+      return a.title.localeCompare(b.title);
+    });
 
-      if (!candidateFound) break;
+    // Development logging of top article-level scoring breakdown
+    if (process.env.NODE_ENV === 'development' && query) {
+      console.log(`\n[ArticleRanking] Query: "${query}" (Total Candidates: ${allScoredResults.length})`);
+      allScoredResults.slice(0, 6).forEach(r => {
+        console.log(` - "${r.title}" (${r.source}) -> finalScore=${r.finalScore} (native=${r.nativeSearchScore}, kwScore=${r.keywordMatchScore}, catScore=${r.categoryMatchScore}, srcPrio=${r.effectivePriority})`);
+      });
     }
 
-    return mixedResults;
+    return allScoredResults.slice(0, targetSize);
   }
 }

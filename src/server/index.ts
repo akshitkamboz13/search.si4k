@@ -12,6 +12,9 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 
+// Trust reverse proxies (Cloudflare, nginx, LAN proxies) for proper req.ip / req.protocol handling
+app.set('trust proxy', true);
+
 app.use(cors());
 app.use(express.json());
 
@@ -66,6 +69,7 @@ app.listen(config.port, async () => {
   console.log(` Si4k Search Engine Running`);
   console.log(` Mode:               ${config.nodeEnv}`);
   console.log(` Port:               ${config.port}`);
+  console.log(` Environment:        ${config.environment.override !== 'auto' ? `Override (${config.environment.override})` : 'Auto-detected'}`);
   console.log(` Kiwix Data Dir:     ${config.kiwix.dataDir}`);
   console.log(` Kiwix Library XML:  ${config.kiwix.libraryXml}`);
   console.log(` Kiwix Local URL:    ${config.kiwix.localUrl}`);

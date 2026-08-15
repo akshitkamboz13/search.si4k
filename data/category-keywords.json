@@ -25,7 +25,7 @@
   },
   "cooking": {
     "priority": 10,
-    "keywords": ["recipe", "cook", "cooking", "culinary", "food", "dish", "meal", "cuisine", "ingredient", "bake", "baking", "roast", "fry", "boil", "steam", "saute", "kitchen", "chef", "paneer", "curry", "pasta", "pizza", "soup", "salad", "dessert", "cake", "bread", "spice", "drink"]
+    "keywords": ["recipe", "cook", "cooking", "culinary", "food", "dish", "meal", "cuisine", "ingredient", "bake", "baking", "roast", "fry", "boil", "steam", "saute", "kitchen", "chef", "paneer", "curry", "pasta", "pizza", "soup", "salad", "dessert", "cake", "bread", "spice", "drink", "veg", "non-veg", "veggie", "non-veggie", "chicken", "mutton", "fish", "egg", "vegitarian", "non-vegitarian", "beef", "pork", "vegan"]
   },
   "repair": {
     "priority": 10,

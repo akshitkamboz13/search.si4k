@@ -1,16 +1,17 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { SearchResponse, SearchMode, StreamEventPayload } from '../shared/types.js';
+import { SearchResponse, SearchResult, SearchMode, StreamEventPayload } from '../shared/types.js';
 import { Header } from './components/Header.js';
 import { SearchBar } from './components/SearchBar.js';
 import { SearchResults } from './components/SearchResults.js';
 import { LoadingState } from './components/LoadingState.js';
 import { ErrorState } from './components/ErrorState.js';
-import { streamSearchResults } from './services/api.js';
+import { streamSearchResults, fetchEnvironment } from './services/api.js';
 import { BookOpen, MapPin, Database } from 'lucide-react';
 
 export const App: React.FC = () => {
   const [query, setQuery] = useState<string>('');
   const [mode, setMode] = useState<SearchMode>('local');
+  const [environment, setEnvironment] = useState<'local' | 'internet'>('local');
   const [page, setPage] = useState<number>(1);
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const [loading, setLoading] = useState<boolean>(false);
@@ -19,28 +20,75 @@ export const App: React.FC = () => {
   const [streamStatus, setStreamStatus] = useState<string>('');
 
   const cancelStreamRef = useRef<(() => void) | null>(null);
+  const accumulatedResultsRef = useRef<SearchResult[]>([]);
+  const seenResultIdsRef = useRef<Set<string>>(new Set());
+  const sourcesMetadataRef = useRef<Record<string, { count: number; effectivePriority?: number }>>({});
+  const executionTimeMsRef = useRef<number>(0);
+  const isEnvInitializedRef = useRef<boolean>(false);
 
   // Synchronize theme with DOM data-theme attribute
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
   }, [theme]);
 
+  const updateResponseState = useCallback((currentPage: number, searchMode: SearchMode, statusText?: string, isStreaming: boolean = true) => {
+    const accumulated = accumulatedResultsRef.current;
+    const pageSize = 20;
+    const totalResults = accumulated.length;
+    const totalPages = totalResults > 0 ? Math.ceil(totalResults / pageSize) : 1;
+
+    let validPage = Math.floor(currentPage);
+    if (isNaN(validPage) || validPage < 1) validPage = 1;
+    if (validPage > totalPages) validPage = totalPages;
+
+    const startIndex = (validPage - 1) * pageSize;
+    const pageResults = accumulated.slice(startIndex, startIndex + pageSize);
+
+    setResponse({
+      query: query || '',
+      mode: searchMode,
+      results: pageResults,
+      sources: { ...sourcesMetadataRef.current },
+      pagination: {
+        page: validPage,
+        pageSize,
+        totalResults,
+        totalPages,
+        hasNextPage: validPage < totalPages,
+        hasPreviousPage: validPage > 1,
+      },
+      meta: {
+        mode: searchMode,
+        total: totalResults,
+        executionTimeMs: executionTimeMsRef.current,
+        providers: ['kiwix'],
+        isStreaming,
+        statusText,
+      },
+    });
+  }, [query]);
+
   const executeSearch = useCallback(
     (searchQuery: string, searchMode: SearchMode = mode, searchPage: number = page) => {
-      // Cancel any ongoing stream
+      // 1. Cancel previous stream if active
       if (cancelStreamRef.current) {
         cancelStreamRef.current();
         cancelStreamRef.current = null;
       }
 
+      // 2. Completely reset state for fresh deterministic search
+      accumulatedResultsRef.current = [];
+      seenResultIdsRef.current.clear();
+      sourcesMetadataRef.current = {};
+      executionTimeMsRef.current = 0;
+
       setLoading(true);
       setError(null);
+      setResponse(null);
       setStreamStatus('Initiating search...');
 
-      // Build updated URL preserving q, mode, page
       const params = new URLSearchParams();
       params.set('q', searchQuery);
-      params.set('mode', searchMode);
       if (searchPage > 1) {
         params.set('page', String(searchPage));
       }
@@ -56,20 +104,34 @@ export const App: React.FC = () => {
             if (payload.data.statusText) {
               setStreamStatus(payload.data.statusText);
             }
-          } else if (payload.event === 'results') {
+          } else if (payload.event === 'results' || payload.event === 'complete') {
             setLoading(false);
-            if (payload.data.results) {
-              setResponse(payload.data as SearchResponse);
+
+            if (payload.data.sources) {
+              sourcesMetadataRef.current = { ...sourcesMetadataRef.current, ...payload.data.sources };
             }
-            if (payload.data.meta?.statusText) {
-              setStreamStatus(payload.data.meta.statusText);
+
+            if (payload.data.meta && typeof payload.data.meta.executionTimeMs === 'number') {
+              executionTimeMsRef.current = payload.data.meta.executionTimeMs;
             }
-          } else if (payload.event === 'complete') {
-            setLoading(false);
-            if (payload.data.results) {
-              setResponse(payload.data as SearchResponse);
+
+            if (payload.data.results && payload.data.results.length > 0) {
+              const incoming = payload.data.results;
+              const seen = seenResultIdsRef.current;
+              const accumulated = accumulatedResultsRef.current;
+
+              for (const item of incoming) {
+                const dedupeKey = item.id || `${item.source}:${item.title}`;
+                if (!seen.has(dedupeKey)) {
+                  seen.add(dedupeKey);
+                  accumulated.push(item);
+                }
+              }
             }
-            setStreamStatus('Search complete');
+
+            const currentStatus = payload.event === 'complete' ? 'Search complete' : (payload.data.meta?.statusText || 'Searching sources...');
+            setStreamStatus(currentStatus);
+            updateResponseState(searchPage, searchMode, currentStatus, payload.event !== 'complete');
           }
         },
         (err: Error) => {
@@ -79,35 +141,56 @@ export const App: React.FC = () => {
         }
       );
     },
-    [mode, page]
+    [mode, page, updateResponseState]
   );
 
-  // Initial URL parsing & Browser Back/Forward (popstate) support
+  // Initialize Environment first, then execute search cleanly from URL
   useEffect(() => {
-    const handleUrlState = () => {
+    fetchEnvironment()
+      .then((envRes) => {
+        let activeMode: SearchMode = 'local';
+        if (envRes && envRes.mode) {
+          activeMode = envRes.mode;
+          setMode(envRes.mode);
+          setEnvironment(envRes.environment || 'local');
+        }
+        isEnvInitializedRef.current = true;
+
+        const params = new URLSearchParams(window.location.search);
+        const initialQ = params.get('q') || '';
+        const initialPage = parseInt(params.get('page') || '1', 10);
+        const validPage = isNaN(initialPage) || initialPage < 1 ? 1 : initialPage;
+        setPage(validPage);
+
+        if (initialQ) {
+          setQuery(initialQ);
+          executeSearch(initialQ, activeMode, validPage);
+        }
+      })
+      .catch((err) => {
+        console.warn('Environment detection error:', err);
+        isEnvInitializedRef.current = true;
+      });
+
+    const handlePopState = () => {
       const params = new URLSearchParams(window.location.search);
       const initialQ = params.get('q') || '';
-      const initialMode = (params.get('mode') as SearchMode) || 'local';
       const initialPage = parseInt(params.get('page') || '1', 10);
-
-      setMode(initialMode);
       const validPage = isNaN(initialPage) || initialPage < 1 ? 1 : initialPage;
       setPage(validPage);
 
       if (initialQ) {
         setQuery(initialQ);
-        executeSearch(initialQ, initialMode, validPage);
+        executeSearch(initialQ, mode, validPage);
       } else {
         setQuery('');
         setResponse(null);
       }
     };
 
-    handleUrlState();
-
-    window.addEventListener('popstate', handleUrlState);
+    window.addEventListener('popstate', handlePopState);
     return () => {
-      window.removeEventListener('popstate', handleUrlState);
+      window.removeEventListener('popstate', handlePopState);
       if (cancelStreamRef.current) {
         cancelStreamRef.current();
       }
@@ -123,16 +206,16 @@ export const App: React.FC = () => {
   const handlePageChange = (newPage: number) => {
     setPage(newPage);
     if (query) {
-      executeSearch(query, mode, newPage);
+      const params = new URLSearchParams(window.location.search);
+      params.set('q', query);
+      if (newPage > 1) {
+        params.set('page', String(newPage));
+      } else {
+        params.delete('page');
+      }
+      window.history.pushState({ q: query, mode, page: newPage }, '', `${window.location.pathname}?${params.toString()}`);
+      updateResponseState(newPage, mode, streamStatus, Boolean(response?.meta?.isStreaming));
       window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-  };
-
-  const handleModeChange = (newMode: SearchMode) => {
-    setMode(newMode);
-    setPage(1);
-    if (query) {
-      executeSearch(query, newMode, 1);
     }
   };
 
@@ -145,6 +228,10 @@ export const App: React.FC = () => {
       cancelStreamRef.current();
       cancelStreamRef.current = null;
     }
+    accumulatedResultsRef.current = [];
+    seenResultIdsRef.current.clear();
+    sourcesMetadataRef.current = {};
+    executionTimeMsRef.current = 0;
     setQuery('');
     setPage(1);
     setResponse(null);
@@ -159,7 +246,7 @@ export const App: React.FC = () => {
     <div className="app-container">
       <Header
         mode={mode}
-        onModeChange={handleModeChange}
+        environment={environment}
         theme={theme}
         onThemeToggle={handleThemeToggle}
         onHomeClick={handleHomeClick}
@@ -192,6 +279,7 @@ export const App: React.FC = () => {
         {response && (
           <SearchResults
             response={response}
+            allResults={accumulatedResultsRef.current}
             onPageChange={handlePageChange}
             streamStatus={streamStatus}
           />

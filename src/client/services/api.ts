@@ -1,5 +1,21 @@
 import { SearchResponse, SearchMode, StreamEventPayload } from '../../shared/types.js';
 
+export interface EnvironmentResponse {
+  environment: 'local' | 'internet';
+  mode: SearchMode;
+  publicUrl: string;
+  clientIp?: string;
+  isDevOverride?: boolean;
+}
+
+export async function fetchEnvironment(): Promise<EnvironmentResponse> {
+  const response = await fetch('/api/environment');
+  if (!response.ok) {
+    return { environment: 'local', mode: 'local', publicUrl: '' };
+  }
+  return response.json();
+}
+
 export async function fetchSearchResults(
   query: string,
   mode: SearchMode = 'local',
@@ -63,7 +79,6 @@ export function streamSearchResults(
         const data = JSON.parse(event.data);
         onError(new Error(data.message || 'Streaming search failed'));
       } else {
-        // Normal close on stream end
         eventSource.close();
       }
     } catch {

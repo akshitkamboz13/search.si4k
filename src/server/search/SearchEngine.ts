@@ -8,9 +8,84 @@ import { config } from '../config.js';
 import sourcesData from '../config/sources.json' with { type: 'json' };
 
 export interface QueryCacheEntry {
+  key: string;
   unifiedResults: SearchResult[];
   sourceCounts: Record<string, { count: number; effectivePriority?: number }>;
   timestamp: number;
+}
+
+export class SearchCache {
+  private cache: Map<string, QueryCacheEntry> = new Map();
+
+  public get(key: string): QueryCacheEntry | null {
+    if (!config.cache.enabled) return null;
+
+    const entry = this.cache.get(key);
+    if (!entry) {
+      if (config.cache.debug) {
+        console.log(`[Cache] MISS key=${key}`);
+      }
+      return null;
+    }
+
+    const ageSeconds = (Date.now() - entry.timestamp) / 1000;
+    if (ageSeconds > config.cache.ttlSeconds) {
+      this.cache.delete(key);
+      if (config.cache.debug) {
+        console.log(`[Cache] EXPIRED key=${key}`);
+      }
+      return null;
+    }
+
+    // Refresh LRU position (move to end)
+    this.cache.delete(key);
+    this.cache.set(key, entry);
+
+    if (config.cache.debug) {
+      console.log(`[Cache] HIT key=${key} age=${Math.round(ageSeconds)}s`);
+    }
+    return entry;
+  }
+
+  public set(key: string, data: Omit<QueryCacheEntry, 'key' | 'timestamp'>): void {
+    if (!config.cache.enabled) return;
+
+    if (this.cache.has(key)) {
+      this.cache.delete(key);
+    }
+
+    while (this.cache.size >= config.cache.maxEntries) {
+      const oldestKey = this.cache.keys().next().value;
+      if (oldestKey) {
+        this.cache.delete(oldestKey);
+        if (config.cache.debug) {
+          console.log(`[Cache] EVICT key=${oldestKey}`);
+        }
+      } else {
+        break;
+      }
+    }
+
+    const fullEntry: QueryCacheEntry = {
+      key,
+      ...data,
+      timestamp: Date.now(),
+    };
+
+    this.cache.set(key, fullEntry);
+
+    if (config.cache.debug) {
+      console.log(`[Cache] STORE key=${key} entries=${this.cache.size}`);
+    }
+  }
+
+  public clear(): void {
+    this.cache.clear();
+  }
+
+  public get size(): number {
+    return this.cache.size;
+  }
 }
 
 export class SearchEngine {
@@ -19,8 +94,7 @@ export class SearchEngine {
   private sourceRelevance: SourceRelevance;
   private sourceRanker: SourceRanker;
   private resultMixer: ResultMixer;
-  private queryCache: Map<string, QueryCacheEntry> = new Map();
-  private readonly ttlMs: number = 10 * 60 * 1000; // 10 minutes TTL
+  public searchCache: SearchCache = new SearchCache();
 
   constructor(customLibrary?: ZimLibrary | SearchSourceConfig[], customScoring?: ScoringConfig) {
     if (customLibrary && Array.isArray(customLibrary)) {
@@ -69,9 +143,6 @@ export class SearchEngine {
     return this.zimLibrary.getDiscoveredSources();
   }
 
-  /**
-   * Helper method to paginate any pre-ordered array of SearchResults safely.
-   */
   public paginateResults(
     unifiedList: SearchResult[],
     requestedPage: number = 1,
@@ -106,7 +177,7 @@ export class SearchEngine {
    * Standard Search Endpoint (Non-streaming compatibility)
    */
   async search(query: string, options: SearchOptions = {}): Promise<SearchResponse> {
-    const startTime = Date.now();
+    const startedAt = performance.now();
     const mode = options.mode || 'local';
     const lang = options.lang || 'en';
     const pageSize = options.pageSize || 20;
@@ -136,27 +207,25 @@ export class SearchEngine {
       };
     }
 
-    const cacheKey = `${trimmedQuery.toLowerCase()}:${mode}:${lang}`;
-    let cached = this.queryCache.get(cacheKey);
+    const cacheKey = `${trimmedQuery.toLowerCase()}:${mode}:${lang}:v1`;
+    let cached = this.searchCache.get(cacheKey);
 
-    if (!cached || (Date.now() - cached.timestamp > this.ttlMs)) {
+    if (!cached) {
       const allDiscovered = await this.zimLibrary.getDiscoveredSources();
       const langSources = allDiscovered.filter(s => s.lang === lang || !s.lang);
 
-      const relevanceSelection = this.sourceRelevance.selectRelevantSources(trimmedQuery, langSources, 12);
-      const selectedZims = relevanceSelection.selectedSources;
+      const relevanceSelection = this.sourceRelevance.selectRelevantSources(trimmedQuery, langSources, 16);
+      const selectedZims = relevanceSelection.allRankedSources;
 
       const kiwixProvider = this.providers.get('kiwix');
       if (kiwixProvider && 'setSources' in kiwixProvider) {
         (kiwixProvider as any).setSources(selectedZims);
       }
 
-      const rankedSelected = this.sourceRanker.rankSources(selectedZims, trimmedQuery);
-
       const groups: SourceResultsGroup[] = [];
       const sourceCounts: Record<string, { count: number; effectivePriority?: number }> = {};
 
-      for (const source of rankedSelected) {
+      for (const source of selectedZims) {
         const provider = this.providers.get(source.provider);
         if (!provider) continue;
 
@@ -167,37 +236,44 @@ export class SearchEngine {
           groups.push({
             sourceId: source.id,
             sourceName: source.name,
-            effectivePriority: source.effectivePriority,
+            effectivePriority: source.basePriority,
             results: matchingResults,
           });
 
           sourceCounts[source.name] = {
             count: matchingResults.length,
-            effectivePriority: source.effectivePriority,
+            effectivePriority: source.basePriority,
           };
         } catch (err) {
           console.error(`[SearchEngine] Error querying source '${source.name}':`, err);
         }
       }
 
-      const unifiedResults = this.resultMixer.mixResults(groups, 140);
+      const totalCandidatesReceived = groups.reduce((acc, g) => acc + g.results.length, 0);
+      const unifiedResults = this.resultMixer.mixResults(groups, 500, trimmedQuery);
+
+      console.log(`[Mixer]`);
+      console.log(`inputCandidates=${totalCandidatesReceived}`);
+      console.log(`outputCandidates=${unifiedResults.length}\n`);
 
       cached = {
+        key: cacheKey,
         unifiedResults,
         sourceCounts,
         timestamp: Date.now(),
       };
 
-      this.queryCache.set(cacheKey, cached);
-
-      if (this.queryCache.size > 100) {
-        const firstKey = this.queryCache.keys().next().value;
-        if (firstKey) this.queryCache.delete(firstKey);
-      }
+      this.searchCache.set(cacheKey, cached);
     }
 
     const requestedPage = options.page ?? 1;
     const paginationResult = this.paginateResults(cached.unifiedResults, requestedPage, pageSize);
+    const executionTimeMs = Math.max(1, Math.round(performance.now() - startedAt));
+
+    console.log(`[Pagination]`);
+    console.log(`totalResults=${cached.unifiedResults.length}`);
+    console.log(`pageSize=${pageSize}`);
+    console.log(`page=${requestedPage}\n`);
 
     return {
       query: trimmedQuery,
@@ -215,7 +291,7 @@ export class SearchEngine {
       meta: {
         mode,
         total: paginationResult.results.length,
-        executionTimeMs: Date.now() - startTime,
+        executionTimeMs,
         providers: this.getRegisteredProviders(),
       },
     };
@@ -223,14 +299,13 @@ export class SearchEngine {
 
   /**
    * Progressive / Streaming Search Engine Worker
-   * Executes controlled concurrent ZIM searches, buffering & streaming results progressively.
    */
   async searchProgressive(
     query: string,
     options: SearchOptions = {},
     onEvent: (payload: StreamEventPayload) => void
   ): Promise<void> {
-    const startTime = Date.now();
+    const startedAt = performance.now();
     const mode = options.mode || 'local';
     const lang = options.lang || 'en';
     const pageSize = options.pageSize || 20;
@@ -267,17 +342,18 @@ export class SearchEngine {
       return;
     }
 
-    const cacheKey = `${trimmedQuery.toLowerCase()}:${mode}:${lang}`;
-    const cached = this.queryCache.get(cacheKey);
+    const getElapsedMs = () => Math.max(1, Math.round(performance.now() - startedAt));
+    const cacheKey = `${trimmedQuery.toLowerCase()}:${mode}:${lang}:v1`;
+    const cached = this.searchCache.get(cacheKey);
 
-    // Fast Path: Cache HIT
-    if (cached && (Date.now() - cached.timestamp <= this.ttlMs)) {
+    if (cached) {
       console.log(`[SearchEngine] Progressive Cache HIT for key '${cacheKey}'`);
       const paginated = this.paginateResults(cached.unifiedResults, requestedPage, pageSize);
+      const executionTimeMs = getElapsedMs();
       const payloadData: SearchResponse = {
         query: trimmedQuery,
         mode,
-        results: paginated.results,
+        results: cached.unifiedResults,
         sources: cached.sourceCounts,
         pagination: {
           page: paginated.page,
@@ -290,7 +366,7 @@ export class SearchEngine {
         meta: {
           mode,
           total: paginated.totalResults,
-          executionTimeMs: Date.now() - startTime,
+          executionTimeMs,
           providers: this.getRegisteredProviders(),
           statusText: 'Search complete',
         },
@@ -301,15 +377,18 @@ export class SearchEngine {
       return;
     }
 
-    // Stage 1: Load and rank candidate ZIM sources
     const allDiscovered = await this.zimLibrary.getDiscoveredSources();
     const langSources = allDiscovered.filter(s => s.lang === lang || !s.lang);
 
     const relevanceSelection = this.sourceRelevance.selectRelevantSources(trimmedQuery, langSources, 16);
-    const selectedZims = relevanceSelection.selectedSources;
-
-    const rankedSources = this.sourceRanker.rankSources(selectedZims, trimmedQuery);
+    const prioritySources = relevanceSelection.prioritySources;
+    const remainingSources = relevanceSelection.remainingSources;
+    const rankedSources = relevanceSelection.allRankedSources;
     const totalSourcesCount = rankedSources.length;
+
+    console.log(`\n[QUERY] ${trimmedQuery}`);
+    console.log(`[Search] priority sources: ${prioritySources.length}`);
+    console.log(`[Search] remaining sources: ${remainingSources.length}\n`);
 
     let pendingSources = totalSourcesCount;
     let completedSources = 0;
@@ -328,7 +407,6 @@ export class SearchEngine {
 
     const groups: SourceResultsGroup[] = [];
     const sourceCounts: Record<string, { count: number; effectivePriority?: number }> = {};
-    const kiwixProvider = this.providers.get('kiwix');
 
     let activeWorkers = 0;
     let queueIndex = 0;
@@ -336,15 +414,26 @@ export class SearchEngine {
     let isFinished = false;
 
     const emitCurrentBatch = () => {
-      const unifiedResults = this.resultMixer.mixResults(groups, 140);
+      const totalCandidatesReceived = groups.reduce((acc, g) => acc + g.results.length, 0);
+      const unifiedResults = this.resultMixer.mixResults(groups, 500, trimmedQuery);
       const paginated = this.paginateResults(unifiedResults, requestedPage, pageSize);
+      const executionTimeMs = getElapsedMs();
+
+      console.log(`[Mixer]`);
+      console.log(`inputCandidates=${totalCandidatesReceived}`);
+      console.log(`outputCandidates=${unifiedResults.length}\n`);
+
+      console.log(`[Pagination]`);
+      console.log(`totalResults=${unifiedResults.length}`);
+      console.log(`pageSize=${pageSize}`);
+      console.log(`page=${requestedPage}\n`);
 
       const statusText = pendingSources > 0 ? `Searching ${pendingSources} sources...` : 'Search complete';
 
       const payloadData: SearchResponse = {
         query: trimmedQuery,
         mode,
-        results: paginated.results,
+        results: unifiedResults,
         sources: { ...sourceCounts },
         pagination: {
           page: paginated.page,
@@ -357,7 +446,7 @@ export class SearchEngine {
         meta: {
           mode,
           total: paginated.totalResults,
-          executionTimeMs: Date.now() - startTime,
+          executionTimeMs,
           providers: this.getRegisteredProviders(),
           isStreaming: pendingSources > 0,
           pendingSources,
@@ -367,13 +456,8 @@ export class SearchEngine {
         },
       };
 
+      // NOTE: Do NOT store intermediate batches in searchCache!
       onEvent({ event: 'results', data: payloadData });
-
-      this.queryCache.set(cacheKey, {
-        unifiedResults,
-        sourceCounts: { ...sourceCounts },
-        timestamp: Date.now(),
-      });
     };
 
     const scheduleFlush = (immediate: boolean = false) => {
@@ -406,19 +490,26 @@ export class SearchEngine {
             flushTimer = null;
           }
 
-          const finalUnified = this.resultMixer.mixResults(groups, 140);
+          const totalCandidatesReceived = groups.reduce((acc, g) => acc + g.results.length, 0);
+          const finalUnified = this.resultMixer.mixResults(groups, 500, trimmedQuery);
           const paginated = this.paginateResults(finalUnified, requestedPage, pageSize);
+          const finalExecutionTimeMs = getElapsedMs();
 
-          this.queryCache.set(cacheKey, {
+          console.log(`\n[GLOBAL]`);
+          console.log(`candidates before mixing: ${totalCandidatesReceived}`);
+          console.log(`candidates after mixing: ${finalUnified.length}`);
+          console.log(`[Search] final results: ${finalUnified.length}\n`);
+
+          // CRITICAL: Cache ONLY upon complete search session
+          this.searchCache.set(cacheKey, {
             unifiedResults: finalUnified,
             sourceCounts: { ...sourceCounts },
-            timestamp: Date.now(),
           });
 
           const finalPayload: SearchResponse = {
             query: trimmedQuery,
             mode,
-            results: paginated.results,
+            results: finalUnified,
             sources: { ...sourceCounts },
             pagination: {
               page: paginated.page,
@@ -431,7 +522,7 @@ export class SearchEngine {
             meta: {
               mode,
               total: paginated.totalResults,
-              executionTimeMs: Date.now() - startTime,
+              executionTimeMs: finalExecutionTimeMs,
               providers: this.getRegisteredProviders(),
               isStreaming: false,
               pendingSources: 0,
@@ -451,23 +542,34 @@ export class SearchEngine {
           const source = rankedSources[queueIndex++];
           activeWorkers++;
 
+          console.log(`[Search] started: ${source.name}`);
+
           (async () => {
             let hasResults = false;
+            let resultsCount = 0;
             try {
-              if (kiwixProvider && 'searchZimSource' in kiwixProvider) {
-                const results = await (kiwixProvider as any).searchZimSource(source, trimmedQuery, mode);
+              const provider = this.providers.get(source.provider);
+              if (provider) {
+                let results: SearchResult[] = [];
+                if (source.provider === 'kiwix' && 'searchZimSource' in provider) {
+                  results = await (provider as any).searchZimSource(source, trimmedQuery, mode);
+                } else {
+                  results = await provider.search(trimmedQuery, { mode, lang });
+                }
+
                 const matchingResults = results.filter((r: SearchResult) => !r.sourceId || r.sourceId === source.id);
+                resultsCount = matchingResults.length;
 
                 groups.push({
                   sourceId: source.id,
                   sourceName: source.name,
-                  effectivePriority: source.effectivePriority,
+                  effectivePriority: source.basePriority,
                   results: matchingResults,
                 });
 
                 sourceCounts[source.name] = {
                   count: matchingResults.length,
-                  effectivePriority: source.effectivePriority,
+                  effectivePriority: source.basePriority,
                 };
                 if (matchingResults.length > 0) {
                   hasResults = true;
@@ -479,6 +581,9 @@ export class SearchEngine {
               activeWorkers--;
               completedSources++;
               pendingSources = Math.max(0, totalSourcesCount - completedSources);
+
+              console.log(`[Search] completed: ${source.name}, results=${resultsCount}`);
+              console.log(`[Search] sources searched: ${completedSources}/${totalSourcesCount}`);
 
               scheduleFlush(hasResults);
               processNextInQueue();

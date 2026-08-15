@@ -261,16 +261,36 @@ body {
 
 .filter-pills {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  white-space: nowrap;
   gap: 0.5rem;
   margin-bottom: 1.5rem;
+  padding-bottom: 0.4rem;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+}
+
+.filter-pills::-webkit-scrollbar {
+  height: 4px;
+}
+
+.filter-pills::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.filter-pills::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 4px;
 }
 
 .filter-pill {
+  flex-shrink: 0;
+  white-space: nowrap;
   border: 1px solid var(--border-color);
   background-color: var(--bg-primary);
   color: var(--text-secondary);
-  padding: 0.3rem 0.75rem;
+  padding: 0.35rem 0.85rem;
   border-radius: var(--radius-full);
   font-size: 0.8rem;
   font-weight: 500;

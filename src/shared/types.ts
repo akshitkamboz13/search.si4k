@@ -31,6 +31,10 @@ export interface SearchResult {
   score?: number;
   sourceId?: string;
   effectivePriority?: number;
+  nativeSearchScore?: number;
+  keywordMatchScore?: number;
+  categoryMatchScore?: number;
+  finalScore?: number;
 }
 
 export interface SearchResponse {

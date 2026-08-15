@@ -1,11 +1,28 @@
 import { Router, Request, Response } from 'express';
 import { SearchEngine } from '../search/SearchEngine.js';
 import { SourceRelevance } from '../search/SourceRelevance.js';
+import { EnvironmentDetector } from '../search/EnvironmentDetector.js';
 import { SearchMode, StreamEventPayload } from '../../shared/types.js';
 
 export function createSearchRouter(searchEngine: SearchEngine): Router {
   const router = Router();
   const sourceRelevance = new SourceRelevance();
+  const envDetector = new EnvironmentDetector();
+
+  /**
+   * GET /api/environment (Automatic Environment Detection API)
+   * Returns: { environment: 'local' | 'internet', mode: 'local' | 'online', publicUrl: string }
+   */
+  router.get('/environment', (req: Request, res: Response) => {
+    const detection = envDetector.detectEnvironment(req);
+    res.json({
+      environment: detection.environment,
+      mode: detection.mode,
+      publicUrl: detection.publicUrl,
+      clientIp: detection.clientIp,
+      isDevOverride: detection.isDevOverride,
+    });
+  });
 
   /**
    * GET /api/search (Standard non-streaming endpoint for backward compatibility)
@@ -13,7 +30,8 @@ export function createSearchRouter(searchEngine: SearchEngine): Router {
   router.get('/search', async (req: Request, res: Response) => {
     try {
       const q = typeof req.query.q === 'string' ? req.query.q : '';
-      const mode = (req.query.mode as SearchMode) || 'local';
+      const autoDetection = envDetector.detectEnvironment(req);
+      const mode = (req.query.mode as SearchMode) || autoDetection.mode;
       const lang = typeof req.query.lang === 'string' ? req.query.lang : 'en';
       const page = parseInt(typeof req.query.page === 'string' ? req.query.page : '1', 10);
       const pageSize = parseInt(typeof req.query.pageSize === 'string' ? req.query.pageSize : '20', 10);
@@ -31,7 +49,8 @@ export function createSearchRouter(searchEngine: SearchEngine): Router {
    */
   router.get('/search/stream', async (req: Request, res: Response) => {
     const q = typeof req.query.q === 'string' ? req.query.q : '';
-    const mode = (req.query.mode as SearchMode) || 'local';
+    const autoDetection = envDetector.detectEnvironment(req);
+    const mode = (req.query.mode as SearchMode) || autoDetection.mode;
     const lang = typeof req.query.lang === 'string' ? req.query.lang : 'en';
     const page = parseInt(typeof req.query.page === 'string' ? req.query.page : '1', 10);
     const pageSize = parseInt(typeof req.query.pageSize === 'string' ? req.query.pageSize : '20', 10);
