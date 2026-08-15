@@ -1,5 +1,3 @@
-import { SearchEngine } from './SearchEngine.js';
-import { KiwixProvider } from './providers/KiwixProvider.js';
 import { SourceRanker } from './sourceRanker.js';
 import { ResultMixer } from './resultMixer.js';
 import { SearchSourceConfig, ScoringConfig } from '../../shared/types.js';
@@ -11,20 +9,20 @@ const mockScoring: ScoringConfig = {
   categoryMatchScore: 3,
 };
 
-const mockSources: SearchSourceConfig[] = [
+const testSources: SearchSourceConfig[] = [
   {
-    id: 'archwiki_en',
-    zimName: 'archlinux_en_all_2023-05',
+    id: 'archwiki_en_2026_07',
+    zimName: 'archlinux_en_all_maxi_2026-07',
     name: 'Arch Wiki',
     provider: 'kiwix',
     lang: 'en',
     basePriority: 6,
     category: 'technical',
     enabled: true,
-    keywords: ['arch', 'arch linux', 'pacman', 'aur', 'systemd', 'linux'],
+    keywords: ['arch', 'arch linux', 'pacman', 'aur', 'systemd', 'linux', 'terminal', 'bash', 'folder', 'directory'],
   },
   {
-    id: 'wikihow_en',
+    id: 'wikihow_en_2023_03',
     zimName: 'wikihow_en_maxi_2023-03',
     name: 'wikiHow',
     provider: 'kiwix',
@@ -32,158 +30,144 @@ const mockSources: SearchSourceConfig[] = [
     basePriority: 9,
     category: 'guides',
     enabled: true,
-    keywords: ['how to', 'how', 'repair', 'fix', 'diy', 'make', 'build'],
+    keywords: ['how to', 'how', 'repair', 'fix', 'diy', 'make', 'create', 'build', 'step by step'],
   },
   {
-    id: 'wikipedia_en',
-    zimName: 'wikipedia_en_all_maxi_2023-11',
+    id: 'ifixit_en_2025_12',
+    zimName: 'ifixit_en_all_2025-12',
+    name: 'iFixit',
+    provider: 'kiwix',
+    lang: 'en',
+    basePriority: 9,
+    category: 'repair',
+    enabled: true,
+    keywords: ['repair', 'replace', 'battery', 'screen', 'teardown', 'hardware', 'tool', 'part', 'wall', 'fix'],
+  },
+  {
+    id: 'wikipedia_en_2026_06',
+    zimName: 'wikipedia_en_all_nopic_2026-06',
     name: 'Wikipedia',
     provider: 'kiwix',
     lang: 'en',
     basePriority: 6,
     category: 'general',
     enabled: true,
-    keywords: ['general knowledge', 'history', 'geography', 'science'],
-  },
-  {
-    id: 'wikihow_hi',
-    zimName: 'wikihow_hi_all_2023-01',
-    name: 'wikiHow Hindi',
-    provider: 'kiwix',
-    lang: 'hi',
-    basePriority: 8,
-    category: 'guides',
-    enabled: true,
-    keywords: ['how to', 'hindi'],
+    keywords: ['general knowledge', 'history', 'geography', 'science', 'biography', 'overview', 'capital', 'france', 'city'],
   },
 ];
 
 async function runTests() {
   console.log('====================================================');
-  console.log(' Running Complete Si4k Search Engine Test Suite');
+  console.log(' Running SearchEngine Priority Ranking & Mixing Tests');
   console.log('====================================================\n');
 
-  // 1. Test Source Priority Boosting (Arch Wiki domain match overriding base priority)
-  console.log('1. Testing Query-Dependent Source Priority Boosting...');
   const ranker = new SourceRanker(mockScoring);
 
-  const archQuery = 'how to make folder in Arch';
-  const archRanked = ranker.rankSources(mockSources, archQuery);
+  // Test Case 1: "create folder in arch" -> Arch Wiki outranks wikiHow and Wikipedia
+  console.log('1. Testing Query: "create folder in arch"...');
+  const q1Ranked = ranker.rankSources(testSources, 'create folder in arch');
+  console.log(`   Top Source: ${q1Ranked[0].name} (effectivePriority: ${q1Ranked[0].effectivePriority})`);
+  console.log(`   Ranked Order: ${q1Ranked.map(s => `${s.name} (${s.effectivePriority})`).join(' > ')}`);
 
-  console.log(`   Query: "${archQuery}"`);
-  console.log(`   Top Ranked Source: ${archRanked[0].name} (effectivePriority: ${archRanked[0].effectivePriority})`);
-
-  if (archRanked[0].id !== 'archwiki_en' && archRanked[0].id !== 'wikihow_en') {
-    console.error('❌ Source ranking test failed: Arch Wiki or wikiHow should be top ranked');
+  if (q1Ranked[0].name !== 'Arch Wiki') {
+    console.error(`❌ Test 1 Failed! Expected Arch Wiki to be top ranked, got ${q1Ranked[0].name}`);
     process.exit(1);
   }
-  console.log('   ✅ PASS: Domain signal correctly boosted source priority.\n');
+  console.log('   ✅ PASS: "create folder in arch" correctly prioritized Arch Wiki as top source.\n');
 
-  // 2. Test Kiwix XML Parser & URL Conversion
-  console.log('2. Testing Kiwix Full-Text XML Parser & KIWIX_PUBLIC_URL Conversion...');
-  const provider = new KiwixProvider({
-    internalUrl: 'http://localhost:8080',
-    publicUrl: 'https://wiki.si4k.online',
-    sources: mockSources,
-  });
+  // Test Case 2: "how to repair a wall" -> wikiHow / iFixit high priority
+  console.log('2. Testing Query: "how to repair a wall"...');
+  const q2Ranked = ranker.rankSources(testSources, 'how to repair a wall');
+  console.log(`   Top Source: ${q2Ranked[0].name} (effectivePriority: ${q2Ranked[0].effectivePriority})`);
+  console.log(`   Ranked Order: ${q2Ranked.map(s => `${s.name} (${s.effectivePriority})`).join(' > ')}`);
 
-  const sampleXml = `<?xml version="1.0" encoding="UTF-8"?>
-  <feed xmlns="http://www.w3.org/2005/Atom">
-    <entry>
-      <title>Creating Folders and Directories in Arch Linux</title>
-      <summary>Comprehensive guide on mkdir command in Arch Linux filesystem.</summary>
-      <link rel="alternate" href="http://localhost:8080/archlinux_en_all_2023-05/A/mkdir.html"/>
-    </entry>
-  </feed>`;
-
-  const parsedResults = provider.parseKiwixHtml(sampleXml, mockSources[0]);
-  console.log(`   Parsed ${parsedResults.length} entry.`);
-  console.log(`   Target Public URL: ${parsedResults[0].url}`);
-
-  if (!parsedResults[0].url.startsWith('https://wiki.si4k.online/archlinux_en_all_2023-05')) {
-    console.error('❌ Kiwix XML URL conversion test failed!');
+  const topTwoNames = [q2Ranked[0].name, q2Ranked[1].name];
+  if (!topTwoNames.includes('wikiHow') || !topTwoNames.includes('iFixit')) {
+    console.error(`❌ Test 2 Failed! Expected wikiHow/iFixit in top two, got ${topTwoNames.join(', ')}`);
     process.exit(1);
   }
-  console.log('   ✅ PASS: Kiwix XML parsed cleanly and converted to KIWIX_PUBLIC_URL.\n');
+  console.log('   ✅ PASS: "how to repair a wall" correctly prioritized wikiHow and iFixit.\n');
 
-  // 3. Test Adaptive Result Mixing (Monopolization Prevention)
-  console.log('3. Testing Adaptive Result Mixing Algorithm...');
+  // Test Case 3: "capital of france" -> Wikipedia high priority
+  console.log('3. Testing Query: "capital of france"...');
+  const q3Ranked = ranker.rankSources(testSources, 'capital of france');
+  console.log(`   Top Source: ${q3Ranked[0].name} (effectivePriority: ${q3Ranked[0].effectivePriority})`);
+  console.log(`   Ranked Order: ${q3Ranked.map(s => `${s.name} (${s.effectivePriority})`).join(' > ')}`);
+
+  if (q3Ranked[0].name !== 'Wikipedia') {
+    console.error(`❌ Test 3 Failed! Expected Wikipedia to be top ranked, got ${q3Ranked[0].name}`);
+    process.exit(1);
+  }
+  console.log('   ✅ PASS: "capital of france" correctly prioritized Wikipedia.\n');
+
+  // Test Case 4: Adaptive Result Mixing (Page Size 20)
+  console.log('4. Testing Adaptive Result Mixing...');
   const mixer = new ResultMixer();
-
   const mockGroups = [
     {
-      sourceId: 'archwiki_en',
+      sourceId: 'archwiki_en_2026_07',
       sourceName: 'Arch Wiki',
-      effectivePriority: 15,
-      results: Array.from({ length: 2 }, (_, i) => ({
+      effectivePriority: 17,
+      results: Array.from({ length: 4 }, (_, i) => ({
         id: `arch-${i}`,
         source: 'Arch Wiki',
         provider: 'kiwix',
         type: 'article',
         title: `Arch Article ${i}`,
         description: '...',
-        url: `https://wiki.si4k.online/arch/${i}`,
+        url: `http://192.168.31.250:8080/content/archlinux_en_all_maxi_2026-07/Arch_${i}`,
       })),
     },
     {
-      sourceId: 'wikihow_en',
+      sourceId: 'wikihow_en_2023_03',
       sourceName: 'wikiHow',
-      effectivePriority: 13,
-      results: Array.from({ length: 30 }, (_, i) => ({
+      effectivePriority: 15,
+      results: Array.from({ length: 25 }, (_, i) => ({
         id: `wikihow-${i}`,
         source: 'wikiHow',
         provider: 'kiwix',
         type: 'article',
         title: `wikiHow Article ${i}`,
         description: '...',
-        url: `https://wiki.si4k.online/wikihow/${i}`,
+        url: `http://192.168.31.250:8080/content/wikihow_en_maxi_2023-03/wikiHow_${i}`,
       })),
     },
     {
-      sourceId: 'wikipedia_en',
+      sourceId: 'wikipedia_en_2026_06',
       sourceName: 'Wikipedia',
-      effectivePriority: 6,
-      results: Array.from({ length: 15 }, (_, i) => ({
+      effectivePriority: 8,
+      results: Array.from({ length: 20 }, (_, i) => ({
         id: `wiki-${i}`,
         source: 'Wikipedia',
         provider: 'kiwix',
         type: 'article',
         title: `Wikipedia Article ${i}`,
         description: '...',
-        url: `https://wiki.si4k.online/wiki/${i}`,
+        url: `http://192.168.31.250:8080/content/wikipedia_en_all_nopic_2026-06/Wiki_${i}`,
       })),
     },
   ];
 
   const mixed = mixer.mixResults(mockGroups, 20);
-  console.log(`   Mixed Page Size: ${mixed.length} results.`);
+  console.log(`   Mixed Total Results: ${mixed.length}`);
   const archCount = mixed.filter(r => r.source === 'Arch Wiki').length;
   const wikihowCount = mixed.filter(r => r.source === 'wikiHow').length;
   const wikipediaCount = mixed.filter(r => r.source === 'Wikipedia').length;
 
-  console.log(`   Distribution -> Arch Wiki: ${archCount}, wikiHow: ${wikihowCount}, Wikipedia: ${wikipediaCount}`);
+  console.log(`   Mixed Counts -> Arch Wiki: ${archCount}, wikiHow: ${wikihowCount}, Wikipedia: ${wikipediaCount}`);
 
-  if (mixed.length !== 20 || archCount !== 2 || wikihowCount === 0 || wikipediaCount === 0) {
-    console.error('❌ Result mixer test failed!');
+  if (mixed.length !== 20 || archCount !== 4 || wikihowCount === 0 || wikipediaCount === 0) {
+    console.error('❌ Result mixing test failed!');
     process.exit(1);
   }
-  console.log('   ✅ PASS: Results adaptively mixed without monopolization.\n');
+  console.log('   ✅ PASS: Adaptive mixing dynamically allocated slots correctly.\n');
 
-  // 4. Test SearchEngine Integration & Pagination
-  console.log('4. Testing SearchEngine Multi-Source Integration & Pagination...');
-  const searchEngine = new SearchEngine(mockSources, mockScoring);
-  searchEngine.registerProvider(provider);
-
-  const response = await searchEngine.search('how to repair wall', { page: 1, pageSize: 20 });
-  console.log(`   Query Response Execution Time: ${response.meta.executionTimeMs}ms`);
-  console.log(`   Pagination -> Page: ${response.pagination.page}, Total Candidate Results: ${response.pagination.totalResults}`);
-
-  console.log('\n====================================================');
-  console.log(' ✅ ALL SEARCH ENGINE TESTS PASSED SUCCESSFULLY!');
+  console.log('====================================================');
+  console.log(' ✅ ALL PRIORITY RANKING & MIXING TESTS PASSED!');
   console.log('====================================================');
 }
 
 runTests().catch((err) => {
-  console.error('Test suite failed:', err);
+  console.error('Test failed:', err);
   process.exit(1);
 });

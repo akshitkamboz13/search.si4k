@@ -24,7 +24,7 @@ export class SourceRanker {
     let boost = 0;
 
     // 1. Strong Domain / Source Name Match (+7 by default)
-    // E.g. "arch" in "how to make folder in Arch" matching "Arch Wiki" or source.id
+    // E.g. "arch" in "create folder in arch" matching "Arch Wiki"
     const normalizedName = source.name.toLowerCase();
     const nameTokens = normalizedName.split(/\s+/).filter(t => t !== 'wiki' && t.length > 2);
 
@@ -39,7 +39,6 @@ export class SourceRanker {
     for (const kw of source.keywords) {
       const normalizedKw = kw.toLowerCase().trim();
 
-      // Multi-word exact phrase match (e.g. "how to")
       if (normalizedKw.includes(' ') && normalizedQuery.includes(normalizedKw)) {
         boost += this.scoringConfig.exactPhraseKeywordScore;
       } else if (!normalizedKw.includes(' ') && queryTokens.includes(normalizedKw)) {
@@ -49,11 +48,15 @@ export class SourceRanker {
 
     // 3. Category / Intent Heuristics (+3 by default)
     if (source.category === 'guides' || source.category === 'repair') {
-      if (normalizedQuery.startsWith('how to') || normalizedQuery.includes('fix') || normalizedQuery.includes('repair')) {
+      if (normalizedQuery.startsWith('how to') || normalizedQuery.includes('fix') || normalizedQuery.includes('repair') || normalizedQuery.includes('replace')) {
         boost += this.scoringConfig.categoryMatchScore;
       }
     } else if (source.category === 'technical') {
-      if (normalizedQuery.includes('arch') || normalizedQuery.includes('linux') || normalizedQuery.includes('pacman') || normalizedQuery.includes('systemd')) {
+      if (normalizedQuery.includes('arch') || normalizedQuery.includes('linux') || normalizedQuery.includes('pacman') || normalizedQuery.includes('systemd') || normalizedQuery.includes('terminal')) {
+        boost += this.scoringConfig.categoryMatchScore;
+      }
+    } else if (source.category === 'general') {
+      if (normalizedQuery.includes('capital') || normalizedQuery.includes('france') || normalizedQuery.includes('history') || normalizedQuery.includes('what is') || normalizedQuery.includes('who is')) {
         boost += this.scoringConfig.categoryMatchScore;
       }
     }

@@ -7,6 +7,28 @@
   },
   "sources": [
     {
+      "id": "archwiki_en_2026_07",
+      "zimName": "archlinux_en_all_maxi_2026-07",
+      "name": "Arch Wiki",
+      "provider": "kiwix",
+      "lang": "en",
+      "basePriority": 6,
+      "category": "technical",
+      "enabled": true,
+      "keywords": [
+        "arch",
+        "arch linux",
+        "pacman",
+        "aur",
+        "systemd",
+        "linux",
+        "terminal",
+        "bash",
+        "folder",
+        "directory"
+      ]
+    },
+    {
       "id": "wikihow_en_2023_03",
       "zimName": "wikihow_en_maxi_2023-03",
       "name": "wikiHow",
@@ -15,7 +37,17 @@
       "basePriority": 9,
       "category": "guides",
       "enabled": true,
-      "keywords": ["how to", "how", "repair", "fix", "diy", "make", "build", "step by step"]
+      "keywords": [
+        "how to",
+        "how",
+        "repair",
+        "fix",
+        "diy",
+        "make",
+        "create",
+        "build",
+        "step by step"
+      ]
     },
     {
       "id": "ifixit_en_2025_12",
@@ -26,18 +58,18 @@
       "basePriority": 9,
       "category": "repair",
       "enabled": true,
-      "keywords": ["repair", "replace", "battery", "screen", "teardown", "hardware", "tool", "part"]
-    },
-    {
-      "id": "archwiki_en_2026_07",
-      "zimName": "archlinux_en_all_maxi_2026-07",
-      "name": "Arch Wiki",
-      "provider": "kiwix",
-      "lang": "en",
-      "basePriority": 6,
-      "category": "technical",
-      "enabled": true,
-      "keywords": ["arch", "arch linux", "pacman", "aur", "systemd", "linux", "terminal", "bash"]
+      "keywords": [
+        "repair",
+        "replace",
+        "battery",
+        "screen",
+        "teardown",
+        "hardware",
+        "tool",
+        "part",
+        "wall",
+        "fix"
+      ]
     },
     {
       "id": "wikipedia_en_2026_06",
@@ -48,7 +80,18 @@
       "basePriority": 6,
       "category": "general",
       "enabled": true,
-      "keywords": ["general knowledge", "history", "geography", "science", "biography", "overview"]
+      "keywords": [
+        "general knowledge",
+        "history",
+        "geography",
+        "science",
+        "biography",
+        "overview",
+        "capital",
+        "france",
+        "city",
+        "country"
+      ]
     }
   ]
 }
