@@ -11,6 +11,9 @@ dist
 
 # Tests & temporary files
 coverage
-scripts
 .gemini
 tmp
+
+# Dev-only scripts (exclude resource audit scripts, but keep build-zim-index.ts)
+scripts/resource-audit.ts
+scripts/resource-audit-uncached.ts
