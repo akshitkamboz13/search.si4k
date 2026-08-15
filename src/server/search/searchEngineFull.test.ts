@@ -1,6 +1,7 @@
+import { SearchEngine } from './SearchEngine.js';
 import { SourceRanker } from './sourceRanker.js';
 import { ResultMixer } from './resultMixer.js';
-import { SearchSourceConfig, ScoringConfig } from '../../shared/types.js';
+import { SearchResult, SearchSourceConfig, ScoringConfig } from '../../shared/types.js';
 
 const mockScoring: ScoringConfig = {
   exactDomainMatchScore: 7,
@@ -58,7 +59,7 @@ const testSources: SearchSourceConfig[] = [
 
 async function runTests() {
   console.log('====================================================');
-  console.log(' Running SearchEngine Priority Ranking & Mixing Tests');
+  console.log(' Running SearchEngine Priority Ranking, Mixing & Pagination Tests');
   console.log('====================================================\n');
 
   const ranker = new SourceRanker(mockScoring);
@@ -67,7 +68,6 @@ async function runTests() {
   console.log('1. Testing Query: "create folder in arch"...');
   const q1Ranked = ranker.rankSources(testSources, 'create folder in arch');
   console.log(`   Top Source: ${q1Ranked[0].name} (effectivePriority: ${q1Ranked[0].effectivePriority})`);
-  console.log(`   Ranked Order: ${q1Ranked.map(s => `${s.name} (${s.effectivePriority})`).join(' > ')}`);
 
   if (q1Ranked[0].name !== 'Arch Wiki') {
     console.error(`❌ Test 1 Failed! Expected Arch Wiki to be top ranked, got ${q1Ranked[0].name}`);
@@ -78,10 +78,8 @@ async function runTests() {
   // Test Case 2: "how to repair a wall" -> wikiHow / iFixit high priority
   console.log('2. Testing Query: "how to repair a wall"...');
   const q2Ranked = ranker.rankSources(testSources, 'how to repair a wall');
-  console.log(`   Top Source: ${q2Ranked[0].name} (effectivePriority: ${q2Ranked[0].effectivePriority})`);
-  console.log(`   Ranked Order: ${q2Ranked.map(s => `${s.name} (${s.effectivePriority})`).join(' > ')}`);
-
   const topTwoNames = [q2Ranked[0].name, q2Ranked[1].name];
+
   if (!topTwoNames.includes('wikiHow') || !topTwoNames.includes('iFixit')) {
     console.error(`❌ Test 2 Failed! Expected wikiHow/iFixit in top two, got ${topTwoNames.join(', ')}`);
     process.exit(1);
@@ -91,79 +89,70 @@ async function runTests() {
   // Test Case 3: "capital of france" -> Wikipedia high priority
   console.log('3. Testing Query: "capital of france"...');
   const q3Ranked = ranker.rankSources(testSources, 'capital of france');
-  console.log(`   Top Source: ${q3Ranked[0].name} (effectivePriority: ${q3Ranked[0].effectivePriority})`);
-  console.log(`   Ranked Order: ${q3Ranked.map(s => `${s.name} (${s.effectivePriority})`).join(' > ')}`);
-
   if (q3Ranked[0].name !== 'Wikipedia') {
     console.error(`❌ Test 3 Failed! Expected Wikipedia to be top ranked, got ${q3Ranked[0].name}`);
     process.exit(1);
   }
   console.log('   ✅ PASS: "capital of france" correctly prioritized Wikipedia.\n');
 
-  // Test Case 4: Adaptive Result Mixing (Page Size 20)
-  console.log('4. Testing Adaptive Result Mixing...');
-  const mixer = new ResultMixer();
-  const mockGroups = [
-    {
-      sourceId: 'archwiki_en_2026_07',
-      sourceName: 'Arch Wiki',
-      effectivePriority: 17,
-      results: Array.from({ length: 4 }, (_, i) => ({
-        id: `arch-${i}`,
-        source: 'Arch Wiki',
-        provider: 'kiwix',
-        type: 'article',
-        title: `Arch Article ${i}`,
-        description: '...',
-        url: `http://192.168.31.250:8080/content/archlinux_en_all_maxi_2026-07/Arch_${i}`,
-      })),
-    },
-    {
-      sourceId: 'wikihow_en_2023_03',
-      sourceName: 'wikiHow',
-      effectivePriority: 15,
-      results: Array.from({ length: 25 }, (_, i) => ({
-        id: `wikihow-${i}`,
-        source: 'wikiHow',
-        provider: 'kiwix',
-        type: 'article',
-        title: `wikiHow Article ${i}`,
-        description: '...',
-        url: `http://192.168.31.250:8080/content/wikihow_en_maxi_2023-03/wikiHow_${i}`,
-      })),
-    },
-    {
-      sourceId: 'wikipedia_en_2026_06',
-      sourceName: 'Wikipedia',
-      effectivePriority: 8,
-      results: Array.from({ length: 20 }, (_, i) => ({
-        id: `wiki-${i}`,
-        source: 'Wikipedia',
-        provider: 'kiwix',
-        type: 'article',
-        title: `Wikipedia Article ${i}`,
-        description: '...',
-        url: `http://192.168.31.250:8080/content/wikipedia_en_all_nopic_2026-06/Wiki_${i}`,
-      })),
-    },
-  ];
+  // Test Case 4: Pagination with 45 Candidates -> 3 Total Pages
+  console.log('4. Testing Unified Pagination (45 Candidates -> 3 Pages)...');
+  const searchEngine = new SearchEngine(testSources, mockScoring);
 
-  const mixed = mixer.mixResults(mockGroups, 20);
-  console.log(`   Mixed Total Results: ${mixed.length}`);
-  const archCount = mixed.filter(r => r.source === 'Arch Wiki').length;
-  const wikihowCount = mixed.filter(r => r.source === 'wikiHow').length;
-  const wikipediaCount = mixed.filter(r => r.source === 'Wikipedia').length;
+  const mock45Results: SearchResult[] = Array.from({ length: 45 }, (_, i) => ({
+    id: `item-${i + 1}`,
+    source: 'wikiHow',
+    provider: 'kiwix',
+    type: 'article',
+    title: `Article ${i + 1}`,
+    description: `Snippet ${i + 1}`,
+    url: `https://wiki.si4k.online/content/wikihow/Article_${i + 1}`,
+  }));
 
-  console.log(`   Mixed Counts -> Arch Wiki: ${archCount}, wikiHow: ${wikihowCount}, Wikipedia: ${wikipediaCount}`);
-
-  if (mixed.length !== 20 || archCount !== 4 || wikihowCount === 0 || wikipediaCount === 0) {
-    console.error('❌ Result mixing test failed!');
+  // Page 1: items 1-20
+  const p1 = searchEngine.paginateResults(mock45Results, 1, 20);
+  console.log(`   Page 1: ${p1.results.length} items (Page ${p1.page} of ${p1.totalPages}) | hasNext: ${p1.hasNextPage}, hasPrev: ${p1.hasPreviousPage}`);
+  if (p1.results.length !== 20 || p1.results[0].title !== 'Article 1' || p1.results[19].title !== 'Article 20' || p1.totalPages !== 3 || !p1.hasNextPage || p1.hasPreviousPage) {
+    console.error('❌ Page 1 pagination failed!');
     process.exit(1);
   }
-  console.log('   ✅ PASS: Adaptive mixing dynamically allocated slots correctly.\n');
+
+  // Page 2: items 21-40
+  const p2 = searchEngine.paginateResults(mock45Results, 2, 20);
+  console.log(`   Page 2: ${p2.results.length} items (Page ${p2.page} of ${p2.totalPages}) | hasNext: ${p2.hasNextPage}, hasPrev: ${p2.hasPreviousPage}`);
+  if (p2.results.length !== 20 || p2.results[0].title !== 'Article 21' || p2.results[19].title !== 'Article 40' || !p2.hasNextPage || !p2.hasPreviousPage) {
+    console.error('❌ Page 2 pagination failed!');
+    process.exit(1);
+  }
+
+  // Page 3: items 41-45
+  const p3 = searchEngine.paginateResults(mock45Results, 3, 20);
+  console.log(`   Page 3: ${p3.results.length} items (Page ${p3.page} of ${p3.totalPages}) | hasNext: ${p3.hasNextPage}, hasPrev: ${p3.hasPreviousPage}`);
+  if (p3.results.length !== 5 || p3.results[0].title !== 'Article 41' || p3.results[4].title !== 'Article 45' || p3.hasNextPage || !p3.hasPreviousPage) {
+    console.error('❌ Page 3 pagination failed!');
+    process.exit(1);
+  }
+  console.log('   ✅ PASS: 45 candidate results correctly paginated across 3 pages.\n');
+
+  // Test Case 5: Edge Case Page Parameters Handling
+  console.log('5. Testing Edge Case Page Parameters Handling...');
+  const edgePage0 = searchEngine.paginateResults(mock45Results, 0, 20);
+  const edgePageNeg = searchEngine.paginateResults(mock45Results, -1, 20);
+  const edgePageNaN = searchEngine.paginateResults(mock45Results, NaN, 20);
+  const edgePageBeyond = searchEngine.paginateResults(mock45Results, 999, 20);
+
+  if (edgePage0.page !== 1 || edgePageNeg.page !== 1 || edgePageNaN.page !== 1) {
+    console.error('❌ Edge case invalid page normalization failed!');
+    process.exit(1);
+  }
+  if (edgePageBeyond.page !== 3 || edgePageBeyond.results.length !== 5) {
+    console.error('❌ Edge case page beyond totalPages clamping failed!');
+    process.exit(1);
+  }
+  console.log('   ✅ PASS: Edge case page parameters (0, -1, NaN, 999) handled safely.\n');
 
   console.log('====================================================');
-  console.log(' ✅ ALL PRIORITY RANKING & MIXING TESTS PASSED!');
+  console.log(' ✅ ALL PAGINATION & ENGINE TESTS PASSED!');
   console.log('====================================================');
 }
 

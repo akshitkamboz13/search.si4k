@@ -1,7 +1,11 @@
 import { SearchResponse, SearchMode } from '../../shared/types.js';
 
-export async function fetchSearchResults(query: string, mode: SearchMode = 'local'): Promise<SearchResponse> {
-  const url = `/api/search?q=${encodeURIComponent(query)}&mode=${encodeURIComponent(mode)}`;
+export async function fetchSearchResults(
+  query: string,
+  mode: SearchMode = 'local',
+  page: number = 1
+): Promise<SearchResponse> {
+  const url = `/api/search?q=${encodeURIComponent(query)}&mode=${encodeURIComponent(mode)}&page=${page}`;
   const response = await fetch(url);
   
   if (!response.ok) {

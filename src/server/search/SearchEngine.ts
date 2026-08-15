@@ -4,8 +4,9 @@ import { SourceRanker } from './sourceRanker.js';
 import { ResultMixer, SourceResultsGroup } from './resultMixer.js';
 import sourcesData from '../config/sources.json' with { type: 'json' };
 
-export interface CacheEntry {
-  response: SearchResponse;
+export interface QueryCacheEntry {
+  unifiedResults: SearchResult[];
+  sourceCounts: Record<string, { count: number; effectivePriority?: number }>;
   timestamp: number;
 }
 
@@ -14,7 +15,7 @@ export class SearchEngine {
   private sources: SearchSourceConfig[];
   private sourceRanker: SourceRanker;
   private resultMixer: ResultMixer;
-  private cache: Map<string, CacheEntry> = new Map();
+  private queryCache: Map<string, QueryCacheEntry> = new Map();
   private readonly ttlMs: number = 10 * 60 * 1000; // 10 minutes TTL
 
   constructor(customSources?: SearchSourceConfig[], customScoring?: ScoringConfig) {
@@ -37,13 +38,46 @@ export class SearchEngine {
   }
 
   /**
-   * Main Search entry point
+   * Helper method to paginate any pre-ordered array of SearchResults safely.
+   */
+  public paginateResults(
+    unifiedList: SearchResult[],
+    requestedPage: number = 1,
+    pageSize: number = 20
+  ) {
+    const totalResults = unifiedList.length;
+    const safePageSize = Math.max(1, pageSize);
+    const totalPages = totalResults > 0 ? Math.ceil(totalResults / safePageSize) : 1;
+
+    // Sanitize and clamp page
+    let page = Math.floor(requestedPage);
+    if (isNaN(page) || page < 1) {
+      page = 1;
+    } else if (page > totalPages) {
+      page = totalPages;
+    }
+
+    const startIndex = (page - 1) * safePageSize;
+    const pageResults = unifiedList.slice(startIndex, startIndex + safePageSize);
+
+    return {
+      page,
+      pageSize: safePageSize,
+      totalResults,
+      totalPages,
+      hasNextPage: page < totalPages,
+      hasPreviousPage: page > 1,
+      results: pageResults,
+    };
+  }
+
+  /**
+   * Main Search Entry Point with Caching & Unified Pagination
    */
   async search(query: string, options: SearchOptions = {}): Promise<SearchResponse> {
     const startTime = Date.now();
     const mode = options.mode || 'local';
     const lang = options.lang || 'en';
-    const page = options.page || 1;
     const pageSize = options.pageSize || 20;
 
     const trimmedQuery = query ? query.trim() : '';
@@ -54,99 +88,99 @@ export class SearchEngine {
         mode,
         results: [],
         sources: {},
-        pagination: { page: 1, pageSize, totalResults: 0, hasMore: false },
+        pagination: {
+          page: 1,
+          pageSize,
+          totalResults: 0,
+          totalPages: 1,
+          hasNextPage: false,
+          hasPreviousPage: false,
+        },
         meta: { total: 0, executionTimeMs: 0, providers: this.getRegisteredProviders() },
       };
     }
 
-    // Check LRU Cache for exact page request
-    const cacheKey = `${trimmedQuery.toLowerCase()}:${mode}:${lang}:${page}`;
-    const cached = this.cache.get(cacheKey);
-    if (cached && (Date.now() - cached.timestamp < this.ttlMs)) {
-      console.log(`[SearchEngine] Cache HIT for key '${cacheKey}'`);
-      return {
-        ...cached.response,
-        meta: {
-          ...cached.response.meta,
-          executionTimeMs: Date.now() - startTime,
-        },
-      };
-    }
+    const cacheKey = `${trimmedQuery.toLowerCase()}:${mode}:${lang}`;
+    let cached = this.queryCache.get(cacheKey);
 
-    // 1. Calculate query-dependent source relevance (effectivePriority)
-    const rankedSources = this.sourceRanker.rankSources(this.sources, trimmedQuery);
-    const activeSources = rankedSources.filter(s => s.lang === lang || !s.lang);
+    // If cache expired or absent, perform candidate search & mixing
+    if (!cached || (Date.now() - cached.timestamp > this.ttlMs)) {
+      // 1. Calculate query-dependent source relevance (effectivePriority)
+      const rankedSources = this.sourceRanker.rankSources(this.sources, trimmedQuery);
+      const activeSources = rankedSources.filter(s => s.lang === lang || !s.lang);
 
-    // 2. Fetch results per active provider / source
-    const groups: SourceResultsGroup[] = [];
-    const sourceCounts: Record<string, { count: number; effectivePriority?: number }> = {};
+      // 2. Fetch candidate results per active source
+      const groups: SourceResultsGroup[] = [];
+      const sourceCounts: Record<string, { count: number; effectivePriority?: number }> = {};
 
-    for (const source of activeSources) {
-      const provider = this.providers.get(source.provider);
-      if (!provider) continue;
+      for (const source of activeSources) {
+        const provider = this.providers.get(source.provider);
+        if (!provider) continue;
 
-      try {
-        // Query provider for candidate results
-        const sourceResults = await provider.search(trimmedQuery, {
-          mode,
-          lang,
-          page,
-          pageSize,
-        });
+        try {
+          // Fetch candidate pool for this ZIM source
+          const sourceResults = await provider.search(trimmedQuery, { mode, lang });
+          const matchingResults = sourceResults.filter(r => !r.sourceId || r.sourceId === source.id);
 
-        // Filter results belonging to this specific source if tagged
-        const matchingResults = sourceResults.filter(r => !r.sourceId || r.sourceId === source.id);
+          groups.push({
+            sourceId: source.id,
+            sourceName: source.name,
+            effectivePriority: source.effectivePriority,
+            results: matchingResults,
+          });
 
-        groups.push({
-          sourceId: source.id,
-          sourceName: source.name,
-          effectivePriority: source.effectivePriority,
-          results: matchingResults,
-        });
-
-        sourceCounts[source.name] = {
-          count: matchingResults.length,
-          effectivePriority: source.effectivePriority,
-        };
-      } catch (err) {
-        console.error(`[SearchEngine] Error querying source '${source.name}' via provider '${source.provider}':`, err);
+          sourceCounts[source.name] = {
+            count: matchingResults.length,
+            effectivePriority: source.effectivePriority,
+          };
+        } catch (err) {
+          console.error(`[SearchEngine] Error querying source '${source.name}':`, err);
+        }
       }
+
+      // 3. Perform source-aware result mixing to create the full unified ordered result list
+      // Max candidate capacity set to 140
+      const unifiedResults = this.resultMixer.mixResults(groups, 140);
+
+      cached = {
+        unifiedResults,
+        sourceCounts,
+        timestamp: Date.now(),
+      };
+
+      this.queryCache.set(cacheKey, cached);
+
+      // Maintain LRU size limit of 100 queries
+      if (this.queryCache.size > 100) {
+        const firstKey = this.queryCache.keys().next().value;
+        if (firstKey) this.queryCache.delete(firstKey);
+      }
+    } else {
+      console.log(`[SearchEngine] Cache HIT for key '${cacheKey}'`);
     }
 
-    // 3. Adaptive Result-Mixing Algorithm for requested page (page 1)
-    const page1Results = this.resultMixer.mixResults(groups, pageSize);
+    // 4. Paginate the unified ordered result set
+    const requestedPage = options.page ?? 1;
+    const paginationResult = this.paginateResults(cached.unifiedResults, requestedPage, pageSize);
 
-    // 4. Generate & Cache Page 2 if candidates remain
-    const totalCandidateCount = groups.reduce((acc, g) => acc + g.results.length, 0);
-    const hasMore = totalCandidateCount > page1Results.length;
-
-    const response: SearchResponse = {
+    return {
       query: trimmedQuery,
       mode,
-      results: page1Results,
-      sources: sourceCounts,
+      results: paginationResult.results,
+      sources: cached.sourceCounts,
       pagination: {
-        page,
-        pageSize,
-        totalResults: totalCandidateCount,
-        hasMore,
+        page: paginationResult.page,
+        pageSize: paginationResult.pageSize,
+        totalResults: paginationResult.totalResults,
+        totalPages: paginationResult.totalPages,
+        hasNextPage: paginationResult.hasNextPage,
+        hasPreviousPage: paginationResult.hasPreviousPage,
       },
       meta: {
-        total: page1Results.length,
+        total: paginationResult.results.length,
         executionTimeMs: Date.now() - startTime,
         providers: this.getRegisteredProviders(),
       },
     };
-
-    // Cache the response
-    this.cache.set(cacheKey, { response, timestamp: Date.now() });
-
-    // Limit cache size to 100 entries
-    if (this.cache.size > 100) {
-      const firstKey = this.cache.keys().next().value;
-      if (firstKey) this.cache.delete(firstKey);
-    }
-
-    return response;
   }
 }

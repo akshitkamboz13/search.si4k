@@ -1,27 +1,31 @@
 import React, { useState } from 'react';
 import { SearchResponse, SearchResult } from '../../shared/types.js';
 import { ResultCard } from './ResultCard.js';
+import { Pagination } from './Pagination.js';
 
 interface SearchResultsProps {
   response: SearchResponse;
+  onPageChange: (page: number) => void;
 }
 
-export const SearchResults: React.FC<SearchResultsProps> = ({ response }) => {
+export const SearchResults: React.FC<SearchResultsProps> = ({ response, onPageChange }) => {
   const [selectedSource, setSelectedSource] = useState<string | null>(null);
 
   const sourcesList = Object.keys(response.sources);
 
-  // Filter results if a source filter pill is selected, preserving provider ordering
+  // Filter results if a source filter pill is selected
   const displayedResults = selectedSource
     ? response.results.filter((r) => r.source.toLowerCase() === selectedSource.toLowerCase())
     : response.results;
+
+  const { page, totalPages, hasNextPage, hasPreviousPage, totalResults } = response.pagination;
 
   return (
     <div className="search-results-wrapper">
       <div className="results-meta">
         <div>
-          Found <strong>{response.meta.total}</strong> result{response.meta.total !== 1 ? 's' : ''} in{' '}
-          <strong>{response.meta.executionTimeMs}ms</strong>
+          Found <strong>{totalResults}</strong> result{totalResults !== 1 ? 's' : ''} in{' '}
+          <strong>{response.meta.executionTimeMs}ms</strong> (Page {page} of {totalPages})
         </div>
         <div>Mode: <strong style={{ textTransform: 'capitalize' }}>{response.mode}</strong></div>
       </div>
@@ -33,7 +37,7 @@ export const SearchResults: React.FC<SearchResultsProps> = ({ response }) => {
             className={`filter-pill ${selectedSource === null ? 'active' : ''}`}
             onClick={() => setSelectedSource(null)}
           >
-            All Sources ({response.meta.total})
+            All Sources ({totalResults})
           </button>
           {sourcesList.map((src) => (
             <button
@@ -56,11 +60,21 @@ export const SearchResults: React.FC<SearchResultsProps> = ({ response }) => {
           </div>
         </div>
       ) : (
-        <div className="results-list">
-          {displayedResults.map((result: SearchResult) => (
-            <ResultCard key={result.id} result={result} />
-          ))}
-        </div>
+        <>
+          <div className="results-list">
+            {displayedResults.map((result: SearchResult) => (
+              <ResultCard key={result.id} result={result} />
+            ))}
+          </div>
+
+          <Pagination
+            page={page}
+            totalPages={totalPages}
+            hasNextPage={hasNextPage}
+            hasPreviousPage={hasPreviousPage}
+            onPageChange={onPageChange}
+          />
+        </>
       )}
     </div>
   );

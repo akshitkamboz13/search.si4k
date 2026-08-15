@@ -42,7 +42,9 @@ export interface SearchResponse {
     page: number;
     pageSize: number;
     totalResults: number;
-    hasMore: boolean;
+    totalPages: number;
+    hasNextPage: boolean;
+    hasPreviousPage: boolean;
   };
   meta: {
     total: number;

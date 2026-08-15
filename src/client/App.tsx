@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { SearchResponse, SearchMode } from '../shared/types.js';
 import { Header } from './components/Header.js';
 import { SearchBar } from './components/SearchBar.js';
@@ -6,11 +6,12 @@ import { SearchResults } from './components/SearchResults.js';
 import { LoadingState } from './components/LoadingState.js';
 import { ErrorState } from './components/ErrorState.js';
 import { fetchSearchResults } from './services/api.js';
-import { BookOpen, MapPin, Database, Sparkles } from 'lucide-react';
+import { BookOpen, MapPin, Database } from 'lucide-react';
 
 export const App: React.FC = () => {
   const [query, setQuery] = useState<string>('');
   const [mode, setMode] = useState<SearchMode>('local');
+  const [page, setPage] = useState<number>(1);
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -21,50 +22,81 @@ export const App: React.FC = () => {
     document.documentElement.setAttribute('data-theme', theme);
   }, [theme]);
 
-  // Read URL query param on initial load
+  const executeSearch = useCallback(
+    async (searchQuery: string, searchMode: SearchMode = mode, searchPage: number = page) => {
+      setLoading(true);
+      setError(null);
+
+      // Build updated URL preserving q, mode, page
+      const params = new URLSearchParams();
+      params.set('q', searchQuery);
+      params.set('mode', searchMode);
+      if (searchPage > 1) {
+        params.set('page', String(searchPage));
+      }
+      const newUrl = `${window.location.pathname}?${params.toString()}`;
+      window.history.pushState({ q: searchQuery, mode: searchMode, page: searchPage }, '', newUrl);
+
+      try {
+        const data = await fetchSearchResults(searchQuery, searchMode, searchPage);
+        setResponse(data);
+        setPage(data.pagination.page);
+      } catch (err) {
+        console.error('Search request failed:', err);
+        setError(err instanceof Error ? err.message : 'Unable to connect to Si4k Search API');
+      } finally {
+        setLoading(false);
+      }
+    },
+    [mode, page]
+  );
+
+  // Initial URL parsing & Browser Back/Forward (popstate) support
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const initialQ = params.get('q');
-    const initialMode = params.get('mode') as SearchMode;
+    const handleUrlState = () => {
+      const params = new URLSearchParams(window.location.search);
+      const initialQ = params.get('q') || '';
+      const initialMode = (params.get('mode') as SearchMode) || 'local';
+      const initialPage = parseInt(params.get('page') || '1', 10);
 
-    if (initialMode === 'online' || initialMode === 'local') {
       setMode(initialMode);
-    }
+      const validPage = isNaN(initialPage) || initialPage < 1 ? 1 : initialPage;
+      setPage(validPage);
 
-    if (initialQ) {
-      setQuery(initialQ);
-      executeSearch(initialQ, initialMode || 'local');
-    }
+      if (initialQ) {
+        setQuery(initialQ);
+        executeSearch(initialQ, initialMode, validPage);
+      } else {
+        setQuery('');
+        setResponse(null);
+      }
+    };
+
+    handleUrlState();
+
+    window.addEventListener('popstate', handleUrlState);
+    return () => window.removeEventListener('popstate', handleUrlState);
   }, []);
-
-  const executeSearch = async (searchQuery: string, searchMode: SearchMode = mode) => {
-    setLoading(true);
-    setError(null);
-
-    // Update URL history state without reloading
-    const newUrl = `${window.location.pathname}?q=${encodeURIComponent(searchQuery)}&mode=${encodeURIComponent(searchMode)}`;
-    window.history.pushState({ path: newUrl }, '', newUrl);
-
-    try {
-      const data = await fetchSearchResults(searchQuery, searchMode);
-      setResponse(data);
-    } catch (err) {
-      console.error('Search request failed:', err);
-      setError(err instanceof Error ? err.message : 'Unable to connect to Si4k Search API');
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleSearchSubmit = (newQuery: string) => {
     setQuery(newQuery);
-    executeSearch(newQuery, mode);
+    setPage(1);
+    executeSearch(newQuery, mode, 1);
+  };
+
+  const handlePageChange = (newPage: number) => {
+    setPage(newPage);
+    if (query) {
+      executeSearch(query, mode, newPage);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   };
 
   const handleModeChange = (newMode: SearchMode) => {
     setMode(newMode);
+    setPage(1);
     if (query) {
-      executeSearch(query, newMode);
+      executeSearch(query, newMode, 1);
     }
   };
 
@@ -74,6 +106,7 @@ export const App: React.FC = () => {
 
   const handleHomeClick = () => {
     setQuery('');
+    setPage(1);
     setResponse(null);
     setError(null);
     window.history.pushState({}, '', window.location.pathname);
@@ -112,11 +145,11 @@ export const App: React.FC = () => {
         {loading && <LoadingState />}
 
         {!loading && error && (
-          <ErrorState message={error} onRetry={() => executeSearch(query, mode)} />
+          <ErrorState message={error} onRetry={() => executeSearch(query, mode, page)} />
         )}
 
         {!loading && !error && response && (
-          <SearchResults response={response} />
+          <SearchResults response={response} onPageChange={handlePageChange} />
         )}
 
         {!hasSearched && (
