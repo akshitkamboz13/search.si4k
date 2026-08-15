@@ -173,3 +173,44 @@ npx tsx src/server/dockerVerification.test.ts
    - Ensure `KIWIX_PUBLIC_URL` matches the address accessible by your client browser.
 3. **No ZIM sources discovered**:
    - Verify `KIWIX_LIBRARY_XML` path points to a valid `library.xml` file.
+
+---
+
+## Extensibility & Extension Roadmap
+
+### Core Design Principle
+> **Optional capabilities must never become mandatory dependencies of the core search engine.**
+>
+> Si4k Search operates out of the box as **Search Core + Knowledge Providers**. Additional capabilities (+ Voice, + Translation, + Dictionary, + AI, + Maps) are pluggable extension interfaces that can be activated independently.
+
+### Extension Phases
+
+#### Phase 1: Knowledge Providers (`SearchProvider`)
+- Kiwix / ZIM (Wikipedia, wikiHow, iFixit, Stack Overflow, DevDocs)
+- Offline Documents (PDF, ePub, Markdown)
+- OpenStreetMap / Nominatim location datasets
+- Custom structured JSON/XML datasets
+
+#### Phase 2: Local Language Capabilities (`LanguageProvider`)
+- Offline language detection
+- Downloadable offline dictionaries & term lookup
+- Query translation (e.g. English query routed to Hindi ZIMs with cross-lingual unified ranking)
+- Multilingual query expansion
+
+```
+User Query ──→ Language Detection
+                    │
+                    ├── original query ──→ English ZIMs ──┐
+                    │                                     ├──→ Unified Ranking
+                    └── translation ────→ Hindi ZIMs ────┘
+```
+
+#### Phase 3: Voice Search (`SpeechToTextProvider`)
+- Optional local speech-to-text (STT) provider (`Microphone ──→ Local STT ──→ Search Query`).
+- Completely decoupled; core search requires zero voice or STT packages.
+
+#### Phase 4: AI-Assisted Search (`SummaryProvider`)
+- Optional grounded summary generation using local LLMs (e.g. Ollama/llama.cpp) or custom AI endpoints.
+- Pipeline: `Search ──→ Top N Ranked Results ──→ SummaryProvider ──→ Grounded Summary + Source Citations`.
+- Core search remains 100% operational without an AI model.
+

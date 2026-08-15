@@ -81,3 +81,40 @@ export interface StreamEventPayload {
     message?: string;
   };
 }
+
+// Phase 2: Optional Language & Multilingual Types
+export interface LanguageDetectionResult {
+  detectedLanguage: string; // e.g. "en", "hi", "es"
+  confidence: number;
+  isSupportedByLibrary: boolean;
+}
+
+export interface TranslatedQuery {
+  originalQuery: string;
+  sourceLanguage: string;
+  targetLanguage: string;
+  translatedQuery: string;
+}
+
+// Phase 3: Optional Voice Search Types
+export interface TranscriptionResult {
+  transcript: string;
+  confidence: number;
+  language?: string;
+}
+
+// Phase 4: Optional Grounded Summary & AI Types
+export interface GroundedCitation {
+  resultId: string;
+  title: string;
+  source: string;
+  url: string;
+  snippet: string;
+}
+
+export interface GroundedSummary {
+  summary: string;
+  citations: GroundedCitation[];
+  modelUsed?: string;
+  executionTimeMs?: number;
+}
