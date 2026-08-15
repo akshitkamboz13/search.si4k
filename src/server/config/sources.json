@@ -1,0 +1,54 @@
+{
+  "scoringConfig": {
+    "exactDomainMatchScore": 7,
+    "exactPhraseKeywordScore": 4,
+    "singleKeywordScore": 2,
+    "categoryMatchScore": 3
+  },
+  "sources": [
+    {
+      "id": "wikihow_en_2023_03",
+      "zimName": "wikihow_en_maxi_2023-03",
+      "name": "wikiHow",
+      "provider": "kiwix",
+      "lang": "en",
+      "basePriority": 9,
+      "category": "guides",
+      "enabled": true,
+      "keywords": ["how to", "how", "repair", "fix", "diy", "make", "build", "step by step"]
+    },
+    {
+      "id": "ifixit_en_2025_12",
+      "zimName": "ifixit_en_all_2025-12",
+      "name": "iFixit",
+      "provider": "kiwix",
+      "lang": "en",
+      "basePriority": 9,
+      "category": "repair",
+      "enabled": true,
+      "keywords": ["repair", "replace", "battery", "screen", "teardown", "hardware", "tool", "part"]
+    },
+    {
+      "id": "archwiki_en_2026_07",
+      "zimName": "archlinux_en_all_maxi_2026-07",
+      "name": "Arch Wiki",
+      "provider": "kiwix",
+      "lang": "en",
+      "basePriority": 6,
+      "category": "technical",
+      "enabled": true,
+      "keywords": ["arch", "arch linux", "pacman", "aur", "systemd", "linux", "terminal", "bash"]
+    },
+    {
+      "id": "wikipedia_en_2026_06",
+      "zimName": "wikipedia_en_all_nopic_2026-06",
+      "name": "Wikipedia",
+      "provider": "kiwix",
+      "lang": "en",
+      "basePriority": 6,
+      "category": "general",
+      "enabled": true,
+      "keywords": ["general knowledge", "history", "geography", "science", "biography", "overview"]
+    }
+  ]
+}

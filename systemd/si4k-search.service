@@ -1,0 +1,25 @@
+[Unit]
+Description=Si4k Search Engine Service
+After=network.target kiwix-serve.service
+
+[Service]
+Type=simple
+User=siakshit
+WorkingDirectory=/opt/si4k/search
+ExecStart=/usr/bin/npm start
+Restart=always
+RestartSec=5
+
+# Environment variables
+Environment=NODE_ENV=production
+Environment=PORT=3000
+Environment=KIWIX_URL=http://localhost:8080
+Environment=KIWIX_PUBLIC_URL=https://wiki.si4k.online
+
+# Security hardening
+NoNewPrivileges=true
+ProtectSystem=full
+ProtectHome=read-only
+
+[Install]
+WantedBy=multi-user.target
