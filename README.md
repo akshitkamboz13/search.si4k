@@ -1,172 +1,175 @@
 # Si4k Search Engine
 
-Unified, high-performance offline-first knowledge search engine for Kiwix, Wikipedia, wikiHow, iFixit, Stack Overflow, and local ZIM collections. Optimized for low-resource hardware (e.g. Intel i5 5th-Gen servers).
+Unified, high-performance offline-first knowledge search engine for Kiwix, Wikipedia, wikiHow, iFixit, Stack Overflow, and local ZIM collections. Optimized for modest home servers and offline knowledge infrastructure.
 
 ---
 
-## Key Features & Architecture
+## Quick Start with Docker
+
+### Option A: Complete Docker Compose Stack (Si4k Search + Kiwix Server)
+
+If you have ZIM datasets located on your host machine (e.g., at `/mnt/knowledge`), run:
+
+```bash
+docker compose up -d
+```
+
+Si4k Search will be accessible at `http://localhost:3000`.
+
+### Option B: Connecting Si4k Search to an Existing Kiwix Server
+
+If you already have `kiwix-serve` running on your local network (e.g., at `http://192.168.1.100:8080`):
+
+```bash
+docker run -d \
+  --name si4k-search \
+  -p 3000:3000 \
+  -e NODE_ENV=production \
+  -e KIWIX_URL=http://192.168.1.100:8080 \
+  -e KIWIX_PUBLIC_URL=http://192.168.1.100:8080 \
+  -e KIWIX_DATA_DIR=/knowledge \
+  -e KIWIX_LIBRARY_XML=/knowledge/Metadata/library.xml \
+  -v /mnt/knowledge:/knowledge:ro \
+  si4k-search:latest
+```
+
+---
+
+## Key Architecture & Features
 
 - **Two-Wave Priority Search Model**:
-  - Wave 1 searches high-relevance prioritized ZIM sources (e.g. ArchWiki for Arch Linux queries, Stack Overflow for code queries).
-  - Wave 2 continues searching all remaining eligible ZIM sources in the library.
-  - Priority determines search order, **never search scope** — search terminates only after full library traversal.
+  - **Wave 1**: Searches high-relevance prioritized ZIM sources (e.g., ArchWiki for Linux/Arch queries, Stack Overflow for code queries).
+  - **Wave 2**: Traverses all remaining eligible ZIM sources in the library.
+  - Priority determines search order, **never search scope** — search finishes only after full library traversal.
 - **Progressive SSE Result Streaming**:
   - Emits progressive result batches over Server-Sent Events (SSE) as ZIM sources complete.
   - Real-time client rendering with monotonic execution time tracking (`executionTimeMs`).
 - **User-Configurable LRU Search Cache**:
   - Deterministic caching controlled via `.env` (`SEARCH_CACHE_ENABLED`, `SEARCH_CACHE_TTL_SECONDS`, `SEARCH_CACHE_MAX_ENTRIES`).
-  - Only complete search sessions are cached. In-progress queries bypass cache to prevent partial result pollution.
-- **Server Concurrency Protection & Resource Efficiency**:
-  - Strict concurrency limits (`SEARCH_MAX_CONCURRENT`, `SEARCH_MAX_ZIM_WORKERS`, `SEARCH_REQUEST_TIMEOUT_MS`) to protect CPU and memory on modest hardware.
-  - Automatic `AbortSignal` handling cancels worker HTTP fetches when clients disconnect.
+  - Only complete search sessions enter the cache to prevent partial result pollution.
+- **Server Concurrency Valve & Resource Efficiency**:
+  - Strict queue-backed concurrency controls (`SEARCH_MAX_CONCURRENT=2`, `SEARCH_MAX_ZIM_WORKERS=4`, `SEARCH_REQUEST_TIMEOUT_MS=10000`).
+  - Automatic `AbortSignal` propagation cancels worker HTTP fetches when clients disconnect.
 - **100% Offline & Self-Contained UI**:
-  - Standalone SVG logo (`Si4kIcon`), inline SVG favicon, zero external network fonts/CDNs, and native system font stack.
+  - Standalone inline SVG logo (`Si4kIcon`), inline SVG favicon, zero external network fonts/CDNs, and native system font stack.
 
 ---
 
-## Project Structure
+## Environment Variables
 
-```
-search.si4k.online/
-├── package.json               # Node.js dependencies & npm scripts
-├── tsconfig.json              # Base TypeScript configuration
-├── tsconfig.server.json       # Node.js Express server TS configuration
-├── vite.config.ts             # Vite client bundler & dev proxy configuration
-├── .env.example               # Environment variable configuration template
-├── systemd/
-│   └── si4k-search.service    # Production systemd service unit file
-├── src/
-│   ├── shared/
-│   │   └── types.ts           # Unified SearchResult, SearchResponse, SearchMode types
-│   ├── server/
-│   │   ├── index.ts           # Express server entry point & static server
-│   │   ├── config.ts          # Central environment configuration loader
-│   │   ├── search/
-│   │   │   ├── SearchEngine.ts # Core search engine session manager & session queue
-│   │   │   ├── resultCache.ts  # Deterministic LRU result cache
-│   │   │   ├── zimDiscovery.ts # Dynamic ZIM library discovery & source ranker
-│   │   │   ├── resultMixer.ts  # Adaptive result mixer & candidate limit filter
-│   │   │   ├── articleRanker.ts # Category & keyword article relevance ranker
-│   │   │   └── providers/
-│   │   │       ├── KiwixProvider.ts     # Encapsulated Kiwix ZIM search provider
-│   │   │       └── KiwixProvider.test.ts # Unit test verifying Kiwix provider
-│   │   └── api/
-│   │       └── searchRouter.ts # SSE /api/search stream endpoint
-│   └── client/
-│       ├── main.tsx           # React DOM entry point
-│       ├── App.tsx            # Main search application component
-│       ├── index.css          # Offline system-font search engine styling
-│       ├── components/
-│       │   ├── Header.tsx     # Brand logo, mode selector, and theme toggle
-│       │   ├── SearchBar.tsx  # Large search input bar with Enter key support
-│       │   ├── SearchResults.tsx # Progressive search results view with stream status
-│       │   ├── ResultCard.tsx # Article snippet card component
-│       │   ├── Si4kIcon.tsx   # Offline SVG brand icon
-│       │   ├── LoadingState.tsx # Skeleton loading animation
-│       │   └── ErrorState.tsx # Friendly error alert display
-│       └── services/
-│           └── api.ts         # SSE streaming client for /api/search
-```
+| Variable | Default Value | Description |
+| :--- | :--- | :--- |
+| `PORT` | `3000` | HTTP port exposed by Express server |
+| `NODE_ENV` | `production` | Application execution mode (`production` / `development`) |
+| `KIWIX_URL` | `http://kiwix:8080` | Internal backend URL used by Node process to query Kiwix server |
+| `KIWIX_PUBLIC_URL` | `http://localhost:8080` | Browser-facing public target URL used for result article links |
+| `KIWIX_DATA_DIR` | `/knowledge` | Path to host-mounted knowledge library root directory |
+| `KIWIX_LIBRARY_XML` | `/knowledge/Metadata/library.xml` | Path to host-mounted Kiwix `library.xml` catalog file |
+| `KIWIX_CANDIDATE_LIMIT` | `100` | Maximum raw candidate limit per individual ZIM source |
+| `SEARCH_MAX_CONCURRENT` | `2` | Maximum concurrent progressive search sessions running in backend |
+| `SEARCH_MAX_ZIM_WORKERS` | `4` | Maximum parallel ZIM worker fetches per search session |
+| `SEARCH_REQUEST_TIMEOUT_MS` | `10000` | Maximum HTTP request timeout for individual Kiwix ZIM fetches |
+| `SEARCH_CACHE_ENABLED` | `true` | Enable/disable deterministic search result caching |
+| `SEARCH_CACHE_TTL_SECONDS` | `300` | Time-to-live for cached search queries (in seconds) |
+| `SEARCH_CACHE_MAX_ENTRIES` | `100` | Maximum entries retained in LRU cache |
 
 ---
 
-## Environment Configuration
+## Health Check & Monitoring Endpoints
 
-Copy `.env.example` to `.env`:
+- **Service Liveness Endpoint**:
+  ```bash
+  curl http://localhost:3000/api/health
+  ```
+  Returns `200 OK` with status:
+  ```json
+  {
+    "status": "ok",
+    "service": "si4k-search"
+  }
+  ```
+  *Note: `/api/health` does NOT fail if Kiwix is temporarily offline.*
 
-```bash
-cp .env.example .env
+- **Kiwix Readiness Endpoint**:
+  ```bash
+  curl http://localhost:3000/api/health/ready
+  ```
+  Returns `200 OK` when Kiwix is reachable (`"kiwix": "reachable"`), or `503 Service Unavailable` when Kiwix is offline (`"kiwix": "unreachable"`).
+
+---
+
+## Mounting ZIM Library & External Kiwix Setup
+
+### Mounting Host Knowledge Directory
+
+ZIM knowledge libraries can be hundreds of gigabytes in size. **Do not copy ZIM files into Docker images.** Mount your host knowledge directory into the container:
+
+```yaml
+volumes:
+  - /mnt/knowledge:/knowledge:ro
 ```
 
-### `.env` Parameters
+Expected directory layout on host:
 
-```ini
-# Server Configuration
-PORT=3000
-NODE_ENV=development
-
-# Network Detection Configuration
-ENVIRONMENT_OVERRIDE=auto
-LOCAL_NETWORKS=192.168.0.0/16,10.0.0.0/8,172.16.0.0/12,127.0.0.1/32,::1/128
-
-# Kiwix Target URLs
-KIWIX_LOCAL_URL=http://localhost:8080
-KIWIX_LOCAL_PUBLIC_URL=http://localhost:8080
-KIWIX_ONLINE_URL=http://localhost:8080
-KIWIX_ONLINE_PUBLIC_URL=https://wiki.example.com
-
-# Kiwix Data & Metadata Paths
-KIWIX_DATA_DIR=/var/kiwix/data
-KIWIX_LIBRARY_XML=/var/kiwix/data/Metadata/library.xml
-
-# Limits & Weights
-KIWIX_CANDIDATE_LIMIT=100
-MAX_CONCURRENT_ZIM_SEARCHES=8
-
-# Server Concurrency & Protection
-SEARCH_MAX_CONCURRENT=2
-SEARCH_MAX_ZIM_WORKERS=4
-SEARCH_REQUEST_TIMEOUT_MS=10000
-
-# Search Cache Controls
-SEARCH_CACHE_ENABLED=true
-SEARCH_CACHE_TTL_SECONDS=300
-SEARCH_CACHE_MAX_ENTRIES=100
-SEARCH_CACHE_DEBUG=true
+```
+/mnt/knowledge/
+├── Metadata/
+│   └── library.xml
+└── ZIM/
+    ├── wikipedia_en_all_maxi.zim
+    ├── wikihow_en_maxi.zim
+    └── archlinux_en_all_maxi.zim
 ```
 
 ---
 
-## Development & Testing
+## Resource Configuration & Limits
 
-### Installation
+For modest server hardware (e.g. Intel i5 5th-Gen servers, 4GB–8GB RAM):
+
+- **Internal Concurrency Valve**: Keep `SEARCH_MAX_CONCURRENT=2` and `SEARCH_MAX_ZIM_WORKERS=4`. This prevents CPU saturation during heavy concurrent search traffic.
+- **Memory Overhead**: Si4k Search uses only **~160MB–230MB RSS** memory. No restrictive Docker RAM caps are required.
+
+---
+
+## Graceful Shutdown
+
+During container shutdown or restarting (`docker stop` or `docker compose down`), Node.js catches `SIGTERM` and `SIGINT`:
+1. Express stops accepting new HTTP connections.
+2. Active search sessions and SSE streams are cleanly aborted/closed.
+3. Process exits with code 0.
+
+---
+
+## Local Development & Manual Testing
+
+### Building Locally
 
 ```bash
 npm install
-```
-
-### Running Development Server
-
-Start the frontend (Vite port `5173`) and Express backend (`PORT 3000`) concurrently:
-
-```bash
-npm run dev
+npm run build
 ```
 
 ### Running Automated Test Suite
-
-Execute all TypeScript checks and unit/integration tests:
 
 ```bash
 npx tsc --noEmit && npm test
 ```
 
+### Manual Verification Script
+
+```bash
+npx tsx src/server/dockerVerification.test.ts
+```
+
 ---
 
-## Production Deployment
+## Troubleshooting
 
-### Build Production Bundle
-
-```bash
-npm run build
-```
-
-This compiles:
-- `dist/client/`: Static single-page web app.
-- `dist/server/`: Express backend bundle.
-
-### Start Production Server
-
-```bash
-npm start
-```
-
-### Systemd Service Setup
-
-```bash
-sudo mkdir -p /opt/si4k/search
-sudo cp -r dist package.json package-lock.json node_modules /opt/si4k/search/
-sudo cp systemd/si4k-search.service /etc/systemd/system/
-sudo systemctl daemon-reload
-sudo systemctl enable --now si4k-search
-```
+1. **`GET /api/health/ready` returns 503 Service Unavailable**:
+   - Check if `KIWIX_URL` matches your Kiwix server address.
+   - Verify network accessibility: `curl http://<KIWIX_HOST>:8080/`.
+2. **Search results link to unreachable URLs**:
+   - Ensure `KIWIX_PUBLIC_URL` matches the address accessible by your client browser.
+3. **No ZIM sources discovered**:
+   - Verify `KIWIX_LIBRARY_XML` path points to a valid `library.xml` file.

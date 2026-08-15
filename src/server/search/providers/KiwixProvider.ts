@@ -58,6 +58,22 @@ export class KiwixProvider implements SearchProvider {
   }
 
   /**
+   * Performs quick HTTP ping to verify Kiwix endpoint accessibility
+   */
+  public async checkReadiness(): Promise<boolean> {
+    try {
+      const { internalUrl } = this.getUrlsForMode('local');
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 3000);
+      const res = await fetch(internalUrl, { signal: controller.signal, method: 'HEAD' });
+      clearTimeout(timeoutId);
+      return res.status < 500;
+    } catch {
+      return false;
+    }
+  }
+
+  /**
    * Helper to fetch a single HTML page from Kiwix search endpoint
    */
   private async fetchHtmlPage(internalUrl: string, zimName: string, query: string, start: number, signal?: AbortSignal): Promise<string | null> {

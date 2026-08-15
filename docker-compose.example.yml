@@ -1,0 +1,55 @@
+# Docker Compose Example Configuration
+# Option 1: Complete Stack (Si4k Search + Kiwix Container)
+version: '3.8'
+
+services:
+  search:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: si4k-search
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - KIWIX_URL=http://kiwix:8080
+      - KIWIX_PUBLIC_URL=http://localhost:8080
+      - KIWIX_DATA_DIR=/knowledge
+      - KIWIX_LIBRARY_XML=/knowledge/Metadata/library.xml
+      - SEARCH_MAX_CONCURRENT=2
+      - SEARCH_MAX_ZIM_WORKERS=4
+    volumes:
+      - /mnt/knowledge:/knowledge:ro
+    depends_on:
+      - kiwix
+
+  kiwix:
+    image: ghcr.io/kiwix/kiwix-serve:latest
+    container_name: kiwix-server
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    volumes:
+      - /mnt/knowledge:/knowledge:ro
+    command: kiwix-serve --port=8080 --library /knowledge/Metadata/library.xml
+
+---
+# Option 2: Standalone Si4k Search connected to an existing LAN Kiwix Server
+# (Uncomment below if using an existing Kiwix server on your LAN)
+#
+# services:
+#   search:
+#     image: si4k-search:latest
+#     container_name: si4k-search
+#     restart: unless-stopped
+#     ports:
+#       - "3000:3000"
+#     environment:
+#       - NODE_ENV=production
+#       - KIWIX_URL=http://192.168.1.100:8080
+#       - KIWIX_PUBLIC_URL=http://192.168.1.100:8080
+#       - KIWIX_DATA_DIR=/knowledge
+#       - KIWIX_LIBRARY_XML=/knowledge/Metadata/library.xml
+#     volumes:
+#       - /mnt/knowledge:/knowledge:ro

@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  search:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: si4k-search
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - KIWIX_URL=${KIWIX_URL:-http://kiwix:8080}
+      - KIWIX_PUBLIC_URL=${KIWIX_PUBLIC_URL:-http://localhost:8080}
+      - KIWIX_DATA_DIR=${KIWIX_DATA_DIR:-/knowledge}
+      - KIWIX_LIBRARY_XML=${KIWIX_LIBRARY_XML:-/knowledge/Metadata/library.xml}
+      - KIWIX_CANDIDATE_LIMIT=${KIWIX_CANDIDATE_LIMIT:-100}
+      - SEARCH_CACHE_ENABLED=${SEARCH_CACHE_ENABLED:-true}
+      - SEARCH_CACHE_TTL_SECONDS=${SEARCH_CACHE_TTL_SECONDS:-300}
+      - SEARCH_CACHE_MAX_ENTRIES=${SEARCH_CACHE_MAX_ENTRIES:-100}
+      - SEARCH_MAX_CONCURRENT=${SEARCH_MAX_CONCURRENT:-2}
+      - SEARCH_MAX_ZIM_WORKERS=${SEARCH_MAX_ZIM_WORKERS:-4}
+      - SEARCH_REQUEST_TIMEOUT_MS=${SEARCH_REQUEST_TIMEOUT_MS:-10000}
+    volumes:
+      - ${KNOWLEDGE_HOST_PATH:-/mnt/knowledge}:/knowledge:ro
+    depends_on:
+      - kiwix
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  kiwix:
+    image: ghcr.io/kiwix/kiwix-serve:latest
+    container_name: kiwix-server
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    volumes:
+      - ${KNOWLEDGE_HOST_PATH:-/mnt/knowledge}:/knowledge:ro
+    command: kiwix-serve --port=8080 --library /knowledge/Metadata/library.xml

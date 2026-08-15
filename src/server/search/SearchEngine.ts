@@ -694,4 +694,10 @@ export class SearchEngine {
       this.releaseSessionSlot();
     }
   }
+
+  public shutdown(): void {
+    console.log('[SearchEngine] Shutting down session manager...');
+    this.sessionQueue = [];
+    this.searchCache.clear();
+  }
 }

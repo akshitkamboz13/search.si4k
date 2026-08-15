@@ -33,24 +33,32 @@ searchEngine.registerProvider(kiwixProvider);
 // API Routes
 app.use('/api', createSearchRouter(searchEngine));
 
-// Health Check Endpoint
-app.get('/api/health', async (_req, res) => {
-  const discovered = await searchEngine.getDiscoveredSources();
+// Health Check Endpoint (Basic service alive check)
+app.get('/api/health', (_req, res) => {
   res.json({
     status: 'ok',
     service: 'si4k-search',
-    mode: config.nodeEnv,
-    providers: searchEngine.getRegisteredProviders(),
-    discoveredZimsCount: discovered.length,
-    config: {
-      dataDir: config.kiwix.dataDir,
-      libraryXml: config.kiwix.libraryXml,
-      kiwixLocalUrl: config.kiwix.localUrl,
-      kiwixLocalPublicUrl: config.kiwix.localPublicUrl,
-      kiwixOnlineUrl: config.kiwix.onlineUrl,
-      kiwixOnlinePublicUrl: config.kiwix.onlinePublicUrl,
-    },
   });
+});
+
+// Deep Readiness Check (Verifies Kiwix availability)
+app.get('/api/health/ready', async (_req, res) => {
+  const isKiwixReady = await kiwixProvider.checkReadiness();
+  if (isKiwixReady) {
+    res.json({
+      status: 'ready',
+      service: 'si4k-search',
+      kiwix: 'reachable',
+      kiwixUrl: config.kiwix.localUrl,
+    });
+  } else {
+    res.status(503).json({
+      status: 'degraded',
+      service: 'si4k-search',
+      kiwix: 'unreachable',
+      kiwixUrl: config.kiwix.localUrl,
+    });
+  }
 });
 
 // Serve built frontend assets in production mode
@@ -63,7 +71,7 @@ if (config.nodeEnv === 'production') {
 }
 
 // Start Server
-app.listen(config.port, async () => {
+const server = app.listen(config.port, async () => {
   const discovered = await searchEngine.getDiscoveredSources();
   console.log(`====================================================`);
   console.log(` Si4k Search Engine Running`);
@@ -78,5 +86,23 @@ app.listen(config.port, async () => {
   console.log(` Providers:          ${searchEngine.getRegisteredProviders().join(', ')}`);
   console.log(`====================================================`);
 });
+
+const handleShutdown = (signal: string) => {
+  console.log(`\n[Server] Received ${signal}. Starting graceful shutdown...`);
+  server.close(() => {
+    console.log('[Server] Closed HTTP server connections.');
+    searchEngine.shutdown();
+    console.log('[Server] Shutdown complete.');
+    process.exit(0);
+  });
+
+  setTimeout(() => {
+    console.error('[Server] Could not close connections in time, forcing exit.');
+    process.exit(1);
+  }, 10000).unref();
+};
+
+process.on('SIGTERM', () => handleShutdown('SIGTERM'));
+process.on('SIGINT', () => handleShutdown('SIGINT'));
 
 export { app, searchEngine };

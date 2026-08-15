@@ -1,0 +1,16 @@
+# Dependencies & Build artifacts
+node_modules
+dist
+
+# Version control & environment files
+.git
+.gitignore
+.env
+*.env
+*.log
+
+# Tests & temporary files
+coverage
+scripts
+.gemini
+tmp
