@@ -2,7 +2,15 @@
 
 Unified, high-performance offline-first knowledge search engine for Kiwix and local ZIM collections including Wikipedia, wikiHow, iFixit, Stack Overflow, and other datasets. Optimized for modest home servers and offline knowledge infrastructure.
 
-![Si4k Search screenshot](docs/images/search.png)
+### Screenshots
+
+| Landing & Search View | Real-Time Progressive Stream |
+| :---: | :---: |
+| ![Si4k Search Landing Page](docs/images/landing.png) | ![Si4k Search Results View](docs/images/search_results.png) |
+
+| Dark Mode Theme |
+| :---: |
+| ![Si4k Search Dark Mode View](docs/images/dark_mode.png) |
 
 ---
 
