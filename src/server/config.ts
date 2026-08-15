@@ -1,15 +1,25 @@
 import dotenv from 'dotenv';
+import path from 'path';
 
 dotenv.config();
+
+export interface KiwixConfig {
+  dataDir: string;
+  libraryXml: string;
+  localUrl: string;
+  localPublicUrl: string;
+  onlineUrl: string;
+  onlinePublicUrl: string;
+}
 
 export interface Config {
   port: number;
   nodeEnv: string;
-  kiwixLocalUrl: string;
-  kiwixLocalPublicUrl: string;
-  kiwixOnlineUrl: string;
-  kiwixOnlinePublicUrl: string;
+  kiwix: KiwixConfig;
 }
+
+const dataDir = process.env.KIWIX_DATA_DIR || '/mnt/knowledge';
+const libraryXml = process.env.KIWIX_LIBRARY_XML || path.join(dataDir, 'Metadata', 'library.xml');
 
 const defaultLocalUrl = process.env.KIWIX_LOCAL_URL || process.env.KIWIX_URL || 'http://192.168.31.250:8080';
 const defaultLocalPublicUrl = process.env.KIWIX_LOCAL_PUBLIC_URL || process.env.KIWIX_PUBLIC_URL || 'http://si4k-server.local:8080';
@@ -20,8 +30,12 @@ const defaultOnlinePublicUrl = process.env.KIWIX_ONLINE_PUBLIC_URL || process.en
 export const config: Config = {
   port: parseInt(process.env.PORT || '3000', 10),
   nodeEnv: process.env.NODE_ENV || 'development',
-  kiwixLocalUrl: defaultLocalUrl.replace(/\/$/, ''),
-  kiwixLocalPublicUrl: defaultLocalPublicUrl.replace(/\/$/, ''),
-  kiwixOnlineUrl: defaultOnlineUrl.replace(/\/$/, ''),
-  kiwixOnlinePublicUrl: defaultOnlinePublicUrl.replace(/\/$/, ''),
+  kiwix: {
+    dataDir: dataDir.replace(/\/$/, ''),
+    libraryXml,
+    localUrl: defaultLocalUrl.replace(/\/$/, ''),
+    localPublicUrl: defaultLocalPublicUrl.replace(/\/$/, ''),
+    onlineUrl: defaultOnlineUrl.replace(/\/$/, ''),
+    onlinePublicUrl: defaultOnlinePublicUrl.replace(/\/$/, ''),
+  },
 };

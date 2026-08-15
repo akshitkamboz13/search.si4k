@@ -19,11 +19,10 @@ app.use(express.json());
 const searchEngine = new SearchEngine();
 
 const kiwixProvider = new KiwixProvider({
-  localUrl: config.kiwixLocalUrl,
-  localPublicUrl: config.kiwixLocalPublicUrl,
-  onlineUrl: config.kiwixOnlineUrl,
-  onlinePublicUrl: config.kiwixOnlinePublicUrl,
-  sources: searchEngine.getSources(),
+  localUrl: config.kiwix.localUrl,
+  localPublicUrl: config.kiwix.localPublicUrl,
+  onlineUrl: config.kiwix.onlineUrl,
+  onlinePublicUrl: config.kiwix.onlinePublicUrl,
 });
 
 searchEngine.registerProvider(kiwixProvider);
@@ -32,18 +31,21 @@ searchEngine.registerProvider(kiwixProvider);
 app.use('/api', createSearchRouter(searchEngine));
 
 // Health Check Endpoint
-app.get('/api/health', (_req, res) => {
+app.get('/api/health', async (_req, res) => {
+  const discovered = await searchEngine.getDiscoveredSources();
   res.json({
     status: 'ok',
     service: 'si4k-search',
     mode: config.nodeEnv,
     providers: searchEngine.getRegisteredProviders(),
-    sourcesCount: searchEngine.getSources().length,
+    discoveredZimsCount: discovered.length,
     config: {
-      kiwixLocalUrl: config.kiwixLocalUrl,
-      kiwixLocalPublicUrl: config.kiwixLocalPublicUrl,
-      kiwixOnlineUrl: config.kiwixOnlineUrl,
-      kiwixOnlinePublicUrl: config.kiwixOnlinePublicUrl,
+      dataDir: config.kiwix.dataDir,
+      libraryXml: config.kiwix.libraryXml,
+      kiwixLocalUrl: config.kiwix.localUrl,
+      kiwixLocalPublicUrl: config.kiwix.localPublicUrl,
+      kiwixOnlineUrl: config.kiwix.onlineUrl,
+      kiwixOnlinePublicUrl: config.kiwix.onlinePublicUrl,
     },
   });
 });
@@ -58,17 +60,18 @@ if (config.nodeEnv === 'production') {
 }
 
 // Start Server
-app.listen(config.port, () => {
+app.listen(config.port, async () => {
+  const discovered = await searchEngine.getDiscoveredSources();
   console.log(`====================================================`);
   console.log(` Si4k Search Engine Running`);
   console.log(` Mode:               ${config.nodeEnv}`);
   console.log(` Port:               ${config.port}`);
-  console.log(` Kiwix Local URL:    ${config.kiwixLocalUrl}`);
-  console.log(` Kiwix Local Public: ${config.kiwixLocalPublicUrl}`);
-  console.log(` Kiwix Online URL:   ${config.kiwixOnlineUrl}`);
-  console.log(` Kiwix Online Public:${config.kiwixOnlinePublicUrl}`);
+  console.log(` Kiwix Data Dir:     ${config.kiwix.dataDir}`);
+  console.log(` Kiwix Library XML:  ${config.kiwix.libraryXml}`);
+  console.log(` Kiwix Local URL:    ${config.kiwix.localUrl}`);
+  console.log(` Kiwix Local Public: ${config.kiwix.localPublicUrl}`);
+  console.log(` Discovered ZIMs:    ${discovered.length} entries`);
   console.log(` Providers:          ${searchEngine.getRegisteredProviders().join(', ')}`);
-  console.log(` Sources:            ${searchEngine.getSources().map(s => s.name).join(', ')}`);
   console.log(`====================================================`);
 });
 

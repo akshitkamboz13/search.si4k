@@ -10,7 +10,7 @@
     "build:server": "tsc -p tsconfig.server.json",
     "build": "npm run build:client && npm run build:server",
     "start": "node dist/server/index.js",
-    "test": "tsx src/server/search/providers/KiwixProvider.test.ts && tsx src/server/search/searchEngineFull.test.ts"
+    "test": "tsx src/server/search/zimDiscovery.test.ts && tsx src/server/search/providers/KiwixProvider.test.ts && tsx src/server/search/searchEngineFull.test.ts"
   },
   "dependencies": {
     "cheerio": "^1.0.0-rc.12",

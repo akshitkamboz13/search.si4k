@@ -2,6 +2,8 @@ import { SearchProvider } from './types.js';
 import { SearchResult, SearchResponse, SearchOptions, SearchSourceConfig, ScoringConfig } from '../../shared/types.js';
 import { SourceRanker } from './sourceRanker.js';
 import { ResultMixer, SourceResultsGroup } from './resultMixer.js';
+import { ZimLibrary, DiscoveredZim } from './ZimLibrary.js';
+import { SourceRelevance } from './SourceRelevance.js';
 import sourcesData from '../config/sources.json' with { type: 'json' };
 
 export interface QueryCacheEntry {
@@ -12,17 +14,47 @@ export interface QueryCacheEntry {
 
 export class SearchEngine {
   private providers: Map<string, SearchProvider> = new Map();
-  private sources: SearchSourceConfig[];
+  private zimLibrary: ZimLibrary;
+  private sourceRelevance: SourceRelevance;
   private sourceRanker: SourceRanker;
   private resultMixer: ResultMixer;
   private queryCache: Map<string, QueryCacheEntry> = new Map();
   private readonly ttlMs: number = 10 * 60 * 1000; // 10 minutes TTL
 
-  constructor(customSources?: SearchSourceConfig[], customScoring?: ScoringConfig) {
-    this.sources = customSources || (sourcesData.sources as SearchSourceConfig[]);
+  constructor(customLibrary?: ZimLibrary | SearchSourceConfig[], customScoring?: ScoringConfig) {
+    if (customLibrary && Array.isArray(customLibrary)) {
+      // Mock library wrapper for unit tests passing source array
+      const mockSources: DiscoveredZim[] = customLibrary.map(s => ({
+        ...s,
+        tags: s.keywords || [],
+        description: s.name,
+      }));
+      this.zimLibrary = {
+        getDiscoveredSources: async () => mockSources,
+        parseLibraryXml: () => mockSources,
+      } as unknown as ZimLibrary;
+    } else if (customLibrary) {
+      this.zimLibrary = customLibrary as ZimLibrary;
+    } else {
+      this.zimLibrary = new ZimLibrary();
+    }
+
+    this.sourceRelevance = new SourceRelevance();
     const scoring = customScoring || (sourcesData.scoringConfig as ScoringConfig);
     this.sourceRanker = new SourceRanker(scoring);
     this.resultMixer = new ResultMixer();
+
+    this.initAsyncDiscovery();
+  }
+
+  private async initAsyncDiscovery(): Promise<void> {
+    try {
+      if (this.zimLibrary && typeof this.zimLibrary.getDiscoveredSources === 'function') {
+        await this.zimLibrary.getDiscoveredSources();
+      }
+    } catch (err) {
+      console.error('[SearchEngine] Error during initial ZimLibrary discovery:', err);
+    }
   }
 
   public registerProvider(provider: SearchProvider): void {
@@ -33,8 +65,8 @@ export class SearchEngine {
     return Array.from(this.providers.keys());
   }
 
-  public getSources(): SearchSourceConfig[] {
-    return this.sources;
+  public async getDiscoveredSources(): Promise<DiscoveredZim[]> {
+    return this.zimLibrary.getDiscoveredSources();
   }
 
   /**
@@ -71,7 +103,7 @@ export class SearchEngine {
   }
 
   /**
-   * Main Search Entry Point with Server-Side Mode Selection & Caching
+   * Main Search Entry Point with Dynamic Discovery, Two-Stage Relevance & Pagination
    */
   async search(query: string, options: SearchOptions = {}): Promise<SearchResponse> {
     const startTime = Date.now();
@@ -108,13 +140,29 @@ export class SearchEngine {
     let cached = this.queryCache.get(cacheKey);
 
     if (!cached || (Date.now() - cached.timestamp > this.ttlMs)) {
-      const rankedSources = this.sourceRanker.rankSources(this.sources, trimmedQuery);
-      const activeSources = rankedSources.filter(s => s.lang === lang || !s.lang);
+      // Stage 1: Load dynamically discovered ZIM sources
+      const allDiscovered = await this.zimLibrary.getDiscoveredSources();
+
+      // Filter by language
+      const langSources = allDiscovered.filter(s => s.lang === lang || !s.lang);
+
+      // Stage 2: Two-Stage Relevance Selection (selects top relevant ZIMs to query)
+      const relevanceSelection = this.sourceRelevance.selectRelevantSources(trimmedQuery, langSources, 8);
+      const selectedZims = relevanceSelection.selectedSources;
+
+      // Update provider sources list
+      const kiwixProvider = this.providers.get('kiwix');
+      if (kiwixProvider && 'setSources' in kiwixProvider) {
+        (kiwixProvider as any).setSources(selectedZims);
+      }
+
+      // Rank selected sources
+      const rankedSelected = this.sourceRanker.rankSources(selectedZims, trimmedQuery);
 
       const groups: SourceResultsGroup[] = [];
       const sourceCounts: Record<string, { count: number; effectivePriority?: number }> = {};
 
-      for (const source of activeSources) {
+      for (const source of rankedSelected) {
         const provider = this.providers.get(source.provider);
         if (!provider) continue;
 
@@ -138,6 +186,7 @@ export class SearchEngine {
         }
       }
 
+      // Perform adaptive result mixing
       const unifiedResults = this.resultMixer.mixResults(groups, 140);
 
       cached = {
