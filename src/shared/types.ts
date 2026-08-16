@@ -69,6 +69,7 @@ export interface SearchOptions {
   page?: number;
   pageSize?: number;
   maxConcurrency?: number;
+  maxSearchSources?: number;
 }
 
 export interface StreamEventPayload {

@@ -23,13 +23,13 @@ Si4k Search provides a unified search layer across those sources.
 Instead of:
 
 ```
-User ──→ one ZIM ──→ search
+User ──> one ZIM ──> search
 ```
 
 Si4k provides:
 
 ```
-User ──→ Si4k Search ──→ relevant ZIMs ──→ unified results
+User ──> Si4k Search ──> relevant ZIMs ──> unified results
 ```
 
 - **Priority-Aware Search**: Dynamically routes queries to intent-matched ZIM sources first (e.g., ArchWiki for Linux setup queries, Stack Overflow for coding questions).
@@ -169,13 +169,38 @@ In current development benchmarks, Si4k Search remained around **160–230 MB RS
 | `KIWIX_PUBLIC_URL` | `http://localhost:8080` | Browser-facing public target URL used for result article links |
 | `KIWIX_DATA_DIR` | `/knowledge` | Path to host-mounted knowledge library root directory |
 | `KIWIX_LIBRARY_XML` | `/knowledge/Metadata/library.xml` | Path to host-mounted Kiwix `library.xml` catalog file |
+| `KIWIX_MAX_SEARCH_SOURCES` | `unset` (unlimited) | Maximum ZIM sources to query per request after relevance ranking |
 | `KIWIX_CANDIDATE_LIMIT` | `100` | Maximum raw candidate limit per individual ZIM source |
+| `KIWIX_CACHE_TTL_SECONDS` | `300` | Periodic runtime ZIM catalog discovery and index refresh interval (seconds) |
+| `MAX_CONCURRENT_ZIM_SEARCHES` | `8` | Maximum parallel HTTP fetches across active ZIM sources per provider |
 | `SEARCH_MAX_CONCURRENT` | `2` | Maximum concurrent progressive search sessions running in backend |
 | `SEARCH_MAX_ZIM_WORKERS` | `4` | Maximum parallel ZIM worker fetches per search session |
 | `SEARCH_REQUEST_TIMEOUT_MS` | `10000` | Maximum HTTP request timeout for individual Kiwix ZIM fetches |
 | `SEARCH_CACHE_ENABLED` | `true` | Enable/disable deterministic search result caching |
 | `SEARCH_CACHE_TTL_SECONDS` | `300` | Time-to-live for cached search queries (in seconds) |
 | `SEARCH_CACHE_MAX_ENTRIES` | `100` | Maximum entries retained in LRU cache |
+
+### Search Scope & Concurrency Tuning
+
+- **`KIWIX_MAX_SEARCH_SOURCES`** (default: `unset` / unlimited):
+  Limits how many ZIM sources are searched for a single query.
+  - **Dynamic Query-Based Selection**: This is a **maximum cap**, not a hardcoded list of sources. For each query, Si4k scores and ranks all available ZIM sources using keyword and category relevance matching, then dispatches search requests to the top $N$ highest-ranked sources for that specific query.
+  - **Query-Dependent Matching**: A query like `linux terminal` prioritizes Linux and shell ZIMs, while `react hooks` prioritizes programming and web development ZIMs.
+  - **Recall vs. Latency Tradeoff**: Higher values (or leaving it unset) search more ZIM sources, maximizing recall across large libraries, but take longer and increase server network/CPU load. Lower values (e.g. `KIWIX_MAX_SEARCH_SOURCES=5`) restrict search scope to the top 5 most relevant sources, drastically improving response times and reducing load on modest home servers.
+  - **Automatic Fallback**: If the query has fewer relevant sources than $N$, all available relevant sources are searched without truncation.
+  - **Example**:
+    ```bash
+    KIWIX_MAX_SEARCH_SOURCES=5
+    ```
+
+- **`MAX_CONCURRENT_ZIM_SEARCHES`** (default: `8`):
+  Maximum parallel HTTP fetches executed simultaneously per provider. Prevents socket exhaustion when querying large source lists.
+
+- **`SEARCH_MAX_ZIM_WORKERS`** (default: `4`):
+  Maximum parallel ZIM worker tasks executed per search session.
+
+- **`KIWIX_CACHE_TTL_SECONDS`** (default: `300`):
+  Interval in seconds for periodic runtime ZIM catalog discovery and index reconciliation.
 
 ---
 

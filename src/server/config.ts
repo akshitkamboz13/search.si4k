@@ -18,6 +18,7 @@ export interface KiwixConfig {
   candidateLimit: number;
   maxConcurrentSearches: number;
   cacheTtlMs: number;
+  maxSearchSources?: number;
 }
 
 export interface SearchConfig {
@@ -60,6 +61,16 @@ const envOverride = (rawOverride === 'local' || rawOverride === 'internet') ? ra
 const rawLocalNetworks = process.env.LOCAL_NETWORKS || '192.168.0.0/16,10.0.0.0/8,172.16.0.0/12,127.0.0.1/32,::1/128';
 const localNetworks = rawLocalNetworks.split(',').map(s => s.trim()).filter(Boolean);
 
+export function parseMaxSearchSources(rawVal?: string): number | undefined {
+  if (!rawVal || !rawVal.trim()) return undefined;
+  const parsed = parseInt(rawVal.trim(), 10);
+  if (isNaN(parsed) || parsed <= 0) {
+    console.warn(`[Config] Invalid KIWIX_MAX_SEARCH_SOURCES value '${rawVal}'. Falling back to searching all relevant sources.`);
+    return undefined;
+  }
+  return parsed;
+}
+
 export const config: Config = {
   port: parseInt(process.env.PORT || '3000', 10),
   nodeEnv: process.env.NODE_ENV || 'development',
@@ -77,6 +88,7 @@ export const config: Config = {
     candidateLimit: parseInt(process.env.KIWIX_CANDIDATE_LIMIT || '100', 10),
     maxConcurrentSearches: parseInt(process.env.MAX_CONCURRENT_ZIM_SEARCHES || '8', 10),
     cacheTtlMs: parseInt(process.env.KIWIX_CACHE_TTL_SECONDS || process.env.ZIM_CACHE_TTL_SECONDS || '300', 10) * 1000,
+    maxSearchSources: parseMaxSearchSources(process.env.KIWIX_MAX_SEARCH_SOURCES || process.env.SEARCH_MAX_SOURCES),
   },
   search: {
     keywordWeight: parseFloat(process.env.SEARCH_KEYWORD_WEIGHT || '10'),

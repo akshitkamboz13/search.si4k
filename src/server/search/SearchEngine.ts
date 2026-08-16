@@ -293,7 +293,12 @@ export class SearchEngine {
         const langSources = allDiscovered.filter(s => s.lang === lang || !s.lang);
 
         const relevanceSelection = this.sourceRelevance.selectRelevantSources(trimmedQuery, langSources, 16);
-        const selectedZims = relevanceSelection.allRankedSources;
+        let selectedZims = relevanceSelection.allRankedSources;
+
+        const maxSourcesLimit = options.maxSearchSources !== undefined ? options.maxSearchSources : config.kiwix.maxSearchSources;
+        if (typeof maxSourcesLimit === 'number' && Number.isFinite(maxSourcesLimit) && maxSourcesLimit > 0) {
+          selectedZims = selectedZims.slice(0, maxSourcesLimit);
+        }
 
         const kiwixProvider = this.providers.get('kiwix');
         if (kiwixProvider && 'setSources' in kiwixProvider) {
@@ -480,9 +485,15 @@ export class SearchEngine {
       const langSources = allDiscovered.filter(s => s.lang === lang || !s.lang);
 
       const relevanceSelection = this.sourceRelevance.selectRelevantSources(trimmedQuery, langSources, 16);
-      const prioritySources = relevanceSelection.prioritySources;
-      const remainingSources = relevanceSelection.remainingSources;
-      const rankedSources = relevanceSelection.allRankedSources;
+      let rankedSources = relevanceSelection.allRankedSources;
+
+      const maxSourcesLimit = options.maxSearchSources !== undefined ? options.maxSearchSources : config.kiwix.maxSearchSources;
+      if (typeof maxSourcesLimit === 'number' && Number.isFinite(maxSourcesLimit) && maxSourcesLimit > 0) {
+        rankedSources = rankedSources.slice(0, maxSourcesLimit);
+      }
+
+      const prioritySources = rankedSources.slice(0, Math.min(16, rankedSources.length));
+      const remainingSources = rankedSources.slice(prioritySources.length);
       const totalSourcesCount = rankedSources.length;
 
       console.log(`\n[QUERY] ${trimmedQuery}`);
