@@ -125,6 +125,18 @@ docker run -d \
   si4k-search:latest
 ```
 
+### Docker Build Requirements
+
+The Docker image does not require a running Kiwix server during build.
+
+If the Kiwix catalog is unavailable while building, Si4k Search preserves the prebuilt ZIM index included with the repository. Kiwix connectivity is configured at runtime through `KIWIX_URL`.
+
+For Docker Compose, the default is:
+
+`http://kiwix:8080`
+
+This allows the image to be built independently of the host's Kiwix installation or private network.
+
 ---
 
 ## Performance & Benchmarks
