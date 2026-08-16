@@ -8,10 +8,10 @@
     "dev": "concurrently \"vite\" \"tsx watch src/server/index.ts\"",
     "build:client": "vite build",
     "build:server": "tsc -p tsconfig.server.json",
-    "build:zim-index": "tsx src/build/build-zim-index.ts",
+    "build:zim-index": "tsx scripts/build-zim-index.ts",
     "build": "npm run build:zim-index && npm run build:client && npm run build:server",
     "start": "node dist/server/index.js",
-    "test": "tsx src/server/search/executionTime.test.ts && tsx src/server/search/kiwixTruncation.test.ts && tsx src/server/search/environmentDetection.test.ts && tsx src/server/search/articleRanking.test.ts && tsx src/client/frontendOrdering.test.ts && tsx src/server/search/progressiveOrdering.test.ts && tsx src/server/search/queryRouting.test.ts && tsx src/server/search/zimIndexer.test.ts && tsx src/server/search/progressiveSearch.test.ts && tsx src/server/search/zimDiscovery.test.ts && tsx src/server/search/providers/KiwixProvider.test.ts && tsx src/server/search/searchEngineFull.test.ts"
+    "test": "tsx src/server/search/executionTime.test.ts && tsx src/server/search/kiwixTruncation.test.ts && tsx src/server/search/environmentDetection.test.ts && tsx src/server/search/articleRanking.test.ts && tsx src/client/frontendOrdering.test.ts && tsx src/server/search/progressiveOrdering.test.ts && tsx src/server/search/queryRouting.test.ts && tsx src/server/search/zimIndexer.test.ts && tsx src/server/search/progressiveSearch.test.ts && tsx src/server/search/zimDiscovery.test.ts && tsx src/server/search/providers/KiwixProvider.test.ts && tsx src/server/search/searchEngineFull.test.ts && tsx src/server/search/zimLibraryReconciliation.test.ts && tsx src/server/search/searchAmplificationRegression.test.ts"
   },
   "dependencies": {
     "cheerio": "^1.0.0-rc.12",

@@ -17,6 +17,7 @@ export interface KiwixConfig {
   onlinePublicUrl: string;
   candidateLimit: number;
   maxConcurrentSearches: number;
+  cacheTtlMs: number;
 }
 
 export interface SearchConfig {
@@ -75,6 +76,7 @@ export const config: Config = {
     onlinePublicUrl: defaultOnlinePublicUrl.replace(/\/$/, ''),
     candidateLimit: parseInt(process.env.KIWIX_CANDIDATE_LIMIT || '100', 10),
     maxConcurrentSearches: parseInt(process.env.MAX_CONCURRENT_ZIM_SEARCHES || '8', 10),
+    cacheTtlMs: parseInt(process.env.KIWIX_CACHE_TTL_SECONDS || process.env.ZIM_CACHE_TTL_SECONDS || '300', 10) * 1000,
   },
   search: {
     keywordWeight: parseFloat(process.env.SEARCH_KEYWORD_WEIGHT || '10'),

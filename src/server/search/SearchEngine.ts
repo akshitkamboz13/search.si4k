@@ -303,29 +303,44 @@ export class SearchEngine {
         const groups: SourceResultsGroup[] = [];
         const sourceCounts: Record<string, { count: number; effectivePriority?: number }> = {};
 
-        for (const source of selectedZims) {
-          const provider = this.providers.get(source.provider);
-          if (!provider) continue;
+        const maxConcurrency = options.maxConcurrency || config.search.maxZimWorkers || config.kiwix.maxConcurrentSearches || 4;
+        let queueIndex = 0;
+        const totalSourcesCount = selectedZims.length;
 
-          try {
-            const sourceResults = await provider.search(trimmedQuery, { mode, lang });
-            const matchingResults = sourceResults.filter(r => !r.sourceId || r.sourceId === source.id);
+        const workerPool = Array.from({ length: Math.min(maxConcurrency, totalSourcesCount) }, async () => {
+          while (queueIndex < totalSourcesCount) {
+            const source = selectedZims[queueIndex++];
+            const provider = this.providers.get(source.provider);
+            if (!provider) continue;
 
-            groups.push({
-              sourceId: source.id,
-              sourceName: source.name,
-              effectivePriority: source.basePriority,
-              results: matchingResults,
-            });
+            try {
+              let sourceResults: SearchResult[] = [];
+              if (source.provider === 'kiwix' && 'searchZimSource' in provider) {
+                sourceResults = await (provider as any).searchZimSource(source, trimmedQuery, mode);
+              } else {
+                sourceResults = await provider.search(trimmedQuery, { mode, lang });
+              }
 
-            sourceCounts[source.name] = {
-              count: matchingResults.length,
-              effectivePriority: source.basePriority,
-            };
-          } catch (err) {
-            console.error(`[SearchEngine] Error querying source '${source.name}':`, err);
+              const matchingResults = sourceResults.filter((r: SearchResult) => !r.sourceId || r.sourceId === source.id);
+
+              groups.push({
+                sourceId: source.id,
+                sourceName: source.name,
+                effectivePriority: source.basePriority,
+                results: matchingResults,
+              });
+
+              sourceCounts[source.name] = {
+                count: matchingResults.length,
+                effectivePriority: source.basePriority,
+              };
+            } catch (err) {
+              console.error(`[SearchEngine] Error querying source '${source.name}':`, err);
+            }
           }
-        }
+        });
+
+        await Promise.all(workerPool);
 
         const totalCandidatesReceived = groups.reduce((acc, g) => acc + g.results.length, 0);
         const unifiedResults = this.resultMixer.mixResults(groups, 500, trimmedQuery);
@@ -696,8 +711,11 @@ export class SearchEngine {
   }
 
   public shutdown(): void {
-    console.log('[SearchEngine] Shutting down session manager...');
+    console.log('[SearchEngine] Shutting down session manager and ZIM library...');
     this.sessionQueue = [];
     this.searchCache.clear();
+    if (this.zimLibrary && typeof this.zimLibrary.shutdown === 'function') {
+      this.zimLibrary.shutdown();
+    }
   }
 }

@@ -190,13 +190,24 @@ export class KiwixProvider implements SearchProvider {
     const { internalUrl, publicUrl } = this.getUrlsForMode(mode);
     console.log(`[KiwixProvider] [Mode: ${mode}] Searching ${activeSources.length} ZIM sources via ${internalUrl} (Public target: ${publicUrl}) for "${trimmedQuery}"`);
 
-    const searchPromises = activeSources.map(async (source) => {
-      const results = await this.searchZimSource(source, trimmedQuery, mode);
-      return results;
+    const maxConcurrency = config.kiwix.maxConcurrentSearches || 8;
+    const results: SearchResult[] = [];
+    let queueIndex = 0;
+
+    const workerPool = Array.from({ length: Math.min(maxConcurrency, activeSources.length) }, async () => {
+      while (queueIndex < activeSources.length) {
+        const source = activeSources[queueIndex++];
+        try {
+          const sourceResults = await this.searchZimSource(source, trimmedQuery, mode);
+          results.push(...sourceResults);
+        } catch (err) {
+          console.error(`[KiwixProvider] Error searching source '${source.name}':`, err);
+        }
+      }
     });
 
-    const resultsPerSource = await Promise.all(searchPromises);
-    return resultsPerSource.flat();
+    await Promise.all(workerPool);
+    return results;
   }
 
   /**

@@ -32,8 +32,13 @@ async function main() {
         console.warn(`⚠️  Preserving existing prebuilt index at: ${outputPath}`);
         return;
       }
-      console.error(`\n❌ Failed to fetch catalog feed from ${catalogUrl} and no existing ZIM index found:`, err);
-      process.exit(1);
+      console.warn(`\n⚠️  Could not fetch catalog feed from ${catalogUrl} (${err instanceof Error ? err.message : String(err)}).`);
+      console.warn(`⚠️  No local library.xml and no existing prebuilt index found. Generating valid empty ZIM index for first-run Docker startup.`);
+      const indexer = new ZimIndexer();
+      const emptyIndexData = indexer.buildIndex('');
+      indexer.saveIndex(emptyIndexData);
+      console.log(`\n✅ Empty ZIM index successfully saved to: ${outputPath}`);
+      return;
     }
   }
 
