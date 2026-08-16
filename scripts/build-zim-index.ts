@@ -16,15 +16,25 @@ async function main() {
     xmlContent = fs.readFileSync(config.kiwix.libraryXml, 'utf-8');
   } else {
     const catalogUrl = `${config.kiwix.localUrl}/catalog/v2/entries?count=1000`;
-    console.log(`Local file absent. Fetching dynamic ZIM catalog feed from ${catalogUrl}...`);
-    const res = await fetch(catalogUrl, {
-      headers: { 'Accept': 'application/atom+xml, application/xml, */*' }
-    });
-    if (!res.ok) {
-      console.error(`Failed to fetch catalog feed from ${catalogUrl}: HTTP ${res.status}`);
+    const outputPath = path.join(process.cwd(), 'data', 'zim-index.json');
+    console.log(`Local file absent. Attempting to fetch ZIM catalog feed from ${catalogUrl}...`);
+    try {
+      const res = await fetch(catalogUrl, {
+        headers: { 'Accept': 'application/atom+xml, application/xml, */*' }
+      });
+      if (!res.ok) {
+        throw new Error(`HTTP ${res.status}`);
+      }
+      xmlContent = await res.text();
+    } catch (err) {
+      if (fs.existsSync(outputPath)) {
+        console.warn(`\n⚠️  Could not fetch catalog feed from ${catalogUrl} (${err instanceof Error ? err.message : String(err)}).`);
+        console.warn(`⚠️  Preserving existing prebuilt index at: ${outputPath}`);
+        return;
+      }
+      console.error(`\n❌ Failed to fetch catalog feed from ${catalogUrl} and no existing ZIM index found:`, err);
       process.exit(1);
     }
-    xmlContent = await res.text();
   }
 
   const indexer = new ZimIndexer();

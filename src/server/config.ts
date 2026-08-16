@@ -47,10 +47,10 @@ export interface Config {
 const dataDir = process.env.KIWIX_DATA_DIR || '/mnt/knowledge';
 const libraryXml = process.env.KIWIX_LIBRARY_XML || path.join(dataDir, 'Metadata', 'library.xml');
 
-const defaultLocalUrl = process.env.KIWIX_LOCAL_URL || process.env.KIWIX_URL || 'http://192.168.31.250:8080';
+const defaultLocalUrl = process.env.KIWIX_LOCAL_URL || process.env.KIWIX_URL || 'http://kiwix:8080';
 const defaultLocalPublicUrl = process.env.KIWIX_LOCAL_PUBLIC_URL || process.env.KIWIX_PUBLIC_URL || 'http://si4k-server.local:8080';
 
-const defaultOnlineUrl = process.env.KIWIX_ONLINE_URL || process.env.KIWIX_URL || 'http://192.168.31.250:8080';
+const defaultOnlineUrl = process.env.KIWIX_ONLINE_URL || process.env.KIWIX_URL || 'http://kiwix:8080';
 const defaultOnlinePublicUrl = process.env.KIWIX_ONLINE_PUBLIC_URL || process.env.KIWIX_PUBLIC_URL || 'https://wiki.si4k.online';
 
 const rawOverride = (process.env.ENVIRONMENT_OVERRIDE || 'auto').toLowerCase();
