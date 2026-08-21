@@ -47,19 +47,26 @@ export class KiwixProvider implements SearchProvider {
     return this.sourcesList;
   }
 
+  public updateUrls(options: { localUrl?: string; localPublicUrl?: string; onlineUrl?: string; onlinePublicUrl?: string }): void {
+    if (options.localUrl) this.localUrl = options.localUrl.replace(/\/$/, '');
+    if (options.localPublicUrl) this.localPublicUrl = options.localPublicUrl.replace(/\/$/, '');
+    if (options.onlineUrl) this.onlineUrl = options.onlineUrl.replace(/\/$/, '');
+    if (options.onlinePublicUrl) this.onlinePublicUrl = options.onlinePublicUrl.replace(/\/$/, '');
+  }
+
   /**
    * Resolve internal backend URL and public browser target URL based on mode
    */
   public getUrlsForMode(mode: SearchMode = 'local') {
     if (mode === 'online') {
       return {
-        internalUrl: this.onlineUrl,
-        publicUrl: this.onlinePublicUrl,
+        internalUrl: (config.kiwix.onlineUrl || this.onlineUrl).replace(/\/$/, ''),
+        publicUrl: (config.kiwix.onlinePublicUrl || this.onlinePublicUrl).replace(/\/$/, ''),
       };
     }
     return {
-      internalUrl: this.localUrl,
-      publicUrl: this.localPublicUrl,
+      internalUrl: (config.kiwix.localUrl || this.localUrl).replace(/\/$/, ''),
+      publicUrl: (config.kiwix.localPublicUrl || this.localPublicUrl).replace(/\/$/, ''),
     };
   }
 
@@ -70,11 +77,15 @@ export class KiwixProvider implements SearchProvider {
     try {
       const { internalUrl } = this.getUrlsForMode('local');
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 3000);
-      const res = await fetch(internalUrl, { signal: controller.signal, method: 'HEAD' });
+      const timeoutId = setTimeout(() => controller.abort(), 4000);
+      let res = await fetch(internalUrl, { signal: controller.signal, method: 'HEAD' }).catch(() => null);
+      if (!res || res.status >= 500 || res.status === 405) {
+        res = await fetch(internalUrl, { signal: controller.signal, method: 'GET' }).catch(() => null);
+      }
       clearTimeout(timeoutId);
-      return res.status < 500;
-    } catch {
+      return res !== null && res.status < 500;
+    } catch (err) {
+      console.warn(`[KiwixProvider] checkReadiness ping failed for '${this.localUrl}':`, err);
       return false;
     }
   }

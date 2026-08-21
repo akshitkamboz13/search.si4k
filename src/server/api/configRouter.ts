@@ -408,7 +408,19 @@ export function createConfigRouter(searchEngine?: SearchEngine): Router {
 
       if (searchEngine) {
         searchEngine.searchCache.clear();
-        console.log('[ConfigRouter] Cleared search engine query cache.');
+        const providers = searchEngine.getRegisteredProviders();
+        for (const pName of providers) {
+          const provider = (searchEngine as any).providers?.get(pName);
+          if (provider && typeof provider.updateUrls === 'function') {
+            provider.updateUrls({
+              localUrl: config.kiwix.localUrl,
+              localPublicUrl: config.kiwix.localPublicUrl,
+              onlineUrl: config.kiwix.onlineUrl,
+              onlinePublicUrl: config.kiwix.onlinePublicUrl,
+            });
+          }
+        }
+        console.log('[ConfigRouter] Cleared query cache & hot-patched provider URLs.');
       }
 
       console.log(`[ConfigRouter] LAN user (${detection.clientIp}) updated config keys: ${Object.keys(safeUpdates).join(', ')}`);
