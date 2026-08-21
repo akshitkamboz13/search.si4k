@@ -6,6 +6,7 @@ import { config } from './config.js';
 import { SearchEngine } from './search/SearchEngine.js';
 import { KiwixProvider } from './search/providers/KiwixProvider.js';
 import { createSearchRouter } from './api/searchRouter.js';
+import { createConfigRouter } from './api/configRouter.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -32,6 +33,7 @@ searchEngine.registerProvider(kiwixProvider);
 
 // API Routes
 app.use('/api', createSearchRouter(searchEngine));
+app.use('/api/config', createConfigRouter(searchEngine));
 
 // Health Check Endpoint (Basic service alive check)
 app.get('/api/health', (_req, res) => {

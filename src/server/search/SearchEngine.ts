@@ -348,7 +348,8 @@ export class SearchEngine {
         await Promise.all(workerPool);
 
         const totalCandidatesReceived = groups.reduce((acc, g) => acc + g.results.length, 0);
-        const unifiedResults = this.resultMixer.mixResults(groups, 500, trimmedQuery);
+        const maxMixedPool = config.search.maxMixedResults || 500;
+        const unifiedResults = this.resultMixer.mixResults(groups, maxMixedPool, trimmedQuery);
 
         console.log(`[Mixer]`);
         console.log(`inputCandidates=${totalCandidatesReceived}`);
@@ -526,7 +527,8 @@ export class SearchEngine {
       const emitCurrentBatch = () => {
         if (options.isAborted?.() || options.signal?.aborted) return;
         const totalCandidatesReceived = groups.reduce((acc, g) => acc + g.results.length, 0);
-        const unifiedResults = this.resultMixer.mixResults(groups, 500, trimmedQuery);
+        const maxMixedPool = config.search.maxMixedResults || 500;
+        const unifiedResults = this.resultMixer.mixResults(groups, maxMixedPool, trimmedQuery);
         const paginated = this.paginateResults(unifiedResults, requestedPage, pageSize);
         const executionTimeMs = getElapsedMs();
 
@@ -611,7 +613,8 @@ export class SearchEngine {
             }
 
             const totalCandidatesReceived = groups.reduce((acc, g) => acc + g.results.length, 0);
-            const finalUnified = this.resultMixer.mixResults(groups, 500, trimmedQuery);
+            const maxMixedPool = config.search.maxMixedResults || 500;
+            const finalUnified = this.resultMixer.mixResults(groups, maxMixedPool, trimmedQuery);
             const paginated = this.paginateResults(finalUnified, requestedPage, pageSize);
             const finalExecutionTimeMs = getElapsedMs();
 
@@ -707,7 +710,25 @@ export class SearchEngine {
                 console.log(`[Search] completed: ${source.name}, results=${resultsCount}`);
                 console.log(`[Search] sources searched: ${completedSources}/${totalSourcesCount}`);
 
-                scheduleFlush(hasResults);
+                onEvent({
+                  event: 'progress',
+                  data: {
+                    query: trimmedQuery,
+                    mode,
+                    pendingSources,
+                    completedSources,
+                    totalSourcesCount,
+                    statusText: pendingSources > 0 ? `Searching sources (${completedSources}/${totalSourcesCount})...` : 'Search complete',
+                  },
+                });
+
+                const minSourcesBeforeMix = options.minSourcesBeforeStreamMix !== undefined 
+                  ? options.minSourcesBeforeStreamMix 
+                  : (config.search.minSourcesBeforeStreamMix ?? 999);
+
+                if (completedSources >= minSourcesBeforeMix || completedSources >= totalSourcesCount) {
+                  scheduleFlush(hasResults);
+                }
                 processNextInQueue();
               }
             })();

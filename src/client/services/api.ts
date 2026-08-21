@@ -90,3 +90,47 @@ export function streamSearchResults(
     eventSource.close();
   };
 }
+
+// ─── Config API ───────────────────────────────────────────────────────────────
+
+export interface ConfigEntry {
+  key: string;
+  value: string;
+  label: string;
+  group: string;
+  description: string;
+  type: 'text' | 'number' | 'boolean' | 'select';
+  options?: string[];
+  lanOnly?: boolean;
+}
+
+export interface ConfigResponse {
+  isLan: boolean;
+  environment: 'local' | 'internet';
+  clientIp: string;
+  fields: ConfigEntry[];
+}
+
+export async function fetchConfig(): Promise<ConfigResponse> {
+  const res = await fetch('/api/config');
+  if (!res.ok) throw new Error(`Failed to fetch config: ${res.status}`);
+  return res.json();
+}
+
+export interface SaveConfigResult {
+  success: boolean;
+  updated: string[];
+  rejected?: string[];
+  message: string;
+}
+
+export async function saveConfig(updates: Record<string, string>): Promise<SaveConfigResult> {
+  const res = await fetch('/api/config', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ updates }),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.message || `Save failed: ${res.status}`);
+  return data;
+}

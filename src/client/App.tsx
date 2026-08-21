@@ -8,6 +8,7 @@ import { ErrorState } from './components/ErrorState.js';
 import { streamSearchResults, fetchEnvironment } from './services/api.js';
 import { BookOpen, MapPin, Database } from 'lucide-react';
 import { Si4kIcon } from './components/Si4kIcon.js';
+import { ConfigPage } from './components/ConfigPage.js';
 
 export const App: React.FC = () => {
   const [query, setQuery] = useState<string>('');
@@ -19,6 +20,9 @@ export const App: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [response, setResponse] = useState<SearchResponse | null>(null);
   const [streamStatus, setStreamStatus] = useState<string>('');
+  const [completedSources, setCompletedSources] = useState<number>(0);
+  const [totalSourcesCount, setTotalSourcesCount] = useState<number>(32);
+  const [showSettings, setShowSettings] = useState<boolean>(false);
 
   const cancelStreamRef = useRef<(() => void) | null>(null);
   const accumulatedResultsRef = useRef<SearchResult[]>([]);
@@ -87,6 +91,8 @@ export const App: React.FC = () => {
       setError(null);
       setResponse(null);
       setStreamStatus('Initiating search...');
+      setCompletedSources(0);
+      setTotalSourcesCount(32);
 
       const params = new URLSearchParams();
       params.set('q', searchQuery);
@@ -104,6 +110,12 @@ export const App: React.FC = () => {
           if (payload.event === 'progress') {
             if (payload.data.statusText) {
               setStreamStatus(payload.data.statusText);
+            }
+            if (typeof payload.data.completedSources === 'number') {
+              setCompletedSources(payload.data.completedSources);
+            }
+            if (typeof payload.data.totalSourcesCount === 'number') {
+              setTotalSourcesCount(payload.data.totalSourcesCount);
             }
           } else if (payload.event === 'results' || payload.event === 'complete') {
             setLoading(false);
@@ -224,6 +236,9 @@ export const App: React.FC = () => {
     setTheme((prev) => (prev === 'light' ? 'dark' : 'light'));
   };
 
+  const handleSettingsClick = () => setShowSettings(true);
+  const handleSettingsClose = () => setShowSettings(false);
+
   const handleHomeClick = () => {
     if (cancelStreamRef.current) {
       cancelStreamRef.current();
@@ -245,12 +260,14 @@ export const App: React.FC = () => {
 
   return (
     <div className="app-container">
+      {showSettings && <ConfigPage onClose={handleSettingsClose} />}
       <Header
         mode={mode}
         environment={environment}
         theme={theme}
         onThemeToggle={handleThemeToggle}
         onHomeClick={handleHomeClick}
+        onSettingsClick={handleSettingsClick}
       />
 
       <main className={`main-content ${!hasSearched ? 'centered' : ''}`}>
@@ -274,7 +291,14 @@ export const App: React.FC = () => {
           autoFocus={true}
         />
 
-        {loading && !response && <LoadingState />}
+        {loading && !response && (
+          <LoadingState
+            statusText={streamStatus}
+            completedSources={completedSources}
+            totalSourcesCount={totalSourcesCount}
+            query={query}
+          />
+        )}
 
         {!loading && error && (
           <ErrorState message={error} onRetry={() => executeSearch(query, mode, page)} />

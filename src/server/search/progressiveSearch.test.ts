@@ -108,7 +108,7 @@ async function runProgressiveTests() {
 
   await searchEngine.searchProgressive(
     'test',
-    { mode: 'local', maxConcurrency: 2 },
+    { mode: 'local', maxConcurrency: 2, minSourcesBeforeStreamMix: 1 },
     (payload) => {
       eventsReceived.push(payload);
       if (payload.event === 'results' && payload.data.results) {

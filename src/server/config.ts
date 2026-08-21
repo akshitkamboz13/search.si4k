@@ -28,6 +28,8 @@ export interface SearchConfig {
   maxConcurrentSessions: number;
   maxZimWorkers: number;
   requestTimeoutMs: number;
+  maxMixedResults: number;
+  minSourcesBeforeStreamMix: number;
 }
 
 export interface CacheConfig {
@@ -97,6 +99,8 @@ export const config: Config = {
     maxConcurrentSessions: parseInt(process.env.SEARCH_MAX_CONCURRENT || '2', 10),
     maxZimWorkers: parseInt(process.env.SEARCH_MAX_ZIM_WORKERS || '4', 10),
     requestTimeoutMs: parseInt(process.env.SEARCH_REQUEST_TIMEOUT_MS || '10000', 10),
+    maxMixedResults: parseInt(process.env.SEARCH_MAX_MIXED_RESULTS || '500', 10),
+    minSourcesBeforeStreamMix: parseInt(process.env.SEARCH_MIN_SOURCES_BEFORE_STREAM_MIX || '1', 10),
   },
   cache: {
     enabled: process.env.SEARCH_CACHE_ENABLED !== 'false',

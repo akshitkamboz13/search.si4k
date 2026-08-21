@@ -222,6 +222,84 @@ async function runArticleRankingRegressionTests() {
   }
   console.log('   ✅ PASS: "how to make tea" correctly ranked wikiHow/cooking sources above iFixit.\n');
 
+  // Test 5: Source Diversity Interleaving (Consecutive Same-Site Limit)
+  console.log('5. Testing Source Diversity Interleaving (Max 2 Consecutive per Site)...');
+  const diversityGroups: SourceResultsGroup[] = [
+    {
+      sourceId: 'wikipedia',
+      sourceName: 'Wikipedia',
+      effectivePriority: 8,
+      results: Array.from({ length: 5 }, (_, i) => ({
+        id: `wiki-${i}`,
+        source: 'Wikipedia',
+        provider: 'kiwix',
+        type: 'article',
+        zimName: 'wikipedia_en',
+        title: `Python Programming Concept ${i + 1}`,
+        description: 'Comprehensive Python programming guide',
+        url: `http://localhost/content/wiki/python-${i}`,
+      })),
+    },
+    {
+      sourceId: 'wikihow',
+      sourceName: 'wikiHow',
+      effectivePriority: 8,
+      results: Array.from({ length: 3 }, (_, i) => ({
+        id: `wikihow-${i}`,
+        source: 'wikiHow',
+        provider: 'kiwix',
+        type: 'article',
+        zimName: 'wikihow_en',
+        title: `How to Learn Python ${i + 1}`,
+        description: 'Step by step guide to learning Python programming',
+        url: `http://localhost/content/wikihow/python-${i}`,
+      })),
+    },
+    {
+      sourceId: 'ifixit',
+      sourceName: 'iFixit',
+      effectivePriority: 5,
+      results: [
+        {
+          id: 'ifixit-1',
+          source: 'iFixit',
+          provider: 'kiwix',
+          type: 'article',
+          zimName: 'ifixit_en',
+          title: 'Python Board Hardware Setup',
+          description: 'Hardware repair for Python development boards',
+          url: 'http://localhost/content/ifixit/python-board',
+        },
+      ],
+    },
+  ];
+
+  const mixedDiversity = mixer.mixResults(diversityGroups, 10, 'python programming');
+  console.log('   Interleaved Diversity Order (Top 8):');
+  mixedDiversity.slice(0, 8).forEach((r, i) => {
+    console.log(`     ${i + 1}. "${r.title}" (${r.source})`);
+  });
+
+  // Verify no 3 consecutive items from the exact same source
+  let maxConsecutive = 0;
+  let currentStreak = 0;
+  let prevSource = '';
+  for (const item of mixedDiversity) {
+    if (item.source === prevSource) {
+      currentStreak++;
+    } else {
+      prevSource = item.source;
+      currentStreak = 1;
+    }
+    maxConsecutive = Math.max(maxConsecutive, currentStreak);
+  }
+
+  if (maxConsecutive > 2) {
+    console.error(`❌ Test 5 Failed! Found ${maxConsecutive} consecutive results from the same source (expected <= 2).`);
+    process.exit(1);
+  }
+  console.log('   ✅ PASS: Source diversity interleaving successfully capped consecutive same-site items at 2.\n');
+
   console.log('====================================================');
   console.log(' ✅ ALL ARTICLE RANKING REGRESSION TESTS PASSED!');
   console.log('====================================================');

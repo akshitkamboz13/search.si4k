@@ -2,7 +2,7 @@ import { SearchEngine } from './SearchEngine.js';
 import { ZimLibrary, DiscoveredZim } from './ZimLibrary.js';
 import { SearchProvider } from './types.js';
 import { SearchResult, SearchSourceConfig } from '../../shared/types.js';
-import { parseMaxSearchSources } from '../config.js';
+import { config, parseMaxSearchSources } from '../config.js';
 
 async function runMaxSearchSourcesTests() {
   console.log('====================================================');
@@ -199,8 +199,10 @@ async function runMaxSearchSourcesTests() {
   // 5. Unset/default behavior remains backward compatible (searches all available sources)
   console.log('5. Testing Unset/Default Behavior Remains Backward Compatible...');
   searchedSources = [];
-  searchEngine.searchCache.clear();
+  const origMaxSources = config.kiwix.maxSearchSources;
+  config.kiwix.maxSearchSources = undefined;
   await searchEngine.search('test', { maxSearchSources: undefined });
+  config.kiwix.maxSearchSources = origMaxSources;
 
   console.log(`   Searched Sources Count: ${searchedSources.length}`);
   if (searchedSources.length !== 80) {

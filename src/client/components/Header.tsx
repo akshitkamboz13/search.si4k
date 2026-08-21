@@ -1,6 +1,6 @@
 import React from 'react';
 import { SearchMode } from '../../shared/types.js';
-import { Sun, Moon, Wifi, WifiOff } from 'lucide-react';
+import { Sun, Moon, Wifi, WifiOff, Settings } from 'lucide-react';
 import { Si4kIcon } from './Si4kIcon.js';
 
 interface HeaderProps {
@@ -9,6 +9,7 @@ interface HeaderProps {
   theme: 'light' | 'dark';
   onThemeToggle: () => void;
   onHomeClick: () => void;
+  onSettingsClick: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -17,6 +18,7 @@ export const Header: React.FC<HeaderProps> = ({
   theme,
   onThemeToggle,
   onHomeClick,
+  onSettingsClick,
 }) => {
   return (
     <header className="app-header">
@@ -47,6 +49,16 @@ export const Header: React.FC<HeaderProps> = ({
           {mode === 'local' ? <WifiOff size={14} style={{ color: '#10b981' }} /> : <Wifi size={14} style={{ color: '#3b82f6' }} />}
           <span>{mode === 'local' ? 'LAN / Offline' : 'Online'}</span>
         </div>
+
+        <button
+          type="button"
+          className="theme-toggle"
+          onClick={onSettingsClick}
+          title="Search Engine Settings"
+          id="settings-btn"
+        >
+          <Settings size={18} />
+        </button>
 
         <button
           type="button"

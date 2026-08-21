@@ -72,7 +72,7 @@ async function runRegressionTests() {
 
   console.log('1. Testing non-streaming search() query execution with 134 sources...');
   const start = Date.now();
-  const response = await searchEngine.search('linux', { mode: 'local', lang: 'en' });
+  const response = await searchEngine.search('linux', { mode: 'local', lang: 'en', maxSearchSources: 134 });
   const duration = Date.now() - start;
 
   console.log(`   Execution Time: ${duration}ms`);

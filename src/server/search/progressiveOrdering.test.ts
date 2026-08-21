@@ -85,7 +85,7 @@ async function runProgressiveOrderingTest() {
 
   await searchEngine.searchProgressive(
     'test ordering',
-    { mode: 'local', maxConcurrency: 3 },
+    { mode: 'local', maxConcurrency: 3, minSourcesBeforeStreamMix: 1 },
     (payload: StreamEventPayload) => {
       if (payload.event === 'results' && payload.data.results) {
         const order = payload.data.results.map(r => r.source);

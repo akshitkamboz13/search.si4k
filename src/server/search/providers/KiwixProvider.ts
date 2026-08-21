@@ -19,18 +19,24 @@ export class KiwixProvider implements SearchProvider {
   private onlineUrl: string;
   private onlinePublicUrl: string;
   private sourcesList: SearchSourceConfig[] = [];
-  private maxCandidatesPerSource: number;
+  private explicitMaxCandidates?: number;
 
   constructor(options: KiwixProviderOptions) {
     this.localUrl = options.localUrl.replace(/\/$/, '');
     this.localPublicUrl = options.localPublicUrl.replace(/\/$/, '');
     this.onlineUrl = (options.onlineUrl || options.localUrl).replace(/\/$/, '');
     this.onlinePublicUrl = (options.onlinePublicUrl || options.localPublicUrl).replace(/\/$/, '');
-    this.maxCandidatesPerSource = options.maxCandidatesPerSource !== undefined ? options.maxCandidatesPerSource : (config.kiwix.candidateLimit || 100);
+    this.explicitMaxCandidates = options.maxCandidatesPerSource;
 
     if (options.sources) {
       this.setSources(options.sources);
     }
+  }
+
+  public getEffectiveCandidateLimit(): number {
+    return this.explicitMaxCandidates !== undefined 
+      ? this.explicitMaxCandidates 
+      : (config.kiwix.candidateLimit || 100);
   }
 
   public setSources(sources: SearchSourceConfig[]): void {
@@ -126,11 +132,12 @@ export class KiwixProvider implements SearchProvider {
 
     const trimmedQuery = query.trim();
     const { internalUrl, publicUrl } = this.getUrlsForMode(mode);
+    const targetCandidateLimit = this.getEffectiveCandidateLimit();
 
     // 1. Fetch initial Page 1 (start=0)
     const firstHtml = await this.fetchHtmlPage(internalUrl, source.zimName, trimmedQuery, 0, signal);
     if (!firstHtml || signal?.aborted) {
-      console.log(`[Kiwix]\nsource=${source.name}\nrawCandidates=0\ncandidateLimit=${this.maxCandidatesPerSource}\ncandidatesAfterLimit=0\n`);
+      console.log(`[Kiwix]\nsource=${source.name}\nrawCandidates=0\ncandidateLimit=${targetCandidateLimit}\ncandidatesAfterLimit=0\n`);
       return [];
     }
 
@@ -143,7 +150,6 @@ export class KiwixProvider implements SearchProvider {
 
     // 2. Fetch additional pages if Kiwix reports more matches than 25
     const pageSize = 25;
-    const targetCandidateLimit = this.maxCandidatesPerSource;
 
     if (kiwixReportedTotal > pageSize && accumulatedResults.length < targetCandidateLimit && !signal?.aborted) {
       const pageStarts: number[] = [];
