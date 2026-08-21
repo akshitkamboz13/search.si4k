@@ -1,6 +1,6 @@
 import React from 'react';
 import { SearchMode } from '../../shared/types.js';
-import { Sun, Moon, Wifi, WifiOff, Settings } from 'lucide-react';
+import { Sun, Moon, Wifi, WifiOff, Settings, Heart } from 'lucide-react';
 import { Si4kIcon } from './Si4kIcon.js';
 
 interface HeaderProps {
@@ -49,6 +49,17 @@ export const Header: React.FC<HeaderProps> = ({
           {mode === 'local' ? <WifiOff size={14} style={{ color: '#10b981' }} /> : <Wifi size={14} style={{ color: '#3b82f6' }} />}
           <span>{mode === 'local' ? 'LAN / Offline' : 'Online'}</span>
         </div>
+
+        <a
+          href="https://www.si4k.online/contribution"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="theme-toggle contribute-btn"
+          title="Contribute / Support Si4k Engine"
+          style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', color: '#ef4444', textDecoration: 'none' }}
+        >
+          <Heart size={18} fill="#ef4444" />
+        </a>
 
         <button
           type="button"
