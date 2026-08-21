@@ -1,6 +1,8 @@
 # Si4k Search Engine `v0.0.1`
 
-![Version](https://img.shields.io/badge/version-v0.0.1-blue.svg) ![License](https://img.shields.io/badge/license-MIT-green.svg)
+[![Version](https://img.shields.io/badge/version-v0.0.1-blue.svg)](package.json) [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE) [![Live Demo](https://img.shields.io/badge/demo-search.si4k.online-brightgreen.svg)](https://search.si4k.online)
+
+**Live Demo**: [https://search.si4k.online](https://search.si4k.online)
 
 Unified, high-performance offline-first knowledge search engine for Kiwix and local ZIM collections including Wikipedia, wikiHow, iFixit, Stack Overflow, and other datasets. Optimized for modest home servers and offline knowledge infrastructure.
 
@@ -118,22 +120,60 @@ docker compose up -d
 
 Si4k Search will be accessible at `http://localhost:3000`.
 
-### Option B: Connecting Si4k Search to an Existing Kiwix Server
+### Option B: Connecting Si4k Search to an Existing Kiwix Server (Production Setup)
 
-If you already have `kiwix-serve` running on your local network (e.g., at `http://192.168.1.100:8080`):
+If you already have `kiwix-serve` running on your local network or Docker host (e.g., at `http://172.17.0.1:8080` or `http://192.168.1.100:8080`), launch Si4k Search with complete production environment controls:
 
 ```bash
 docker run -d \
   --name si4k-search \
+  --restart unless-stopped \
   -p 3000:3000 \
   -e NODE_ENV=production \
-  -e KIWIX_LOCAL_URL=http://192.168.1.100:8080 \
-  -e KIWIX_LOCAL_PUBLIC_URL=http://192.168.1.100:8080 \
+  -e PORT=3000 \
+  -e KIWIX_URL=http://172.17.0.1:8080 \
   -e KIWIX_DATA_DIR=/knowledge \
   -e KIWIX_LIBRARY_XML=/knowledge/Metadata/library.xml \
+  -e KIWIX_PUBLIC_URL=https://wiki.si4k.online \
+  -e LOCAL_NETWORKS="192.168.0.0/16,10.0.0.0/8,172.16.0.0/12,127.0.0.1/32,::1/128" \
+  -e KIWIX_CACHE_TTL_SECONDS=300 \
+  -e KIWIX_MAX_SEARCH_SOURCES=5 \
+  -e SEARCH_MAX_CONCURRENT=2 \
+  -e SEARCH_MAX_ZIM_WORKERS=4 \
+  -e SEARCH_REQUEST_TIMEOUT_MS=10000 \
   -v /mnt/knowledge:/knowledge:ro \
-  si4k-search:latest
+  si4k-search:v0.0.1
 ```
+
+#### Detailed Parameter Breakdown
+
+##### 1. Container & Network Controls
+* **`--name si4k-search`** (`Required`): Assigns a unique name to the container instance.
+* **`--restart unless-stopped`** (`Recommended`): Automatically restarts the container on host reboots or unexpected process failures unless explicitly stopped by an administrator.
+* **`-p 3000:3000`** (`Required`): Maps host port `3000` to internal container port `3000`.
+* **`-v /mnt/knowledge:/knowledge:ro`** (`Required`): Mounts host ZIM knowledge directory into `/knowledge` inside the container with read-only (`:ro`) access for safety.
+
+##### 2. Core Server Environment
+* **`-e NODE_ENV=production`** (`Recommended`): Enables production optimization (fast static asset caching, production logging, and stripped dev features).
+* **`-e PORT=3000`** (`Optional`): Sets internal HTTP port for Express server (defaults to `3000`).
+
+##### 3. Kiwix Connection & Knowledge Paths
+* **`-e KIWIX_URL=http://172.17.0.1:8080`** (`Required`): Internal backend URL used by Si4k Search to query Kiwix (`172.17.0.1` points to Docker default gateway host IP; fallback: `KIWIX_LOCAL_URL`).
+* **`-e KIWIX_PUBLIC_URL=https://wiki.si4k.online`** (`Recommended`): Browser-facing URL used to format direct article links when users click search results (fallback: `KIWIX_LOCAL_PUBLIC_URL`).
+* **`-e KIWIX_DATA_DIR=/knowledge`** (`Recommended`): Target path inside container pointing to the mounted knowledge root folder.
+* **`-e KIWIX_LIBRARY_XML=/knowledge/Metadata/library.xml`** (`Recommended`): Absolute path to the Kiwix `library.xml` catalog file inside the container.
+
+##### 4. LAN Security & Configuration
+* **`-e LOCAL_NETWORKS="192.168.0.0/16,10.0.0.0/8,172.16.0.0/12,127.0.0.1/32,::1/128"`** (`Recommended`): Whitelisted CIDR subnets allowed to access the LAN Remote Configuration API (`/api/config`) to view and hot-patch environment settings.
+
+##### 5. Home-Server & Performance Scope Tuning
+* **`-e KIWIX_MAX_SEARCH_SOURCES=5`** (`Recommended for modest servers`): Restricts query execution to top $N$ intent-ranked ZIM sources per search. Drastically reduces latency and CPU/network load on modest home servers (e.g. older Intel i5 or Raspberry Pi). Omit or set to `0` to search all available sources.
+* **`-e SEARCH_MAX_CONCURRENT=2`** (`Recommended`): Limits maximum concurrent progressive search sessions processed simultaneously in backend to prevent socket exhaustion.
+* **`-e SEARCH_MAX_ZIM_WORKERS=4`** (`Recommended`): Maximum parallel ZIM worker fetches executed per search session.
+* **`-e SEARCH_REQUEST_TIMEOUT_MS=10000`** (`Optional`): Request timeout in milliseconds for individual ZIM HTTP fetches (default: `10000` ms / 10 sec).
+* **`-e KIWIX_CACHE_TTL_SECONDS=300`** (`Optional`): Cache TTL in seconds for periodic ZIM catalog discovery and index reconciliation (default: `300` sec / 5 mins).
+
+---
 
 ### Docker Build Requirements
 
