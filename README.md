@@ -32,10 +32,13 @@ Si4k provides:
 User ──> Si4k Search ──> relevant ZIMs ──> unified results
 ```
 
+- **Interactive Multi-ZIM Selection (`@`)**: Users can pick one or more specific ZIM files (e.g. `@wikipedia_en_all`, `@wikihow_en_all`) via the `@` popover dropdown or inline `@` triggers. Selected ZIM chips appear above the search bar with hover `x` remove buttons.
+- **Category Attachment & Domain Tagging (`#`)**: Dedicated category logic module (`categoryLogic.ts`) for attaching and filtering queries by domain categories (e.g. `#programming`, `#linux`, `#medicine`, `#guides`, `#repair`, `#cooking`, `#history`).
 - **Priority-Aware Search**: Dynamically routes queries to intent-matched ZIM sources first (e.g., ArchWiki for Linux setup queries, Stack Overflow for coding questions).
 - **Progressive Results**: Streams search matches to the user in real-time over SSE as individual ZIM sources complete.
 - **Full-Library Traversal**: Never terminates early or restricts total candidate search scope — continues traversing the entire library to guarantee deterministic completeness.
 - **Unified Pagination & Ranking**: Interleaves and re-ranks articles from multiple ZIMs using keyword frequency, category match, and source priority.
+- **LAN-Only Remote Configuration**: Real-time `.env` inspection and editing API (`GET /api/config`, `POST /api/config`) with in-memory hot patching for local network administrators.
 - **Modest Hardware Optimization**: Designed to run efficiently on low-resource home servers (such as older Intel i5 5th-Gen servers).
 - **Configurable Deployment**: Easy to deploy via Docker, Docker Compose, or standalone Node.js daemon.
 
@@ -63,15 +66,18 @@ User ──> Si4k Search ──> relevant ZIMs ──> unified results
                        ┌──────────────────┐
                        │ Kiwix Providers  │
                        └────────┬─────────┘
+                                │
                                 ▼
                        ┌──────────────────┐
                        │ Result Mixer     │
                        │ + Ranking        │
                        └────────┬─────────┘
+                                │
                                 ▼
                        ┌──────────────────┐
                        │ Progressive SSE  │
                        └────────┬─────────┘
+                                │
                                 ▼
                          Search Results
 ```
@@ -85,6 +91,8 @@ User ──> Si4k Search ──> relevant ZIMs ──> unified results
 - **Progressive SSE Result Streaming**:
   - Emits progressive result batches over Server-Sent Events (SSE) as ZIM sources complete.
   - Real-time client rendering with monotonic execution time tracking (`executionTimeMs`).
+- **Multi-ZIM Index Mixing**:
+  - When 1 or more ZIM files are selected via `@`, candidate results are inter-leaved and re-ranked across the selected ZIMs.
 - **User-Configurable LRU Search Cache**:
   - Deterministic caching controlled via `.env` (`SEARCH_CACHE_ENABLED`, `SEARCH_CACHE_TTL_SECONDS`, `SEARCH_CACHE_MAX_ENTRIES`).
   - Only complete search sessions enter the cache to prevent partial result pollution.
@@ -117,8 +125,8 @@ docker run -d \
   --name si4k-search \
   -p 3000:3000 \
   -e NODE_ENV=production \
-  -e KIWIX_URL=http://192.168.1.100:8080 \
-  -e KIWIX_PUBLIC_URL=http://192.168.1.100:8080 \
+  -e KIWIX_LOCAL_URL=http://192.168.1.100:8080 \
+  -e KIWIX_LOCAL_PUBLIC_URL=http://192.168.1.100:8080 \
   -e KIWIX_DATA_DIR=/knowledge \
   -e KIWIX_LIBRARY_XML=/knowledge/Metadata/library.xml \
   -v /mnt/knowledge:/knowledge:ro \
@@ -164,21 +172,31 @@ In current development benchmarks, Si4k Search remained around **160–230 MB RS
 | Variable | Default Value | Description |
 | :--- | :--- | :--- |
 | `PORT` | `3000` | HTTP port exposed by Express server |
-| `NODE_ENV` | `production` | Application execution mode (`production` / `development`) |
-| `KIWIX_URL` | `http://kiwix:8080` | Internal backend URL used by Node process to query Kiwix server |
-| `KIWIX_PUBLIC_URL` | `http://localhost:8080` | Browser-facing public target URL used for result article links |
-| `KIWIX_DATA_DIR` | `/knowledge` | Path to host-mounted knowledge library root directory |
-| `KIWIX_LIBRARY_XML` | `/knowledge/Metadata/library.xml` | Path to host-mounted Kiwix `library.xml` catalog file |
-| `KIWIX_MAX_SEARCH_SOURCES` | `unset` (unlimited) | Maximum ZIM sources to query per request after relevance ranking |
-| `KIWIX_CANDIDATE_LIMIT` | `100` | Maximum raw candidate limit per individual ZIM source |
-| `KIWIX_CACHE_TTL_SECONDS` | `300` | Periodic runtime ZIM catalog discovery and index refresh interval (seconds) |
-| `MAX_CONCURRENT_ZIM_SEARCHES` | `8` | Maximum parallel HTTP fetches across active ZIM sources per provider |
+| `NODE_ENV` | `development` | Application execution mode (`production` / `development`) |
+| `ENVIRONMENT_OVERRIDE` | `auto` | Force environment detection (`auto`, `local`, or `internet`) |
+| `LOCAL_NETWORKS` | `192.168.0.0/16,10.0.0.0/8...` | Comma-separated CIDR blocks considered local LAN connections |
+| `KIWIX_LOCAL_URL` | `http://kiwix:8080` | Internal backend URL used by Node process to query Kiwix on LAN (fallback: `KIWIX_URL`) |
+| `KIWIX_LOCAL_PUBLIC_URL` | `http://si4k-server.local:8080` | Public-facing target URL used by LAN users for article links (fallback: `KIWIX_PUBLIC_URL`) |
+| `KIWIX_ONLINE_URL` | `http://kiwix:8080` | Internal backend URL used by Node process when in online mode |
+| `KIWIX_ONLINE_PUBLIC_URL` | `https://wiki.si4k.online` | Target URL used by internet users to open Kiwix articles |
+| `KIWIX_DATA_DIR` | `/mnt/knowledge` | Path to host-mounted knowledge library root directory |
+| `KIWIX_LIBRARY_XML` | `/mnt/knowledge/Metadata/library.xml` | Path to host-mounted Kiwix `library.xml` metadata file |
+| `KIWIX_CANDIDATE_LIMIT` | `100` | Maximum candidate search matches fetched per ZIM source per request |
+| `KIWIX_MAX_SEARCH_SOURCES` | `unset` (unlimited) | Maximum ZIM sources to query per request after relevance ranking (fallback: `SEARCH_MAX_SOURCES`) |
+| `MAX_CONCURRENT_ZIM_SEARCHES` | `8` | Maximum parallel HTTP fetch calls across active ZIM sources per provider |
+| `KIWIX_CACHE_TTL_SECONDS` | `300` | Periodic runtime ZIM catalog discovery and index refresh interval in seconds (fallback: `ZIM_CACHE_TTL_SECONDS`) |
+| `SEARCH_KEYWORD_WEIGHT` | `10` | Multiplier applied to keyword match relevance scoring |
+| `SEARCH_BASE_PRIORITY_WEIGHT` | `1` | Multiplier applied to source base priority scoring |
+| `SEARCH_MIN_SOURCE_SCORE` | `5` | Minimum relevance score for a ZIM source to be included in search dispatch |
 | `SEARCH_MAX_CONCURRENT` | `2` | Maximum concurrent progressive search sessions running in backend |
 | `SEARCH_MAX_ZIM_WORKERS` | `4` | Maximum parallel ZIM worker fetches per search session |
-| `SEARCH_REQUEST_TIMEOUT_MS` | `10000` | Maximum HTTP request timeout for individual Kiwix ZIM fetches |
+| `SEARCH_REQUEST_TIMEOUT_MS` | `10000` | Maximum HTTP request timeout in ms for individual Kiwix ZIM fetches |
+| `SEARCH_MAX_MIXED_RESULTS` | `500` | Maximum candidate articles kept after cross-ZIM mixing |
+| `SEARCH_MIN_SOURCES_BEFORE_STREAM_MIX` | `1` | Number of ZIM sources completed before emitting progressive stream mix |
 | `SEARCH_CACHE_ENABLED` | `true` | Enable/disable deterministic search result caching |
 | `SEARCH_CACHE_TTL_SECONDS` | `300` | Time-to-live for cached search queries (in seconds) |
 | `SEARCH_CACHE_MAX_ENTRIES` | `100` | Maximum entries retained in LRU cache |
+| `SEARCH_CACHE_DEBUG` | `false` | Enable verbose LRU cache hit/miss/eviction logging |
 
 ### Search Scope & Concurrency Tuning
 
@@ -204,7 +222,23 @@ In current development benchmarks, Si4k Search remained around **160–230 MB RS
 
 ---
 
-## Health Check & Monitoring Endpoints
+## API Endpoints & Health Checks
+
+- **ZIM Discovery & Categories Endpoint**:
+  ```bash
+  curl http://localhost:3000/api/zims
+  ```
+  Returns available ZIM sources and distinct categories.
+
+- **Progressive Stream Endpoint**:
+  ```bash
+  curl "http://localhost:3000/api/search/stream?q=fever&zims=medlineplus_en_all_2025-01&categories=medicine"
+  ```
+  Streams real-time result batches over SSE filtered by specified ZIMs and categories.
+
+- **Configuration API (LAN Only)**:
+  - `GET /api/config` - Fetch current whitelisted `.env` parameters.
+  - `POST /api/config` - Update `.env` parameters with in-memory hot-patching.
 
 - **Service Liveness Endpoint**:
   ```bash

@@ -71,6 +71,7 @@ export interface SearchOptions {
   maxConcurrency?: number;
   maxSearchSources?: number;
   minSourcesBeforeStreamMix?: number;
+  candidateLimit?: number;
   zims?: string[];
   categories?: string[];
 }

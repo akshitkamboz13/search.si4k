@@ -1,0 +1,196 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Si4k Search Engine Complete API Specification & Terminal Manual",
+  "version": "1.2.0",
+  "description": "Complete REST & Streaming API documentation for Si4k Search Engine. Covers ZIM file discovery, active categories list, category-isolated search, multi-ZIM scoped search (1 to 4+ ZIMs), per-search candidate limit overrides (candidateLimit/limit), cross-ZIM index mixing, SSE progressive streaming, and terminal curl command examples.",
+  "baseUrl": {
+    "local": "http://localhost:3000/api",
+    "lan": "http://si4k-server.local:3000/api",
+    "production": "https://search.si4k.online/api"
+  },
+  "endpoints": {
+    "/search": {
+      "method": "GET",
+      "summary": "Standard REST Custom Search API (Google/Bing Style)",
+      "description": "Executes unified priority search across indexed ZIM collections and returns formatted JSON search results with pagination metadata.",
+      "queryParams": {
+        "q": {
+          "type": "string",
+          "required": true,
+          "description": "Search query string (e.g. 'quantum computing', 'how to bake bread', 'fever'). Supports inline @zim tags (@wikipedia_en_all) and #category tags (#medicine)."
+        },
+        "mode": {
+          "type": "string",
+          "required": false,
+          "enum": ["local", "online"],
+          "default": "local",
+          "description": "Execution search mode: 'local' (offline LAN search) or 'online' (internet fallback)."
+        },
+        "lang": {
+          "type": "string",
+          "required": false,
+          "default": "en",
+          "description": "ISO 639-1 language code filter (e.g. 'en', 'hi', 'es')."
+        },
+        "page": {
+          "type": "integer",
+          "required": false,
+          "default": 1,
+          "description": "Requested page number (1-indexed)."
+        },
+        "pageSize": {
+          "type": "integer",
+          "required": false,
+          "default": 20,
+          "description": "Number of search results returned per page (max 100)."
+        },
+        "candidateLimit": {
+          "type": "integer",
+          "required": false,
+          "default": "100 (from KIWIX_CANDIDATE_LIMIT)",
+          "description": "Per-ZIM source candidate limit override for this specific request (aliases: 'candidateLimit', 'limit'). E.g., pass candidateLimit=250 for deep search or candidateLimit=25 for ultra-fast light search."
+        },
+        "zims": {
+          "type": "string | array",
+          "required": false,
+          "description": "Comma-separated list or array of specific ZIM file identifiers to scope search (e.g. 'wikipedia_en_all,wikihow_en_all' or 'devdocs_en_python_2026-06')."
+        },
+        "categories": {
+          "type": "string | array",
+          "required": false,
+          "description": "Comma-separated list or array of domain categories to filter (e.g. 'programming,medicine,linux,guides,repair,cooking,science')."
+        }
+      },
+      "terminalExamples": [
+        {
+          "title": "Basic JSON Search Query",
+          "command": "curl -s \"http://localhost:3000/api/search?q=quantum+computing\"",
+          "description": "Queries default local knowledge base and outputs raw JSON search response."
+        },
+        {
+          "title": "Search with Custom Candidate Limit Override",
+          "command": "curl -s \"http://localhost:3000/api/search?q=fever&categories=medicine&candidateLimit=250\"",
+          "description": "Overrides per-ZIM candidate limit to 250 for deeper candidate retrieval."
+        },
+        {
+          "title": "Search Filtered by Specific ZIM Files",
+          "command": "curl -s \"http://localhost:3000/api/search?q=python&zims=devdocs_en_python_2026-06,stackoverflow.com_en_all_2023-11\"",
+          "description": "Restricts search to Python DevDocs and Stack Overflow ZIMs."
+        },
+        {
+          "title": "Terminal Formatting using jq (Title, URL, Source)",
+          "command": "curl -s \"http://localhost:3000/api/search?q=arch+linux&categories=linux\" | jq '.results[] | {title, url, source}'",
+          "description": "Filters JSON response into a clean list of title, URL, and source using jq."
+        }
+      ]
+    },
+    "/zims/names": {
+      "method": "GET",
+      "summary": "ZIM File Names Only API",
+      "description": "Returns lightweight JSON list containing only the unique ZIM file names currently discovered and available on the server.",
+      "terminalExamples": [
+        {
+          "title": "Get ZIM File Names Array",
+          "command": "curl -s \"http://localhost:3000/api/zims/names\"",
+          "description": "Returns JSON with total count and array of ZIM file names."
+        }
+      ]
+    },
+    "/categories": {
+      "method": "GET",
+      "summary": "Active Categories List API",
+      "description": "Returns list of all active domain categories along with source counts for each category.",
+      "terminalExamples": [
+        {
+          "title": "Get All Active Categories & Counts",
+          "command": "curl -s \"http://localhost:3000/api/categories\"",
+          "description": "Returns active categories and total ZIM collections assigned to each."
+        }
+      ]
+    },
+    "/search/category/:category": {
+      "method": "GET",
+      "summary": "Category-Isolated Search API",
+      "description": "Executes search query specifically constrained to a single target domain category (e.g. medicine, linux, programming, repair).",
+      "queryParams": {
+        "q": "Search query string (required)",
+        "mode": "local | online (optional)",
+        "page": "integer (optional)",
+        "pageSize": "integer (optional)",
+        "candidateLimit": "integer per-ZIM candidate limit override (optional)"
+      },
+      "terminalExamples": [
+        {
+          "title": "Search in Medicine Category with High Candidate Limit",
+          "command": "curl -s \"http://localhost:3000/api/search/category/medicine?q=fever&candidateLimit=200\"",
+          "description": "Queries 'fever' in medicine category with candidateLimit=200."
+        }
+      ]
+    },
+    "/search/zims": {
+      "method": "GET | POST",
+      "summary": "Multi-ZIM Target Search API (1 to 4+ Selected @ ZIMs)",
+      "description": "Executes search query restricted exclusively to specified 1, 2, 3, 4+ selected ZIM file datasets.",
+      "queryParams": {
+        "q": "Search query string",
+        "zims": "Comma-separated list of ZIM names",
+        "candidateLimit": "per-ZIM candidate limit override (optional)"
+      },
+      "requestBody": {
+        "q": "string",
+        "zims": ["array of ZIM file names"],
+        "candidateLimit": "integer (optional)",
+        "mode": "string (optional)",
+        "page": "integer (optional)",
+        "pageSize": "integer (optional)"
+      },
+      "terminalExamples": [
+        {
+          "title": "Search 4 @ ZIMs via POST with Custom candidateLimit",
+          "command": "curl -s -X POST \"http://localhost:3000/api/search/zims\" -H \"Content-Type: application/json\" -d '{\"q\":\"array method\",\"zims\":[\"devdocs_en_javascript\",\"devdocs_en_python\"],\"candidateLimit\":150}'",
+          "description": "Posts JSON payload with query, ZIM array, and candidateLimit=150."
+        }
+      ]
+    },
+    "/search/mixed": {
+      "method": "POST",
+      "summary": "Multi-ZIM Index Mixing & Inter-Leaved Ranking API",
+      "description": "Performs cross-ZIM candidate gathering, scoring, inter-leaving, and mixing across selected ZIM datasets and domain categories.",
+      "requestBody": {
+        "q": "Search query string",
+        "zims": ["array of ZIM names"],
+        "categories": ["array of category tags"],
+        "candidateLimit": "integer per-ZIM candidate limit override (optional)",
+        "mode": "local | online",
+        "page": 1,
+        "pageSize": 20
+      },
+      "terminalExamples": [
+        {
+          "title": "Execute Mixed Search with candidateLimit Override",
+          "command": "curl -s -X POST \"http://localhost:3000/api/search/mixed\" -H \"Content-Type: application/json\" -d '{\"q\":\"repair car\",\"zims\":[\"ifixit_en_all\",\"wikihow_en_all\"],\"candidateLimit\":200,\"page\":1,\"pageSize\":10}'",
+          "description": "Returns mixed search results from iFixit and wikiHow with per-source candidateLimit=200."
+        }
+      ]
+    },
+    "/search/stream": {
+      "method": "GET",
+      "summary": "Real-Time Server-Sent Events (SSE) Progressive Stream API",
+      "queryParams": {
+        "q": "Search query string",
+        "candidateLimit": "per-ZIM candidate limit override (e.g. candidateLimit=150)"
+      },
+      "terminalExamples": [
+        {
+          "title": "Stream Real-Time Search with candidateLimit=150",
+          "command": "curl -N -s \"http://localhost:3000/api/search/stream?q=docker&zims=devdocs_en_docker_2026-07&candidateLimit=150\"",
+          "description": "Streams progressive SSE search results with candidateLimit=150."
+        }
+      ]
+    }
+  },
+  "clientExamples": {
+    "curl_bash": "# Search across 4 ZIM files with candidateLimit=200 and format with jq\ncurl -s \"http://localhost:3000/api/search/zims?q=algorithm&zims=wikipedia_en_all,devdocs_en_python,stackoverflow_en_all&candidateLimit=200\" | jq '.results[] | {title, source, score}'",
+    "python": "import requests\n\n# Multi-ZIM Search with custom per-source candidate limit\nres = requests.post('http://localhost:3000/api/search/mixed', json={\n    'q': 'repair engine',\n    'zims': ['ifixit_en_all', 'wikihow_en_all'],\n    'candidateLimit': 250,\n    'pageSize': 10\n})\nprint(res.json())"
+  }
+}

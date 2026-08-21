@@ -67,6 +67,16 @@ export function createSearchRouter(searchEngine: SearchEngine): Router {
   };
 
   /**
+   * Helper to parse per-search candidate limit overrides (candidateLimit=50 or limit=50)
+   */
+  const parseCandidateLimit = (req: Request): number | undefined => {
+    const rawVal = req.query.candidateLimit || req.query.limit || req.body?.candidateLimit || req.body?.limit;
+    if (!rawVal) return undefined;
+    const parsed = parseInt(String(rawVal).trim(), 10);
+    return !isNaN(parsed) && parsed > 0 ? parsed : undefined;
+  };
+
+  /**
    * GET /api/zims (Get all available ZIM files & distinct categories)
    */
   router.get('/zims', async (req: Request, res: Response) => {
@@ -105,6 +115,163 @@ export function createSearchRouter(searchEngine: SearchEngine): Router {
   });
 
   /**
+   * GET /api/zims/names (Lightweight API returning array of ZIM file names only)
+   */
+  router.get('/zims/names', async (_req: Request, res: Response) => {
+    try {
+      const sources = await searchEngine.getDiscoveredSources();
+      const zimNames = Array.from(new Set(sources.map(s => s.zimName).filter(Boolean))).sort();
+      res.json({
+        total: zimNames.length,
+        zimNames,
+      });
+    } catch (err) {
+      res.status(500).json({ error: 'Failed to retrieve ZIM names' });
+    }
+  });
+
+  /**
+   * GET /api/categories (Get active categories with source counts)
+   */
+  router.get('/categories', async (_req: Request, res: Response) => {
+    try {
+      const sources = await searchEngine.getDiscoveredSources();
+      const categoryCounts: Record<string, number> = {};
+
+      sources.forEach(s => {
+        const catList = Array.isArray(s.categories) && s.categories.length > 0 
+          ? s.categories 
+          : [s.category || 'general'];
+        catList.forEach(c => {
+          if (!c) return;
+          const lower = c.toLowerCase().trim();
+          categoryCounts[lower] = (categoryCounts[lower] || 0) + 1;
+        });
+      });
+
+      const categories = Object.entries(categoryCounts)
+        .map(([name, count]) => ({ name, count }))
+        .sort((a, b) => a.name.localeCompare(b.name));
+
+      res.json({
+        totalCategories: categories.length,
+        categories,
+      });
+    } catch (err) {
+      res.status(500).json({ error: 'Failed to retrieve categories' });
+    }
+  });
+
+  /**
+   * GET /api/search/category/:category (Search query specifically within a target category)
+   */
+  router.get('/search/category/:category', async (req: Request, res: Response) => {
+    try {
+      const category = req.params.category;
+      const q = typeof req.query.q === 'string' ? req.query.q : '';
+      const autoDetection = envDetector.detectEnvironment(req);
+      const mode = (req.query.mode as SearchMode) || autoDetection.mode;
+      const lang = typeof req.query.lang === 'string' ? req.query.lang : 'en';
+      const page = parseInt(typeof req.query.page === 'string' ? req.query.page : '1', 10);
+      const pageSize = parseInt(typeof req.query.pageSize === 'string' ? req.query.pageSize : '20', 10);
+      const zims = parseQueryList(req.query.zims);
+
+      const candidateLimit = parseCandidateLimit(req);
+      const result = await searchEngine.search(q, {
+        mode,
+        lang,
+        page,
+        pageSize,
+        candidateLimit,
+        zims,
+        categories: [category],
+      });
+      res.json(result);
+    } catch (err) {
+      res.status(500).json({ error: 'Category search failed', message: err instanceof Error ? err.message : String(err) });
+    }
+  });
+
+  /**
+   * GET/POST /api/search/zims (Search specifically across selected 1+ ZIM files e.g. 4 @ ZIMs)
+   */
+  const handleZimSearch = async (req: Request, res: Response) => {
+    try {
+      const isPost = req.method === 'POST';
+      const body = isPost ? (req.body || {}) : {};
+
+      const q = typeof body.q === 'string' ? body.q : (typeof req.query.q === 'string' ? req.query.q : '');
+      const rawZims = isPost ? body.zims : req.query.zims;
+      const zims = parseQueryList(rawZims);
+
+      if (!zims || zims.length === 0) {
+        res.status(400).json({ error: 'Missing zims parameter. Provide at least 1 ZIM file name.' });
+        return;
+      }
+
+      const autoDetection = envDetector.detectEnvironment(req);
+      const mode = (body.mode || req.query.mode || autoDetection.mode) as SearchMode;
+      const lang = body.lang || req.query.lang || 'en';
+      const page = parseInt(body.page || req.query.page || '1', 10);
+      const pageSize = parseInt(body.pageSize || req.query.pageSize || '20', 10);
+      const candidateLimit = parseCandidateLimit(req);
+
+      const result = await searchEngine.search(q, {
+        mode,
+        lang,
+        page,
+        pageSize,
+        candidateLimit,
+        zims,
+      });
+
+      res.json(result);
+    } catch (err) {
+      res.status(500).json({ error: 'Multi-ZIM search failed', message: err instanceof Error ? err.message : String(err) });
+    }
+  };
+
+  router.get('/search/zims', handleZimSearch);
+  router.post('/search/zims', handleZimSearch);
+
+  /**
+   * POST /api/search/mixed (Advanced multi-ZIM & category index mixing & ranking API)
+   */
+  router.post('/search/mixed', async (req: Request, res: Response) => {
+    try {
+      const body = req.body || {};
+      const q = typeof body.q === 'string' ? body.q : '';
+      const zims = parseQueryList(body.zims);
+      const categories = parseQueryList(body.categories);
+      const autoDetection = envDetector.detectEnvironment(req);
+      const mode = (body.mode || autoDetection.mode) as SearchMode;
+      const lang = body.lang || 'en';
+      const page = parseInt(body.page || '1', 10);
+      const pageSize = parseInt(body.pageSize || '20', 10);
+      const candidateLimit = parseCandidateLimit(req);
+
+      const result = await searchEngine.search(q, {
+        mode,
+        lang,
+        page,
+        pageSize,
+        candidateLimit,
+        zims,
+        categories,
+      });
+
+      res.json({
+        mixingStrategy: 'Multi-ZIM Cross-Source Ranking & Interleaving',
+        targetZims: zims || ['All relevant sources'],
+        targetCategories: categories || ['All active categories'],
+        ...result,
+      });
+    } catch (err) {
+      res.status(500).json({ error: 'Index mixing search failed', message: err instanceof Error ? err.message : String(err) });
+    }
+  });
+
+  /**
    * GET /api/search (Standard non-streaming endpoint for backward compatibility)
    */
   router.get('/search', async (req: Request, res: Response) => {
@@ -117,8 +284,9 @@ export function createSearchRouter(searchEngine: SearchEngine): Router {
       const pageSize = parseInt(typeof req.query.pageSize === 'string' ? req.query.pageSize : '20', 10);
       const zims = parseQueryList(req.query.zims);
       const categories = parseQueryList(req.query.categories);
+      const candidateLimit = parseCandidateLimit(req);
 
-      const result = await searchEngine.search(q, { mode, lang, page, pageSize, zims, categories });
+      const result = await searchEngine.search(q, { mode, lang, page, pageSize, candidateLimit, zims, categories });
       res.json(result);
     } catch (err) {
       console.error('[searchRouter] Search API error:', err);
@@ -138,6 +306,7 @@ export function createSearchRouter(searchEngine: SearchEngine): Router {
     const pageSize = parseInt(typeof req.query.pageSize === 'string' ? req.query.pageSize : '20', 10);
     const zims = parseQueryList(req.query.zims);
     const categories = parseQueryList(req.query.categories);
+    const candidateLimit = parseCandidateLimit(req);
 
     res.setHeader('Content-Type', 'text/event-stream');
     res.setHeader('Cache-Control', 'no-cache');
@@ -173,6 +342,7 @@ export function createSearchRouter(searchEngine: SearchEngine): Router {
           lang,
           page,
           pageSize,
+          candidateLimit,
           zims,
           categories,
           signal: abortController.signal,

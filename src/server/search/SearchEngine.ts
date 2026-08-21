@@ -344,9 +344,9 @@ export class SearchEngine {
             try {
               let sourceResults: SearchResult[] = [];
               if (source.provider === 'kiwix' && 'searchZimSource' in provider) {
-                sourceResults = await (provider as any).searchZimSource(source, trimmedQuery, mode);
+                sourceResults = await (provider as any).searchZimSource(source, trimmedQuery, mode, undefined, options.candidateLimit);
               } else {
-                sourceResults = await provider.search(trimmedQuery, { mode, lang });
+                sourceResults = await provider.search(trimmedQuery, { mode, lang, candidateLimit: options.candidateLimit });
               }
 
               const matchingResults = sourceResults.filter((r: SearchResult) => !r.sourceId || r.sourceId === source.id);
@@ -723,9 +723,9 @@ export class SearchEngine {
                 if (provider && !options.isAborted?.() && !options.signal?.aborted) {
                   let results: SearchResult[] = [];
                   if (source.provider === 'kiwix' && 'searchZimSource' in provider) {
-                    results = await (provider as any).searchZimSource(source, trimmedQuery, mode, options.signal);
+                    results = await (provider as any).searchZimSource(source, trimmedQuery, mode, options.signal, options.candidateLimit);
                   } else {
-                    results = await provider.search(trimmedQuery, { mode, lang });
+                    results = await provider.search(trimmedQuery, { mode, lang, candidateLimit: options.candidateLimit });
                   }
 
                   const matchingResults = results.filter((r: SearchResult) => !r.sourceId || r.sourceId === source.id);

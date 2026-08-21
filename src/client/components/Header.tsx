@@ -1,6 +1,6 @@
 import React from 'react';
 import { SearchMode } from '../../shared/types.js';
-import { Sun, Moon, Wifi, WifiOff, Settings, Heart } from 'lucide-react';
+import { Sun, Moon, Wifi, WifiOff, Settings, Heart, Code } from 'lucide-react';
 import { Si4kIcon } from './Si4kIcon.js';
 
 interface HeaderProps {
@@ -59,6 +59,17 @@ export const Header: React.FC<HeaderProps> = ({
           style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', color: '#ef4444', textDecoration: 'none' }}
         >
           <Heart size={18} fill="#ef4444" />
+        </a>
+
+        <a
+          href="https://www.si4k.online/si4k-search/docs"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="theme-toggle"
+          title="API Documentation & Endpoints"
+          style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', textDecoration: 'none', color: 'var(--text-primary)' }}
+        >
+          <Code size={18} />
         </a>
 
         <button

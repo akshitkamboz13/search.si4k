@@ -126,13 +126,16 @@ export class KiwixProvider implements SearchProvider {
     source: SearchSourceConfig,
     query: string,
     mode: SearchMode = 'local',
-    signal?: AbortSignal
+    signal?: AbortSignal,
+    candidateLimitOverride?: number
   ): Promise<SearchResult[]> {
     if (!query || !query.trim() || signal?.aborted) return [];
 
     const trimmedQuery = query.trim();
     const { internalUrl, publicUrl } = this.getUrlsForMode(mode);
-    const targetCandidateLimit = this.getEffectiveCandidateLimit();
+    const targetCandidateLimit = candidateLimitOverride !== undefined && candidateLimitOverride > 0
+      ? candidateLimitOverride
+      : this.getEffectiveCandidateLimit();
 
     // 1. Fetch initial Page 1 (start=0)
     const firstHtml = await this.fetchHtmlPage(internalUrl, source.zimName, trimmedQuery, 0, signal);
