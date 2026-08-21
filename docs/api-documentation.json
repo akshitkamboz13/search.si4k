@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "Si4k Search Engine Complete API Specification & Terminal Manual",
-  "version": "1.2.0",
+  "version": "0.0.1",
   "description": "Complete REST & Streaming API documentation for Si4k Search Engine. Covers ZIM file discovery, active categories list, category-isolated search, multi-ZIM scoped search (1 to 4+ ZIMs), per-search candidate limit overrides (candidateLimit/limit), cross-ZIM index mixing, SSE progressive streaming, and terminal curl command examples.",
   "baseUrl": {
     "local": "http://localhost:3000/api",

@@ -1,4 +1,6 @@
-# Si4k Search Engine
+# Si4k Search Engine `v0.0.1`
+
+![Version](https://img.shields.io/badge/version-v0.0.1-blue.svg) ![License](https://img.shields.io/badge/license-MIT-green.svg)
 
 Unified, high-performance offline-first knowledge search engine for Kiwix and local ZIM collections including Wikipedia, wikiHow, iFixit, Stack Overflow, and other datasets. Optimized for modest home servers and offline knowledge infrastructure.
 
