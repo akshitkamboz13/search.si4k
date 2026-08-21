@@ -283,21 +283,44 @@ export class SearchEngine {
       };
     }
 
-    const cacheKey = `${trimmedQuery.toLowerCase()}:${mode}:${lang}:v1`;
+    const selectedZimsKey = options.zims && options.zims.length > 0 ? options.zims.slice().sort().join(',') : 'all';
+    const selectedCatsKey = options.categories && options.categories.length > 0 ? options.categories.slice().sort().join(',') : 'all';
+    const cacheKey = `${trimmedQuery.toLowerCase()}:${mode}:${lang}:${selectedZimsKey}:${selectedCatsKey}:v1`;
     let cached = this.searchCache.get(cacheKey);
 
     if (!cached) {
       await this.acquireSessionSlot();
       try {
         const allDiscovered = await this.zimLibrary.getDiscoveredSources();
-        const langSources = allDiscovered.filter(s => s.lang === lang || !s.lang);
+        let langSources = allDiscovered.filter(s => s.lang === lang || !s.lang);
 
-        const relevanceSelection = this.sourceRelevance.selectRelevantSources(trimmedQuery, langSources, 16);
-        let selectedZims = relevanceSelection.allRankedSources;
+        if (options.categories && options.categories.length > 0) {
+          const reqCats = new Set(options.categories.map(c => c.toLowerCase()));
+          const catFiltered = langSources.filter(s => 
+            (s.category && reqCats.has(s.category.toLowerCase())) ||
+            (s.categories && s.categories.some(c => reqCats.has(c.toLowerCase())))
+          );
+          if (catFiltered.length > 0) langSources = catFiltered;
+        }
 
-        const maxSourcesLimit = options.maxSearchSources !== undefined ? options.maxSearchSources : config.kiwix.maxSearchSources;
-        if (typeof maxSourcesLimit === 'number' && Number.isFinite(maxSourcesLimit) && maxSourcesLimit > 0) {
-          selectedZims = selectedZims.slice(0, maxSourcesLimit);
+        let selectedZims: DiscoveredZim[];
+
+        if (options.zims && options.zims.length > 0) {
+          const reqZims = new Set(options.zims.map(z => z.toLowerCase().replace(/^@/, '')));
+          const userSelected = langSources.filter(s => 
+            reqZims.has(s.zimName.toLowerCase()) || 
+            reqZims.has(s.id.toLowerCase()) ||
+            reqZims.has(s.name.toLowerCase())
+          );
+          selectedZims = userSelected.length > 0 ? userSelected : langSources;
+        } else {
+          const relevanceSelection = this.sourceRelevance.selectRelevantSources(trimmedQuery, langSources, 16);
+          selectedZims = relevanceSelection.allRankedSources;
+
+          const maxSourcesLimit = options.maxSearchSources !== undefined ? options.maxSearchSources : config.kiwix.maxSearchSources;
+          if (typeof maxSourcesLimit === 'number' && Number.isFinite(maxSourcesLimit) && maxSourcesLimit > 0) {
+            selectedZims = selectedZims.slice(0, maxSourcesLimit);
+          }
         }
 
         const kiwixProvider = this.providers.get('kiwix');
@@ -445,7 +468,9 @@ export class SearchEngine {
     }
 
     const getElapsedMs = () => Math.max(1, Math.round(performance.now() - startedAt));
-    const cacheKey = `${trimmedQuery.toLowerCase()}:${mode}:${lang}:v1`;
+    const selectedZimsKey = options.zims && options.zims.length > 0 ? options.zims.slice().sort().join(',') : 'all';
+    const selectedCatsKey = options.categories && options.categories.length > 0 ? options.categories.slice().sort().join(',') : 'all';
+    const cacheKey = `${trimmedQuery.toLowerCase()}:${mode}:${lang}:${selectedZimsKey}:${selectedCatsKey}:v1`;
     const cached = this.searchCache.get(cacheKey);
 
     if (cached) {
@@ -483,14 +508,35 @@ export class SearchEngine {
 
     try {
       const allDiscovered = await this.zimLibrary.getDiscoveredSources();
-      const langSources = allDiscovered.filter(s => s.lang === lang || !s.lang);
+      let langSources = allDiscovered.filter(s => s.lang === lang || !s.lang);
 
-      const relevanceSelection = this.sourceRelevance.selectRelevantSources(trimmedQuery, langSources, 16);
-      let rankedSources = relevanceSelection.allRankedSources;
+      if (options.categories && options.categories.length > 0) {
+        const reqCats = new Set(options.categories.map(c => c.toLowerCase()));
+        const catFiltered = langSources.filter(s => 
+          (s.category && reqCats.has(s.category.toLowerCase())) ||
+          (s.categories && s.categories.some(c => reqCats.has(c.toLowerCase())))
+        );
+        if (catFiltered.length > 0) langSources = catFiltered;
+      }
 
-      const maxSourcesLimit = options.maxSearchSources !== undefined ? options.maxSearchSources : config.kiwix.maxSearchSources;
-      if (typeof maxSourcesLimit === 'number' && Number.isFinite(maxSourcesLimit) && maxSourcesLimit > 0) {
-        rankedSources = rankedSources.slice(0, maxSourcesLimit);
+      let rankedSources: DiscoveredZim[];
+
+      if (options.zims && options.zims.length > 0) {
+        const reqZims = new Set(options.zims.map(z => z.toLowerCase().replace(/^@/, '')));
+        const userSelected = langSources.filter(s => 
+          reqZims.has(s.zimName.toLowerCase()) || 
+          reqZims.has(s.id.toLowerCase()) ||
+          reqZims.has(s.name.toLowerCase())
+        );
+        rankedSources = userSelected.length > 0 ? userSelected : langSources;
+      } else {
+        const relevanceSelection = this.sourceRelevance.selectRelevantSources(trimmedQuery, langSources, 16);
+        rankedSources = relevanceSelection.allRankedSources;
+
+        const maxSourcesLimit = options.maxSearchSources !== undefined ? options.maxSearchSources : config.kiwix.maxSearchSources;
+        if (typeof maxSourcesLimit === 'number' && Number.isFinite(maxSourcesLimit) && maxSourcesLimit > 0) {
+          rankedSources = rankedSources.slice(0, maxSourcesLimit);
+        }
       }
 
       const prioritySources = rankedSources.slice(0, Math.min(16, rankedSources.length));

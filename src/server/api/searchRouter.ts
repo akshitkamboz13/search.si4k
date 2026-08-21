@@ -57,6 +57,54 @@ export function createSearchRouter(searchEngine: SearchEngine): Router {
   });
 
   /**
+   * Helper to parse array parameters from query string (e.g. zims=a,b or zims[]=a&zims[]=b)
+   */
+  const parseQueryList = (val: unknown): string[] | undefined => {
+    if (!val) return undefined;
+    if (Array.isArray(val)) return val.map(v => String(v).trim()).filter(Boolean);
+    if (typeof val === 'string') return val.split(',').map(s => s.trim()).filter(Boolean);
+    return undefined;
+  };
+
+  /**
+   * GET /api/zims (Get all available ZIM files & distinct categories)
+   */
+  router.get('/zims', async (req: Request, res: Response) => {
+    try {
+      const sources = await searchEngine.getDiscoveredSources();
+      const categorySet = new Set<string>();
+
+      const zims = sources.map(s => {
+        if (s.category) categorySet.add(s.category.toLowerCase());
+        if (Array.isArray(s.categories)) {
+          for (const c of s.categories) {
+            if (c) categorySet.add(c.toLowerCase());
+          }
+        }
+        return {
+          id: s.id,
+          zimName: s.zimName,
+          name: s.name,
+          title: s.title || s.name,
+          category: s.category || 'general',
+          categories: s.categories || [s.category || 'general'],
+          description: s.description || '',
+          lang: s.lang || 'en',
+          basePriority: s.basePriority || 10,
+        };
+      });
+
+      res.json({
+        zims,
+        categories: Array.from(categorySet).sort(),
+      });
+    } catch (err) {
+      console.error('[searchRouter] ZIM discovery error:', err);
+      res.status(500).json({ error: 'Failed to retrieve available ZIM files' });
+    }
+  });
+
+  /**
    * GET /api/search (Standard non-streaming endpoint for backward compatibility)
    */
   router.get('/search', async (req: Request, res: Response) => {
@@ -67,8 +115,10 @@ export function createSearchRouter(searchEngine: SearchEngine): Router {
       const lang = typeof req.query.lang === 'string' ? req.query.lang : 'en';
       const page = parseInt(typeof req.query.page === 'string' ? req.query.page : '1', 10);
       const pageSize = parseInt(typeof req.query.pageSize === 'string' ? req.query.pageSize : '20', 10);
+      const zims = parseQueryList(req.query.zims);
+      const categories = parseQueryList(req.query.categories);
 
-      const result = await searchEngine.search(q, { mode, lang, page, pageSize });
+      const result = await searchEngine.search(q, { mode, lang, page, pageSize, zims, categories });
       res.json(result);
     } catch (err) {
       console.error('[searchRouter] Search API error:', err);
@@ -86,6 +136,8 @@ export function createSearchRouter(searchEngine: SearchEngine): Router {
     const lang = typeof req.query.lang === 'string' ? req.query.lang : 'en';
     const page = parseInt(typeof req.query.page === 'string' ? req.query.page : '1', 10);
     const pageSize = parseInt(typeof req.query.pageSize === 'string' ? req.query.pageSize : '20', 10);
+    const zims = parseQueryList(req.query.zims);
+    const categories = parseQueryList(req.query.categories);
 
     res.setHeader('Content-Type', 'text/event-stream');
     res.setHeader('Cache-Control', 'no-cache');
@@ -121,6 +173,8 @@ export function createSearchRouter(searchEngine: SearchEngine): Router {
           lang,
           page,
           pageSize,
+          zims,
+          categories,
           signal: abortController.signal,
           isAborted: () => clientDisconnected || abortController.signal.aborted,
         },

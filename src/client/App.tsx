@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { SearchResponse, SearchResult, SearchMode, StreamEventPayload } from '../shared/types.js';
+import { SearchResponse, SearchResult, SearchMode, StreamEventPayload, ZimInfo } from '../shared/types.js';
 import { Header } from './components/Header.js';
 import { SearchBar } from './components/SearchBar.js';
 import { SearchResults } from './components/SearchResults.js';
 import { LoadingState } from './components/LoadingState.js';
 import { ErrorState } from './components/ErrorState.js';
-import { streamSearchResults, fetchEnvironment } from './services/api.js';
+import { streamSearchResults, fetchEnvironment, fetchAvailableZims } from './services/api.js';
 import { BookOpen, MapPin, Database } from 'lucide-react';
 import { Si4kIcon } from './components/Si4kIcon.js';
 import { ConfigPage } from './components/ConfigPage.js';
@@ -24,6 +24,11 @@ export const App: React.FC = () => {
   const [totalSourcesCount, setTotalSourcesCount] = useState<number>(32);
   const [showSettings, setShowSettings] = useState<boolean>(false);
 
+  const [availableZims, setAvailableZims] = useState<ZimInfo[]>([]);
+  const [availableCategories, setAvailableCategories] = useState<string[]>([]);
+  const [selectedZims, setSelectedZims] = useState<string[]>([]);
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+
   const cancelStreamRef = useRef<(() => void) | null>(null);
   const accumulatedResultsRef = useRef<SearchResult[]>([]);
   const seenResultIdsRef = useRef<Set<string>>(new Set());
@@ -35,6 +40,18 @@ export const App: React.FC = () => {
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
   }, [theme]);
+
+  // Fetch available ZIM files & categories on mount
+  useEffect(() => {
+    fetchAvailableZims()
+      .then((res) => {
+        setAvailableZims(res.zims || []);
+        setAvailableCategories(res.categories || []);
+      })
+      .catch((err) => {
+        console.warn('Failed to load available ZIMs:', err);
+      });
+  }, []);
 
   const updateResponseState = useCallback((currentPage: number, searchMode: SearchMode, statusText?: string, isStreaming: boolean = true) => {
     const accumulated = accumulatedResultsRef.current;
@@ -74,7 +91,13 @@ export const App: React.FC = () => {
   }, [query]);
 
   const executeSearch = useCallback(
-    (searchQuery: string, searchMode: SearchMode = mode, searchPage: number = page) => {
+    (
+      searchQuery: string,
+      searchMode: SearchMode = mode,
+      searchPage: number = page,
+      activeZims: string[] = selectedZims,
+      activeCats: string[] = selectedCategories
+    ) => {
       // 1. Cancel previous stream if active
       if (cancelStreamRef.current) {
         cancelStreamRef.current();
@@ -99,8 +122,15 @@ export const App: React.FC = () => {
       if (searchPage > 1) {
         params.set('page', String(searchPage));
       }
+      if (activeZims.length > 0) {
+        params.set('zims', activeZims.join(','));
+      }
+      if (activeCats.length > 0) {
+        params.set('categories', activeCats.join(','));
+      }
+
       const newUrl = `${window.location.pathname}?${params.toString()}`;
-      window.history.pushState({ q: searchQuery, mode: searchMode, page: searchPage }, '', newUrl);
+      window.history.pushState({ q: searchQuery, mode: searchMode, page: searchPage, zims: activeZims, categories: activeCats }, '', newUrl);
 
       cancelStreamRef.current = streamSearchResults(
         searchQuery,
@@ -151,10 +181,12 @@ export const App: React.FC = () => {
           console.error('Streaming search error:', err);
           setError(err.message || 'Unable to connect to Si4k Search API');
           setLoading(false);
-        }
+        },
+        activeZims,
+        activeCats
       );
     },
-    [mode, page, updateResponseState]
+    [mode, page, selectedZims, selectedCategories, updateResponseState]
   );
 
   // Initialize Environment first, then execute search cleanly from URL
@@ -173,11 +205,17 @@ export const App: React.FC = () => {
         const initialQ = params.get('q') || '';
         const initialPage = parseInt(params.get('page') || '1', 10);
         const validPage = isNaN(initialPage) || initialPage < 1 ? 1 : initialPage;
+
+        const urlZims = params.get('zims') ? (params.get('zims') || '').split(',').filter(Boolean) : [];
+        const urlCats = params.get('categories') ? (params.get('categories') || '').split(',').filter(Boolean) : [];
+
         setPage(validPage);
+        if (urlZims.length > 0) setSelectedZims(urlZims);
+        if (urlCats.length > 0) setSelectedCategories(urlCats);
 
         if (initialQ) {
           setQuery(initialQ);
-          executeSearch(initialQ, activeMode, validPage);
+          executeSearch(initialQ, activeMode, validPage, urlZims, urlCats);
         }
       })
       .catch((err) => {
@@ -190,11 +228,17 @@ export const App: React.FC = () => {
       const initialQ = params.get('q') || '';
       const initialPage = parseInt(params.get('page') || '1', 10);
       const validPage = isNaN(initialPage) || initialPage < 1 ? 1 : initialPage;
+
+      const urlZims = params.get('zims') ? (params.get('zims') || '').split(',').filter(Boolean) : [];
+      const urlCats = params.get('categories') ? (params.get('categories') || '').split(',').filter(Boolean) : [];
+
       setPage(validPage);
+      setSelectedZims(urlZims);
+      setSelectedCategories(urlCats);
 
       if (initialQ) {
         setQuery(initialQ);
-        executeSearch(initialQ, mode, validPage);
+        executeSearch(initialQ, mode, validPage, urlZims, urlCats);
       } else {
         setQuery('');
         setResponse(null);
@@ -210,10 +254,12 @@ export const App: React.FC = () => {
     };
   }, []);
 
-  const handleSearchSubmit = (newQuery: string) => {
+  const handleSearchSubmit = (newQuery: string, newZims: string[] = selectedZims, newCats: string[] = selectedCategories) => {
     setQuery(newQuery);
+    setSelectedZims(newZims);
+    setSelectedCategories(newCats);
     setPage(1);
-    executeSearch(newQuery, mode, 1);
+    executeSearch(newQuery, mode, 1, newZims, newCats);
   };
 
   const handlePageChange = (newPage: number) => {
@@ -289,6 +335,10 @@ export const App: React.FC = () => {
           initialQuery={query}
           onSearch={handleSearchSubmit}
           autoFocus={true}
+          availableZims={availableZims}
+          availableCategories={availableCategories}
+          initialSelectedZims={selectedZims}
+          initialSelectedCategories={selectedCategories}
         />
 
         {loading && !response && (

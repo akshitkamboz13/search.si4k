@@ -1,4 +1,4 @@
-import { SearchResponse, SearchMode, StreamEventPayload } from '../../shared/types.js';
+import { SearchResponse, SearchMode, StreamEventPayload, ZimsResponse } from '../../shared/types.js';
 
 export interface EnvironmentResponse {
   environment: 'local' | 'internet';
@@ -16,12 +16,29 @@ export async function fetchEnvironment(): Promise<EnvironmentResponse> {
   return response.json();
 }
 
+export async function fetchAvailableZims(): Promise<ZimsResponse> {
+  const response = await fetch('/api/zims');
+  if (!response.ok) {
+    return { zims: [], categories: [] };
+  }
+  return response.json();
+}
+
 export async function fetchSearchResults(
   query: string,
   mode: SearchMode = 'local',
-  page: number = 1
+  page: number = 1,
+  zims?: string[],
+  categories?: string[]
 ): Promise<SearchResponse> {
-  const url = `/api/search?q=${encodeURIComponent(query)}&mode=${encodeURIComponent(mode)}&page=${page}`;
+  let url = `/api/search?q=${encodeURIComponent(query)}&mode=${encodeURIComponent(mode)}&page=${page}`;
+  if (zims && zims.length > 0) {
+    url += `&zims=${encodeURIComponent(zims.join(','))}`;
+  }
+  if (categories && categories.length > 0) {
+    url += `&categories=${encodeURIComponent(categories.join(','))}`;
+  }
+
   const response = await fetch(url);
 
   if (!response.ok) {
@@ -40,9 +57,17 @@ export function streamSearchResults(
   mode: SearchMode = 'local',
   page: number = 1,
   onPayload: (payload: StreamEventPayload) => void,
-  onError: (err: Error) => void
+  onError: (err: Error) => void,
+  zims?: string[],
+  categories?: string[]
 ): () => void {
-  const url = `/api/search/stream?q=${encodeURIComponent(query)}&mode=${encodeURIComponent(mode)}&page=${page}`;
+  let url = `/api/search/stream?q=${encodeURIComponent(query)}&mode=${encodeURIComponent(mode)}&page=${page}`;
+  if (zims && zims.length > 0) {
+    url += `&zims=${encodeURIComponent(zims.join(','))}`;
+  }
+  if (categories && categories.length > 0) {
+    url += `&categories=${encodeURIComponent(categories.join(','))}`;
+  }
   const eventSource = new EventSource(url);
 
   eventSource.addEventListener('progress', (event: MessageEvent) => {

@@ -209,7 +209,7 @@ body {
 
 .search-input {
   width: 100%;
-  padding: 1rem 3.5rem 1rem 3.25rem;
+  padding: 1rem 17.5rem 1rem 3.25rem;
   font-size: 1.125rem;
   font-family: inherit;
   color: var(--text-primary);
@@ -227,20 +227,20 @@ body {
 }
 
 .search-submit-btn {
-  position: absolute;
-  right: 0.6rem;
+  position: relative;
   background-color: var(--brand-color);
   color: white;
   border: none;
   border-radius: var(--radius-md);
-  padding: 0.6rem 1.1rem;
-  font-size: 0.95rem;
+  padding: 0.55rem 1rem;
+  font-size: 0.925rem;
   font-weight: 600;
   cursor: pointer;
   display: flex;
   align-items: center;
   gap: 0.4rem;
   transition: background-color 0.15s ease;
+  white-space: nowrap;
 }
 
 .search-submit-btn:hover {
@@ -1093,4 +1093,317 @@ body {
   background: #ef4444;
   color: #fff;
 }
+
+/* ─── Selected Chips Bar & Tag Popover Dropdowns ─────────────────────────── */
+
+.selected-chips-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  animation: fadeIn 0.2s ease;
+}
+
+.chips-bar-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-right: 0.25rem;
+}
+
+.chip-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.6rem;
+  border-radius: 16px;
+  font-size: 0.825rem;
+  font-weight: 500;
+  line-height: 1.2;
+  transition: all 0.15s ease;
+  position: relative;
+}
+
+.zim-chip {
+  background: rgba(2, 132, 199, 0.12);
+  border: 1px solid rgba(2, 132, 199, 0.3);
+  color: var(--brand-color);
+}
+
+[data-theme="dark"] .zim-chip {
+  background: rgba(56, 189, 248, 0.16);
+  border-color: rgba(56, 189, 248, 0.35);
+  color: #38bdf8;
+}
+
+.category-chip {
+  background: rgba(147, 51, 234, 0.12);
+  border: 1px solid rgba(147, 51, 234, 0.3);
+  color: #9333ea;
+}
+
+[data-theme="dark"] .category-chip {
+  background: rgba(192, 132, 252, 0.16);
+  border-color: rgba(192, 132, 252, 0.35);
+  color: #c084fc;
+}
+
+.chip-badge:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Hover to visible 'x' button on selected ZIM chip */
+.chip-remove-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border: none;
+  background: transparent;
+  border-radius: 50%;
+  color: currentColor;
+  opacity: 0.6;
+  cursor: pointer;
+  padding: 0;
+  transition: all 0.15s ease;
+}
+
+.chip-badge:hover .chip-remove-btn {
+  opacity: 1;
+  background: rgba(0, 0, 0, 0.12);
+}
+
+[data-theme="dark"] .chip-badge:hover .chip-remove-btn {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.chip-remove-btn:hover {
+  background: rgba(239, 68, 68, 0.2) !important;
+  color: #ef4444 !important;
+  transform: scale(1.1);
+}
+
+.clear-all-chips-btn {
+  background: none;
+  border: none;
+  font-size: 0.775rem;
+  color: var(--text-muted);
+  text-decoration: underline;
+  cursor: pointer;
+  margin-left: auto;
+  padding: 0.1rem 0.4rem;
+}
+
+.clear-all-chips-btn:hover {
+  color: var(--text-primary);
+}
+
+/* Action Buttons inside Input Wrapper */
+.search-action-buttons {
+  position: absolute;
+  right: 0.4rem;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  z-index: 5;
+}
+
+.quick-trigger-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.45rem 0.65rem;
+  font-size: 0.825rem;
+  font-weight: 600;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  background: var(--bg-card);
+  color: var(--text-primary);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+
+.quick-trigger-btn:hover {
+  background: var(--bg-hover);
+  color: var(--brand-color);
+  border-color: var(--brand-color);
+}
+
+.quick-trigger-btn.active {
+  background: rgba(2, 132, 199, 0.12);
+  border-color: var(--brand-color);
+  color: var(--brand-color);
+}
+
+.trigger-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 8px;
+  background: var(--brand-color);
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+/* Popover Dropdown (Compact popup near search action buttons) */
+.tag-popover-dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  width: 380px;
+  max-width: calc(100vw - 2rem);
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 12px 28px -5px rgba(0, 0, 0, 0.25);
+  z-index: 1000;
+  overflow: hidden;
+  animation: fadeIn 0.15s ease;
+}
+
+.popover-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.6rem 0.85rem;
+  border-bottom: 1px solid var(--border-color);
+  background: var(--bg-primary);
+}
+
+.popover-title {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: var(--text-primary);
+}
+
+.popover-close-btn {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 0.15rem;
+  border-radius: 4px;
+}
+
+.popover-close-btn:hover {
+  color: var(--text-primary);
+  background: var(--bg-hover);
+}
+
+.popover-search {
+  padding: 0.4rem 0.65rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.popover-search-input {
+  width: 100%;
+  padding: 0.35rem 0.65rem;
+  font-size: 0.825rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  outline: none;
+}
+
+.popover-search-input:focus {
+  border-color: var(--brand-color);
+}
+
+.popover-list {
+  max-height: 240px;
+  overflow-y: auto;
+  padding: 0.4rem;
+}
+
+.popover-empty {
+  padding: 1.5rem;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+.popover-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.6rem 0.75rem;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.popover-item:hover {
+  background: var(--bg-hover);
+}
+
+.popover-item.selected {
+  background: rgba(2, 132, 199, 0.08);
+}
+
+.popover-item-check {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  color: var(--text-muted);
+}
+
+.popover-item.selected .popover-item-check {
+  color: var(--brand-color);
+}
+
+.item-check-icon {
+  color: var(--brand-color);
+  font-weight: bold;
+}
+
+.popover-item-content {
+  flex: 1;
+}
+
+.popover-item-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.popover-item-tag {
+  font-size: 0.7rem;
+  font-weight: 500;
+  padding: 0.1rem 0.4rem;
+  border-radius: 10px;
+  background: var(--bg-hover);
+  color: var(--text-muted);
+  text-transform: capitalize;
+}
+
+.popover-item-subtitle {
+  font-size: 0.775rem;
+  color: var(--text-muted);
+  margin-top: 0.1rem;
+}
+
 

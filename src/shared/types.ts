@@ -71,6 +71,25 @@ export interface SearchOptions {
   maxConcurrency?: number;
   maxSearchSources?: number;
   minSourcesBeforeStreamMix?: number;
+  zims?: string[];
+  categories?: string[];
+}
+
+export interface ZimInfo {
+  id: string;
+  zimName: string;
+  name: string;
+  title?: string;
+  category: string;
+  categories?: string[];
+  description?: string;
+  lang: string;
+  basePriority: number;
+}
+
+export interface ZimsResponse {
+  zims: ZimInfo[];
+  categories: string[];
 }
 
 export interface StreamEventPayload {
